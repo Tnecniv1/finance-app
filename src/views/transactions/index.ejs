@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Transactions - Finance App</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>💰 Finance App</h1>
+                <div class="user-info">
+                    <span>Bonjour, <strong><%= pseudo %></strong></span>
+                    <a href="/auth/logout" class="btn btn-small">Déconnexion</a>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- Balance Card -->
+            <div class="balance-section">
+                <div class="balance-card">
+                    <h3>Solde Total</h3>
+                    <p class="balance-amount <%= balance.balance >= 0 ? 'positive' : 'negative' %>">
+                        <%= balance.balance.toFixed(2) %> €
+                    </p>
+                </div>
+                <div class="stats-cards">
+                    <div class="stat-card income">
+                        <span class="stat-label">Revenus</span>
+                        <span class="stat-amount">+ <%= balance.totalIncome.toFixed(2) %> €</span>
+                    </div>
+                    <div class="stat-card expense">
+                        <span class="stat-label">Dépenses</span>
+                        <span class="stat-amount">- <%= balance.totalExpenses.toFixed(2) %> €</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Import bancaire -->
+            <div class="card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none;">
+                <h2 style="color: white;">🏦 Importation automatique</h2>
+                <p style="opacity: 0.95; margin-bottom: 20px;">
+                    Connectez votre banque pour importer automatiquement vos transactions et suivre vos finances en temps réel.
+                </p>
+                <a href="/bank/connect" class="btn" style="background: white; color: #059669; font-weight: 600;">
+                    Gérer mes banques connectées →
+                </a>
+            </div>
+
+            <!-- Messages -->
+            <% if (error) { %>
+                <div class="alert alert-error">
+                    <%= error %>
+                </div>
+            <% } %>
+            
+            <% if (success) { %>
+                <div class="alert alert-success">
+                    <%= success %>
+                </div>
+            <% } %>
+
+            <!-- New Transaction Form -->
+            <div class="card">
+                <h2>Nouvelle Transaction</h2>
+                <form action="/transactions" method="POST" class="transaction-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="objet">Description *</label>
+                            <input 
+                                type="text" 
+                                id="objet" 
+                                name="objet" 
+                                required
+                                placeholder="Ex: McDo, Leclerc, Netflix..."
+                            >
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="montant">Montant (€) *</label>
+                            <input 
+                                type="number" 
+                                id="montant" 
+                                name="montant" 
+                                step="0.01" 
+                                min="0.01"
+                                required
+                                placeholder="0.00"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nature">Type *</label>
+                            <select id="nature" name="nature" required onchange="updateCategories()">
+                                <option value="depense">Dépense</option>
+                                <option value="revenu">Revenu</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="sous_categorie_id">Catégorie</label>
+                            <select id="sous_categorie_id" name="sous_categorie_id">
+                                <option value="">Aucune catégorie</option>
+                                
+                                <!-- Catégories de dépenses -->
+                                <optgroup label="DÉPENSES" id="depenses-group">
+                                    <% categories.depenses.forEach(cat => { %>
+                                        <optgroup label="  <%= cat.nom %>">
+                                            <% cat.sous_categories.forEach(sc => { %>
+                                                <option value="<%= sc.id %>" data-nature="depense">
+                                                    <%= sc.nom %>
+                                                </option>
+                                            <% }); %>
+                                        </optgroup>
+                                    <% }); %>
+                                </optgroup>
+                                
+                                <!-- Catégories de revenus -->
+                                <optgroup label="REVENUS" id="revenus-group" style="display: none;">
+                                    <% categories.revenus.forEach(cat => { %>
+                                        <optgroup label="  <%= cat.nom %>">
+                                            <% cat.sous_categories.forEach(sc => { %>
+                                                <option value="<%= sc.id %>" data-nature="revenu">
+                                                    <%= sc.nom %>
+                                                </option>
+                                            <% }); %>
+                                        </optgroup>
+                                    <% }); %>
+                                </optgroup>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="date">Date *</label>
+                            <input 
+                                type="date" 
+                                id="date" 
+                                name="date" 
+                                required
+                                value="<%= new Date().toISOString().split('T')[0] %>"
+                            >
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        Ajouter la transaction
+                    </button>
+                </form>
+            </div>
+
+            <!-- Transactions List -->
+            <div class="card">
+                <h2>Historique des Transactions</h2>
+                <% if (transactions.length === 0) { %>
+                    <p class="empty-state">Aucune transaction pour le moment. Commencez par en ajouter une !</p>
+                <% } else { %>
+                    <div class="transactions-list">
+                        <% transactions.forEach(transaction => { %>
+                            <div class="transaction-item <%= transaction.nature %>">
+                                <div class="transaction-info">
+                                    <div class="transaction-header">
+                                        <span class="transaction-description">
+                                            <%= transaction.objet %>
+                                        </span>
+                                        <span class="transaction-amount <%= transaction.nature %>">
+                                            <%= transaction.nature === 'revenu' ? '+' : '-' %> 
+                                            <%= parseFloat(transaction.montant).toFixed(2) %> €
+                                        </span>
+                                    </div>
+                                    <div class="transaction-meta">
+                                        <span class="transaction-date">
+                                            <%= new Date(transaction.date).toLocaleDateString('fr-FR', { 
+                                                weekday: 'short', 
+                                                year: 'numeric', 
+                                                month: 'short', 
+                                                day: 'numeric' 
+                                            }) %>
+                                        </span>
+                                        <% if (transaction.nature === 'revenu' && transaction.sous_categorie_revenu) { %>
+                                            <span class="transaction-category revenu">
+                                                <%= transaction.sous_categorie_revenu.nom %>
+                                            </span>
+                                        <% } %>
+                                        <% if (transaction.nature === 'depense' && transaction.sous_categorie_depense) { %>
+                                            <span class="transaction-category depense">
+                                                <%= transaction.sous_categorie_depense.nom %>
+                                            </span>
+                                        <% } %>
+                                    </div>
+                                </div>
+                                <form action="/transactions/<%= transaction.id %>/delete" method="POST" 
+                                      style="display: inline;"
+                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette transaction ?');">
+                                    <button type="submit" class="btn-delete" title="Supprimer">
+                                        🗑️
+                                    </button>
+                                </form>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fonction pour mettre à jour les catégories selon le type de transaction
+        function updateCategories() {
+            const nature = document.getElementById('nature').value;
+            const select = document.getElementById('sous_categorie_id');
+            const depensesGroup = document.getElementById('depenses-group');
+            const revenusGroup = document.getElementById('revenus-group');
+            
+            // Réinitialiser la sélection
+            select.value = '';
+            
+            // Afficher/masquer les groupes appropriés
+            if (nature === 'depense') {
+                depensesGroup.style.display = '';
+                revenusGroup.style.display = 'none';
+            } else {
+                depensesGroup.style.display = 'none';
+                revenusGroup.style.display = '';
+            }
+        }
+        
+        // Initialiser au chargement de la page
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCategories();
+        });
+    </script>
+</body>
+</html>

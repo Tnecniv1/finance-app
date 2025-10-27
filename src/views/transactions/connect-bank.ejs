@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connecter ma banque - Finance App</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://connect.bridgeapi.io/latest/bridge-connect.js"></script>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>💰 Finance App</h1>
+                <div class="user-info">
+                    <span>Bonjour, <strong><%= pseudo %></strong></span>
+                    <a href="/transactions" class="btn btn-small">Retour</a>
+                    <a href="/auth/logout" class="btn btn-small">Déconnexion</a>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- Messages -->
+            <% if (error) { %>
+                <div class="alert alert-error">
+                    <%= error %>
+                </div>
+            <% } %>
+            
+            <% if (success) { %>
+                <div class="alert alert-success">
+                    <%= success %>
+                </div>
+            <% } %>
+
+            <!-- Connect Bank Button -->
+            <div class="card">
+                <h2>🏦 Connecter une banque</h2>
+                <p style="color: #666; margin-bottom: 20px;">
+                    Connectez votre banque pour importer automatiquement vos transactions et suivre vos finances en temps réel.
+                </p>
+                <a href="/bank/initiate" class="btn btn-primary">
+                    ➕ Connecter ma banque
+                </a>
+            </div>
+
+            <!-- Connected Banks -->
+            <div class="card">
+                <h2>Mes banques connectées</h2>
+                
+                <% if (connections.length === 0) { %>
+                    <p class="empty-state">
+                        Aucune banque connectée pour le moment.<br>
+                        Cliquez sur "Connecter ma banque" pour commencer.
+                    </p>
+                <% } else { %>
+                    <div class="banks-list">
+                        <% connections.forEach(connection => { %>
+                            <div class="bank-item">
+                                <div class="bank-info">
+                                    <div class="bank-header">
+                                        <span class="bank-icon">🏦</span>
+                                        <div>
+                                            <h3><%= connection.bank_name %></h3>
+                                            <span class="bank-status <%= connection.status %>">
+                                                <%= connection.status === 'active' ? '✓ Connectée' : '⚠ Déconnectée' %>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <% if (connection.bank_accounts && connection.bank_accounts.length > 0) { %>
+                                        <div class="bank-accounts">
+                                            <p style="font-weight: 600; margin-top: 15px; margin-bottom: 10px;">
+                                                Comptes :
+                                            </p>
+                                            <% connection.bank_accounts.forEach(account => { %>
+                                                <div class="account-item">
+                                                    <span class="account-name"><%= account.name %></span>
+                                                    <span class="account-balance">
+                                                        <%= parseFloat(account.balance || 0).toFixed(2) %> <%= account.currency || 'EUR' %>
+                                                    </span>
+                                                </div>
+                                            <% }); %>
+                                        </div>
+                                    <% } %>
+                                    
+                                    <p class="bank-sync">
+                                        Dernière sync : <%= connection.last_sync ? new Date(connection.last_sync).toLocaleDateString('fr-FR', {
+                                            day: 'numeric',
+                                            month: 'short',
+                                            year: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        }) : 'Jamais' %>
+                                    </p>
+                                </div>
+                                
+                                <div class="bank-actions">
+                                    <form action="/bank/<%= connection.id %>/sync" method="POST" style="display: inline;">
+                                        <button type="submit" class="btn btn-secondary btn-small">
+                                            🔄 Synchroniser
+                                        </button>
+                                    </form>
+                                    
+                                    <form action="/bank/<%= connection.id %>/delete" method="POST" 
+                                          style="display: inline;"
+                                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette connexion bancaire ?');">
+                                        <button type="submit" class="btn-delete">
+                                            🗑️
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Info Box -->
+            <div class="card" style="background: #f0f9ff; border-left: 4px solid #3b82f6;">
+                <h3 style="color: #1e40af; margin-bottom: 10px;">ℹ️ À savoir</h3>
+                <ul style="color: #1e40af; padding-left: 20px; line-height: 1.8;">
+                    <li>Vos données bancaires sont sécurisées et chiffrées</li>
+                    <li>Nous n'avons jamais accès à vos identifiants bancaires</li>
+                    <li>La connexion se fait via Bridge API (certifié DSP2)</li>
+                    <li>Les transactions sont synchronisées automatiquement</li>
+                    <li>Vous pouvez catégoriser vos transactions après import</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openBridgeConnect() {
+            const redirectUri = window.location.origin + '/bank/callback';
+            
+            Bridge.connect({
+                clientId: '<%= bridgeClientId %>',
+                redirectUri: redirectUri,
+                onSuccess: function() {
+                    console.log('Connexion réussie !');
+                },
+                onError: function(error) {
+                    console.error('Erreur Bridge:', error);
+                    alert('Erreur lors de la connexion à votre banque. Veuillez réessayer.');
+                }
+            });
+        }
+    </script>
+
+    <style>
+        .banks-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .bank-item {
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            background: #fafafa;
+        }
+
+        .bank-info {
+            flex: 1;
+        }
+
+        .bank-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .bank-icon {
+            font-size: 2rem;
+        }
+
+        .bank-item h3 {
+            margin: 0;
+            color: #333;
+            font-size: 1.2rem;
+        }
+
+        .bank-status {
+            font-size: 0.85rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .bank-status.active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .bank-status.disconnected,
+        .bank-status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .bank-accounts {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .account-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 0.95rem;
+        }
+
+        .account-name {
+            color: #555;
+        }
+
+        .account-balance {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .bank-sync {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .bank-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+    </style>
+</body>
+</html>

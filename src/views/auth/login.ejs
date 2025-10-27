@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Finance App</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1>💰 Finance App</h1>
+            <h2>Connexion</h2>
+            
+            <% if (error) { %>
+                <div class="alert alert-error">
+                    <%= error %>
+                </div>
+            <% } %>
+            
+            <form action="/auth/login" method="POST" class="auth-form">
+                <div class="form-group">
+                    <label for="identifier">Pseudo ou Email</label>
+                    <input 
+                        type="text" 
+                        id="identifier" 
+                        name="identifier" 
+                        required 
+                        autocomplete="username"
+                        autofocus
+                        placeholder="Entrez votre pseudo ou email"
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Mot de passe</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        required
+                        autocomplete="current-password"
+                        placeholder="Entrez votre mot de passe"
+                    >
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">
+                    Se connecter
+                </button>
+            </form>
+            
+            <p class="auth-link">
+                Pas encore de compte ? 
+                <a href="/auth/register">S'inscrire</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
