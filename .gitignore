@@ -3,3 +3,6 @@ database/*.db
 .env
 *.log
 .DS_Store
+# Uploads temporaires
+uploads/
+*.csv

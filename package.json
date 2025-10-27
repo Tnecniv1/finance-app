@@ -1,26 +1,30 @@
 {
   "name": "app-fidess",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Application de gestion de finances personnelles",
+  "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "finance",
+    "budget",
+    "transactions"
+  ],
+  "author": "Vincent Le Barbey",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "@supabase/supabase-js": "^2.76.1",
-    "axios": "^1.12.2",
-    "bcryptjs": "^3.0.2",
+    "@supabase/supabase-js": "^2.39.0",
+    "bcrypt": "^5.1.1",
+    "csv-parser": "^3.2.0",
     "dotenv": "^17.2.3",
-    "ejs": "^3.1.10",
-    "express": "^5.1.0",
-    "express-session": "^1.18.2"
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.0.2"
   }
 }

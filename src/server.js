@@ -5,10 +5,12 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const transactionRoutes = require('./routes/transactions');
-const bankRoutes = require('./routes/bank');
+
+const csvRoutes = require('./routes/csv');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
 
 // Configuration EJS
 app.set('view engine', 'ejs');
@@ -41,7 +43,7 @@ app.get('/', (req, res) => {
 
 app.use('/auth', authRoutes);
 app.use('/transactions', transactionRoutes);
-app.use('/bank', bankRoutes);
+app.use('/transactions/import-csv', csvRoutes);
 
 // Gestion des erreurs 404
 app.use((req, res) => {
