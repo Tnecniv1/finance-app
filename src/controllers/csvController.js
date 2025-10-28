@@ -83,12 +83,12 @@ class CsvController {
       const errorMessages = [];
 
       for (const transaction of transactions) {
+        // DEBUG: Afficher les 3 premières transactions AVANT insertion
+        if (imported + errors < 3) {
+          console.log(`🔍 DEBUG - Transaction #${imported + errors + 1}:`, JSON.stringify(transaction, null, 2));
+        }
+        
         try {
-          // DEBUG: Afficher les 3 premières transactions
-          if (imported < 3) {
-            console.log(`🔍 DEBUG - Transaction #${imported + 1}:`, JSON.stringify(transaction, null, 2));
-          }
-          
           await Transaction.create(
             userId,
             transaction.objet,
