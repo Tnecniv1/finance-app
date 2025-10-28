@@ -1,9 +1,10 @@
 const Transaction = require('../models/Transaction');
 const Category = require('../models/Category');
+const CategorizationAI = require('../services/CategorizationAI');
 
 class TransactionController {
   /**
-   * Afficher la page des transactions avec filtres
+   * Afficher la page des transactions avec filtres et suggestions IA
    */
   static async index(req, res) {
     try {
@@ -12,12 +13,12 @@ class TransactionController {
 
       // Récupérer les paramètres de filtrage
       const {
-        type,           // 'revenu', 'depense', ou vide (tous)
-        categorie,      // ID de la catégorie
-        sous_categorie, // ID de la sous-catégorie
-        date_debut,     // Format YYYY-MM-DD
-        date_fin,       // Format YYYY-MM-DD
-        recherche       // Texte libre dans la description
+        type,
+        categorie,
+        sous_categorie,
+        date_debut,
+        date_fin,
+        recherche
       } = req.query;
 
       // Construire les filtres
@@ -40,6 +41,12 @@ class TransactionController {
       // Calculer le solde
       const balance = await Transaction.getBalance(userId);
 
+      // Récupérer les suggestions IA en attente
+      const suggestions = await CategorizationAI.getPendingSuggestions(userId, 5);
+
+      // Récupérer les stats de l'IA
+      const aiStats = await CategorizationAI.getStats(userId);
+
       // Messages
       const error = req.query.error || null;
       const success = req.query.success || null;
@@ -48,6 +55,8 @@ class TransactionController {
         transactions,
         categories,
         balance,
+        suggestions,
+        aiStats,
         pseudo,
         error,
         success,
@@ -84,7 +93,7 @@ class TransactionController {
   }
 
   /**
-   * Catégoriser une transaction
+   * Catégoriser une transaction (avec apprentissage IA)
    */
   static async categorize(req, res) {
     try {
@@ -106,6 +115,14 @@ class TransactionController {
         sous_categorie_id
       );
 
+      // 🤖 APPRENTISSAGE IA : Apprendre de cette catégorisation
+      await CategorizationAI.learnFromTransaction(
+        userId,
+        transaction,
+        sous_categorie_id,
+        nature
+      );
+
       res.redirect('/transactions?success=Transaction catégorisée');
     } catch (error) {
       console.error('Erreur catégorisation:', error);
@@ -114,7 +131,7 @@ class TransactionController {
   }
 
   /**
-   * Catégoriser plusieurs transactions en masse
+   * Catégoriser plusieurs transactions en masse (avec apprentissage IA)
    */
   static async categorizeBulk(req, res) {
     try {
@@ -133,12 +150,26 @@ class TransactionController {
       let success = 0;
       for (const transactionId of transaction_ids) {
         try {
+          // Récupérer la transaction
+          const transaction = await Transaction.findById(transactionId, userId);
+          if (!transaction) continue;
+
+          // Mettre à jour la catégorie
           await Transaction.updateCategory(
             transactionId,
             userId,
             nature,
             sous_categorie_id
           );
+
+          // 🤖 APPRENTISSAGE IA
+          await CategorizationAI.learnFromTransaction(
+            userId,
+            transaction,
+            sous_categorie_id,
+            nature
+          );
+
           success++;
         } catch (error) {
           console.error(`Erreur catégorisation transaction ${transactionId}:`, error);
@@ -149,6 +180,106 @@ class TransactionController {
     } catch (error) {
       console.error('Erreur catégorisation en masse:', error);
       res.redirect('/transactions?error=Erreur lors de la catégorisation');
+    }
+  }
+
+  /**
+   * Générer des suggestions IA pour l'utilisateur
+   */
+  static async generateSuggestions(req, res) {
+    try {
+      const userId = req.session.userId;
+
+      const result = await CategorizationAI.generateSuggestionsForUser(userId);
+
+      res.redirect(`/transactions?success=${result.suggestionsCreated} suggestion(s) générée(s)`);
+    } catch (error) {
+      console.error('Erreur génération suggestions:', error);
+      res.redirect('/transactions?error=Erreur lors de la génération');
+    }
+  }
+
+  /**
+   * Accepter une suggestion IA
+   */
+  static async acceptSuggestion(req, res) {
+    try {
+      const userId = req.session.userId;
+      const suggestionId = req.params.id;
+
+      // Accepter la suggestion
+      const suggestion = await CategorizationAI.acceptSuggestion(userId, suggestionId);
+
+      if (!suggestion) {
+        return res.redirect('/transactions?error=Suggestion introuvable');
+      }
+
+      // Appliquer la catégorisation à la transaction
+      await Transaction.updateCategory(
+        suggestion.transaction_id,
+        userId,
+        suggestion.suggested_nature,
+        suggestion.suggested_nature === 'revenu' 
+          ? suggestion.suggested_sous_categorie_revenu_id 
+          : suggestion.suggested_sous_categorie_depense_id
+      );
+
+      // Récupérer la transaction pour l'apprentissage
+      const transaction = await Transaction.findById(suggestion.transaction_id, userId);
+      
+      // Renforcer l'apprentissage (double la confiance)
+      await CategorizationAI.learnFromTransaction(
+        userId,
+        transaction,
+        suggestion.suggested_nature === 'revenu' 
+          ? suggestion.suggested_sous_categorie_revenu_id 
+          : suggestion.suggested_sous_categorie_depense_id,
+        suggestion.suggested_nature
+      );
+
+      res.redirect('/transactions?success=Suggestion appliquée');
+    } catch (error) {
+      console.error('Erreur acceptation suggestion:', error);
+      res.redirect('/transactions?error=Erreur lors de l\'application');
+    }
+  }
+
+  /**
+   * Rejeter une suggestion IA
+   */
+  static async rejectSuggestion(req, res) {
+    try {
+      const userId = req.session.userId;
+      const suggestionId = req.params.id;
+
+      await CategorizationAI.rejectSuggestion(userId, suggestionId);
+
+      res.redirect('/transactions?success=Suggestion rejetée');
+    } catch (error) {
+      console.error('Erreur rejet suggestion:', error);
+      res.redirect('/transactions?error=Erreur lors du rejet');
+    }
+  }
+
+  /**
+   * Afficher les statistiques de l'IA
+   */
+  static async aiStats(req, res) {
+    try {
+      const userId = req.session.userId;
+      const pseudo = req.session.pseudo;
+
+      const stats = await CategorizationAI.getStats(userId);
+      const suggestions = await CategorizationAI.getPendingSuggestions(userId, 50);
+
+      res.render('transactions/ai-stats', {
+        pseudo,
+        stats,
+        suggestions
+      });
+    } catch (error) {
+      console.error('Erreur stats IA:', error);
+      res.redirect('/transactions?error=Erreur lors du chargement des stats');
     }
   }
 }

@@ -41,6 +41,274 @@
                 </div>
             </div>
 
+            <!-- 🤖 WIDGET IA - AJOUTER ICI -->
+            <% if (suggestions && suggestions.length > 0) { %>
+            <div class="card ai-suggestions-card">
+                <div class="ai-header">
+                    <h2>🤖 Suggestions IA (<%= suggestions.length %>)</h2>
+                    <span class="ai-badge">
+                        <%= aiStats && aiStats.suggestions.acceptanceRate %>% de précision
+                    </span>
+                </div>
+                
+                <div class="ai-suggestions-list">
+                    <% suggestions.forEach(suggestion => { %>
+                        <div class="ai-suggestion-item">
+                            <div class="suggestion-info">
+                                <div class="suggestion-transaction">
+                                    <span class="suggestion-description">
+                                        <%= suggestion.transaction.objet %>
+                                    </span>
+                                    <span class="suggestion-amount <%= suggestion.suggested_nature %>">
+                                        <%= suggestion.suggested_nature === 'revenu' ? '+' : '-' %> 
+                                        <%= parseFloat(suggestion.transaction.montant).toFixed(2) %> €
+                                    </span>
+                                </div>
+                                
+                                <div class="suggestion-category">
+                                    <span class="confidence-badge" data-confidence="<%= suggestion.confidence_score %>">
+                                        <%= Math.round(suggestion.confidence_score * 100) %>% confiant
+                                    </span>
+                                    →
+                                    <% if (suggestion.suggested_nature === 'revenu' && suggestion.suggested_sous_categorie_revenu) { %>
+                                        <span class="category-label revenu">
+                                            <%= suggestion.suggested_sous_categorie_revenu.nom %>
+                                        </span>
+                                    <% } else if (suggestion.suggested_nature === 'depense' && suggestion.suggested_sous_categorie_depense) { %>
+                                        <span class="category-label depense">
+                                            <%= suggestion.suggested_sous_categorie_depense.nom %>
+                                        </span>
+                                    <% } %>
+                                </div>
+
+                                <% if (suggestion.matched_keyword) { %>
+                                    <div class="suggestion-meta">
+                                        📌 Basé sur: "<%= suggestion.matched_keyword %>"
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <div class="suggestion-actions">
+                                <form action="/transactions/ai/suggestions/<%= suggestion.id %>/accept" method="POST" style="display: inline;">
+                                    <button type="submit" class="btn-suggestion btn-accept" title="Accepter">
+                                        ✅
+                                    </button>
+                                </form>
+                                <form action="/transactions/ai/suggestions/<%= suggestion.id %>/reject" method="POST" style="display: inline;">
+                                    <button type="submit" class="btn-suggestion btn-reject" title="Rejeter">
+                                        ❌
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+
+                <div class="ai-footer">
+                    <form action="/transactions/ai/generate-suggestions" method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-secondary">
+                            🔄 Générer plus de suggestions
+                        </button>
+                    </form>
+                    <a href="/transactions/ai/stats" class="btn btn-secondary">
+                        📊 Statistiques IA
+                    </a>
+                </div>
+            </div>
+
+            <style>
+                .ai-suggestions-card {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    margin-bottom: 20px;
+                }
+
+                .ai-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 20px;
+                }
+
+                .ai-header h2 {
+                    color: white;
+                    margin: 0;
+                }
+
+                .ai-badge {
+                    background: rgba(255, 255, 255, 0.2);
+                    padding: 5px 15px;
+                    border-radius: 20px;
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                }
+
+                .ai-suggestions-list {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 15px;
+                    margin-bottom: 20px;
+                }
+
+                .ai-suggestion-item {
+                    background: white;
+                    border-radius: 12px;
+                    padding: 15px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    gap: 15px;
+                    transition: transform 0.2s;
+                }
+
+                .ai-suggestion-item:hover {
+                    transform: translateX(5px);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                }
+
+                .suggestion-info {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                }
+
+                .suggestion-transaction {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+
+                .suggestion-description {
+                    color: #333;
+                    font-weight: 600;
+                    font-size: 0.95rem;
+                }
+
+                .suggestion-amount {
+                    font-weight: bold;
+                    font-size: 1rem;
+                }
+
+                .suggestion-amount.revenu {
+                    color: #10b981;
+                }
+
+                .suggestion-amount.depense {
+                    color: #ef4444;
+                }
+
+                .suggestion-category {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    color: #666;
+                    font-size: 0.9rem;
+                }
+
+                .confidence-badge {
+                    background: #f3f4f6;
+                    color: #666;
+                    padding: 4px 10px;
+                    border-radius: 6px;
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                }
+
+                .confidence-badge[data-confidence*="0.9"],
+                .confidence-badge[data-confidence*="0.8"] {
+                    background: #d1fae5;
+                    color: #065f46;
+                }
+
+                .confidence-badge[data-confidence*="0.7"],
+                .confidence-badge[data-confidence*="0.6"] {
+                    background: #fef3c7;
+                    color: #92400e;
+                }
+
+                .category-label {
+                    padding: 4px 12px;
+                    border-radius: 6px;
+                    font-weight: 600;
+                    font-size: 0.85rem;
+                }
+
+                .category-label.revenu {
+                    background: #d1fae5;
+                    color: #065f46;
+                }
+
+                .category-label.depense {
+                    background: #fee2e2;
+                    color: #991b1b;
+                }
+
+                .suggestion-meta {
+                    color: #999;
+                    font-size: 0.85rem;
+                    font-style: italic;
+                }
+
+                .suggestion-actions {
+                    display: flex;
+                    gap: 8px;
+                }
+
+                .btn-suggestion {
+                    padding: 10px 16px;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 1.2rem;
+                    transition: all 0.2s;
+                    background: #f3f4f6;
+                }
+
+                .btn-accept:hover {
+                    background: #d1fae5;
+                    transform: scale(1.1);
+                }
+
+                .btn-reject:hover {
+                    background: #fee2e2;
+                    transform: scale(1.1);
+                }
+
+                .ai-footer {
+                    display: flex;
+                    gap: 10px;
+                    padding-top: 15px;
+                    border-top: 1px solid rgba(255, 255, 255, 0.2);
+                }
+
+                .ai-footer .btn {
+                    background: rgba(255, 255, 255, 0.2);
+                    color: white;
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                }
+
+                .ai-footer .btn:hover {
+                    background: rgba(255, 255, 255, 0.3);
+                }
+
+                @media (max-width: 768px) {
+                    .ai-suggestion-item {
+                        flex-direction: column;
+                        align-items: stretch;
+                    }
+
+                    .suggestion-actions {
+                        justify-content: flex-end;
+                    }
+                }
+            </style>
+            <% } %>
+
+
+
+
+
             <!-- Messages -->
             <% if (error) { %>
                 <div class="alert alert-error">
