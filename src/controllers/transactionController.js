@@ -3,95 +3,152 @@ const Category = require('../models/Category');
 
 class TransactionController {
   /**
-   * Afficher la page principale des transactions
+   * Afficher la page des transactions avec filtres
    */
-  static async showTransactions(req, res) {
+  static async index(req, res) {
     try {
       const userId = req.session.userId;
-      
-      // Récupérer les transactions
-      const transactions = await Transaction.findByUserId(userId);
-      
-      // Récupérer les catégories et sous-catégories
-      const categories = await Category.getAllOrganized();
-      
+      const pseudo = req.session.pseudo;
+
+      // Récupérer les paramètres de filtrage
+      const {
+        type,           // 'revenu', 'depense', ou vide (tous)
+        categorie,      // ID de la catégorie
+        sous_categorie, // ID de la sous-catégorie
+        date_debut,     // Format YYYY-MM-DD
+        date_fin,       // Format YYYY-MM-DD
+        recherche       // Texte libre dans la description
+      } = req.query;
+
+      // Construire les filtres
+      const filters = {
+        userId: userId,
+        nature: type || null,
+        categorieId: categorie || null,
+        sousCategorieId: sous_categorie || null,
+        dateDebut: date_debut || null,
+        dateFin: date_fin || null,
+        recherche: recherche || null
+      };
+
+      // Récupérer les transactions filtrées
+      const transactions = await Transaction.findWithFilters(filters);
+
+      // Récupérer les catégories pour les filtres
+      const categories = await Category.getAllWithSubcategories();
+
       // Calculer le solde
       const balance = await Transaction.getBalance(userId);
+
+      // Messages
+      const error = req.query.error || null;
+      const success = req.query.success || null;
 
       res.render('transactions/index', {
         transactions,
         categories,
         balance,
-        pseudo: req.session.pseudo,
-        error: req.query.error || null,
-        success: req.query.success || null
+        pseudo,
+        error,
+        success,
+        filters: {
+          type: type || '',
+          categorie: categorie || '',
+          sous_categorie: sous_categorie || '',
+          date_debut: date_debut || '',
+          date_fin: date_fin || '',
+          recherche: recherche || ''
+        }
       });
     } catch (error) {
-      console.error('Erreur:', error);
-      res.render('transactions/index', {
-        transactions: [],
-        categories: { revenus: [], depenses: [] },
-        balance: { totalIncome: 0, totalExpenses: 0, balance: 0 },
-        pseudo: req.session.pseudo,
-        error: 'Erreur lors du chargement des transactions',
-        success: null
-      });
-    }
-  }
-
-  /**
-   * Créer une nouvelle transaction
-   */
-  static async createTransaction(req, res) {
-    try {
-      const userId = req.session.userId;
-      const { objet, montant, nature, date, sous_categorie_id } = req.body;
-
-      // Validations
-      if (!objet || !montant || !nature || !date) {
-        return res.redirect('/transactions?error=Tous les champs sont requis');
-      }
-
-      const parsedAmount = parseFloat(montant);
-      if (isNaN(parsedAmount) || parsedAmount <= 0) {
-        return res.redirect('/transactions?error=Le montant doit être un nombre positif');
-      }
-
-      // Déterminer quelle sous-catégorie utiliser
-      const transactionData = {
-        user_id: userId,
-        objet,
-        montant: parsedAmount,
-        nature,
-        date,
-        sous_categorie_revenu_id: nature === 'revenu' ? (sous_categorie_id || null) : null,
-        sous_categorie_depense_id: nature === 'depense' ? (sous_categorie_id || null) : null
-      };
-
-      // Créer la transaction
-      await Transaction.create(transactionData);
-
-      res.redirect('/transactions?success=Transaction ajoutée avec succès');
-    } catch (error) {
-      console.error('Erreur création transaction:', error);
-      res.redirect('/transactions?error=Erreur lors de la création de la transaction');
+      console.error('Erreur chargement transactions:', error);
+      res.redirect('/?error=Erreur lors du chargement des transactions');
     }
   }
 
   /**
    * Supprimer une transaction
    */
-  static async deleteTransaction(req, res) {
+  static async delete(req, res) {
     try {
       const userId = req.session.userId;
-      const { id } = req.params;
+      const transactionId = req.params.id;
 
-      await Transaction.delete(id, userId);
+      await Transaction.delete(transactionId, userId);
 
       res.redirect('/transactions?success=Transaction supprimée');
     } catch (error) {
-      console.error('Erreur suppression:', error);
+      console.error('Erreur suppression transaction:', error);
       res.redirect('/transactions?error=Erreur lors de la suppression');
+    }
+  }
+
+  /**
+   * Catégoriser une transaction
+   */
+  static async categorize(req, res) {
+    try {
+      const userId = req.session.userId;
+      const transactionId = req.params.id;
+      const { sous_categorie_id, nature } = req.body;
+
+      // Vérifier que la transaction appartient à l'utilisateur
+      const transaction = await Transaction.findById(transactionId, userId);
+      if (!transaction) {
+        return res.redirect('/transactions?error=Transaction introuvable');
+      }
+
+      // Mettre à jour la catégorie
+      await Transaction.updateCategory(
+        transactionId,
+        userId,
+        nature,
+        sous_categorie_id
+      );
+
+      res.redirect('/transactions?success=Transaction catégorisée');
+    } catch (error) {
+      console.error('Erreur catégorisation:', error);
+      res.redirect('/transactions?error=Erreur lors de la catégorisation');
+    }
+  }
+
+  /**
+   * Catégoriser plusieurs transactions en masse
+   */
+  static async categorizeBulk(req, res) {
+    try {
+      const userId = req.session.userId;
+      const { transaction_ids, sous_categorie_id, nature } = req.body;
+
+      if (!transaction_ids || !Array.isArray(transaction_ids) || transaction_ids.length === 0) {
+        return res.redirect('/transactions?error=Aucune transaction sélectionnée');
+      }
+
+      if (!sous_categorie_id) {
+        return res.redirect('/transactions?error=Veuillez sélectionner une catégorie');
+      }
+
+      // Catégoriser chaque transaction
+      let success = 0;
+      for (const transactionId of transaction_ids) {
+        try {
+          await Transaction.updateCategory(
+            transactionId,
+            userId,
+            nature,
+            sous_categorie_id
+          );
+          success++;
+        } catch (error) {
+          console.error(`Erreur catégorisation transaction ${transactionId}:`, error);
+        }
+      }
+
+      res.redirect(`/transactions?success=${success} transaction(s) catégorisée(s)`);
+    } catch (error) {
+      console.error('Erreur catégorisation en masse:', error);
+      res.redirect('/transactions?error=Erreur lors de la catégorisation');
     }
   }
 }

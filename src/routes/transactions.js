@@ -3,12 +3,19 @@ const router = express.Router();
 const TransactionController = require('../controllers/transactionController');
 const { requireAuth } = require('../middleware/auth');
 
-// Appliquer le middleware d'authentification à toutes les routes
+// Toutes les routes nécessitent une authentification
 router.use(requireAuth);
 
-// Routes des transactions
-router.get('/', TransactionController.showTransactions);
-router.post('/', TransactionController.createTransaction);
-router.post('/:id/delete', TransactionController.deleteTransaction);
+// Afficher les transactions avec filtres
+router.get('/', TransactionController.index);
+
+// Catégoriser une transaction
+router.post('/:id/categorize', TransactionController.categorize);
+
+// Catégoriser plusieurs transactions en masse
+router.post('/categorize-bulk', TransactionController.categorizeBulk);
+
+// Supprimer une transaction
+router.post('/:id/delete', TransactionController.delete);
 
 module.exports = router;

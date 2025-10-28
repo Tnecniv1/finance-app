@@ -14,6 +14,7 @@
                 <h1>💰 Finance App</h1>
                 <div class="user-info">
                     <span>Bonjour, <strong><%= pseudo %></strong></span>
+                    <a href="/transactions/import-csv" class="btn btn-small">📥 Importer CSV</a>
                     <a href="/auth/logout" class="btn btn-small">Déconnexion</a>
                 </div>
             </div>
@@ -40,17 +41,6 @@
                 </div>
             </div>
 
-            <!-- Import CSV -->
-            <div class="card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none;">
-                <h2 style="color: white;">📥 Importation de transactions</h2>
-                <p style="opacity: 0.95; margin-bottom: 20px;">
-                    Importez vos relevés bancaires en CSV pour ajouter plusieurs transactions en une fois.
-                </p>
-                <a href="/transactions/import-csv" class="btn" style="background: white; color: #059669; font-weight: 600;">
-                    Importer un fichier CSV →
-                </a>
-            </div>
-
             <!-- Messages -->
             <% if (error) { %>
                 <div class="alert alert-error">
@@ -64,176 +54,606 @@
                 </div>
             <% } %>
 
-            <!-- New Transaction Form -->
+            <!-- Filtres -->
             <div class="card">
-                <h2>Nouvelle Transaction</h2>
-                <form action="/transactions" method="POST" class="transaction-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="objet">Description *</label>
+                <h2>🔍 Filtrer les transactions</h2>
+                <form action="/transactions" method="GET" class="filters-form">
+                    <div class="filters-row">
+                        <!-- Recherche -->
+                        <div class="filter-group">
+                            <label for="recherche">Recherche</label>
                             <input 
                                 type="text" 
-                                id="objet" 
-                                name="objet" 
-                                required
-                                placeholder="Ex: McDo, Leclerc, Netflix..."
+                                id="recherche" 
+                                name="recherche" 
+                                placeholder="Rechercher..."
+                                value="<%= filters.recherche %>"
                             >
                         </div>
-                        
-                        <div class="form-group">
-                            <label for="montant">Montant (€) *</label>
-                            <input 
-                                type="number" 
-                                id="montant" 
-                                name="montant" 
-                                step="0.01" 
-                                min="0.01"
-                                required
-                                placeholder="0.00"
-                            >
+
+                        <!-- Type -->
+                        <div class="filter-group">
+                            <label for="type">Type</label>
+                            <select id="type" name="type" onchange="updateCategoryFilter()">
+                                <option value="" <%= filters.type === '' ? 'selected' : '' %>>Tous</option>
+                                <option value="revenu" <%= filters.type === 'revenu' ? 'selected' : '' %>>Revenus</option>
+                                <option value="depense" <%= filters.type === 'depense' ? 'selected' : '' %>>Dépenses</option>
+                            </select>
+                        </div>
+
+                        <!-- Catégorie -->
+                        <div class="filter-group">
+                            <label for="categorie">Catégorie</label>
+                            <select id="categorie" name="categorie" onchange="updateSubcategoryFilter()">
+                                <option value="">Toutes</option>
+                                <optgroup label="REVENUS" id="revenus-categories">
+                                    <% categories.revenus.forEach(cat => { %>
+                                        <option value="<%= cat.id %>" <%= filters.categorie == cat.id ? 'selected' : '' %>>
+                                            <%= cat.nom %>
+                                        </option>
+                                    <% }); %>
+                                </optgroup>
+                                <optgroup label="DÉPENSES" id="depenses-categories">
+                                    <% categories.depenses.forEach(cat => { %>
+                                        <option value="<%= cat.id %>" <%= filters.categorie == cat.id ? 'selected' : '' %>>
+                                            <%= cat.nom %>
+                                        </option>
+                                    <% }); %>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <!-- Sous-catégorie -->
+                        <div class="filter-group">
+                            <label for="sous_categorie">Sous-catégorie</label>
+                            <select id="sous_categorie" name="sous_categorie">
+                                <option value="">Toutes</option>
+                                <optgroup label="REVENUS" id="revenus-subcategories">
+                                    <% categories.revenus.forEach(cat => { %>
+                                        <% cat.sous_categories.forEach(sc => { %>
+                                            <option value="<%= sc.id %>" data-parent="<%= cat.id %>" data-nature="revenu" <%= filters.sous_categorie == sc.id ? 'selected' : '' %>>
+                                                <%= cat.nom %> › <%= sc.nom %>
+                                            </option>
+                                        <% }); %>
+                                    <% }); %>
+                                </optgroup>
+                                <optgroup label="DÉPENSES" id="depenses-subcategories">
+                                    <% categories.depenses.forEach(cat => { %>
+                                        <% cat.sous_categories.forEach(sc => { %>
+                                            <option value="<%= sc.id %>" data-parent="<%= cat.id %>" data-nature="depense" <%= filters.sous_categorie == sc.id ? 'selected' : '' %>>
+                                                <%= cat.nom %> › <%= sc.nom %>
+                                            </option>
+                                        <% }); %>
+                                    <% }); %>
+                                </optgroup>
+                            </select>
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="nature">Type *</label>
-                            <select id="nature" name="nature" required onchange="updateCategories()">
-                                <option value="depense">Dépense</option>
-                                <option value="revenu">Revenu</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="sous_categorie_id">Catégorie</label>
-                            <select id="sous_categorie_id" name="sous_categorie_id">
-                                <option value="">Aucune catégorie</option>
-                                
-                                <!-- Catégories de dépenses -->
-                                <optgroup label="DÉPENSES" id="depenses-group">
-                                    <% categories.depenses.forEach(cat => { %>
-                                        <optgroup label="  <%= cat.nom %>">
-                                            <% cat.sous_categories.forEach(sc => { %>
-                                                <option value="<%= sc.id %>" data-nature="depense">
-                                                    <%= sc.nom %>
-                                                </option>
-                                            <% }); %>
-                                        </optgroup>
-                                    <% }); %>
-                                </optgroup>
-                                
-                                <!-- Catégories de revenus -->
-                                <optgroup label="REVENUS" id="revenus-group" style="display: none;">
-                                    <% categories.revenus.forEach(cat => { %>
-                                        <optgroup label="  <%= cat.nom %>">
-                                            <% cat.sous_categories.forEach(sc => { %>
-                                                <option value="<%= sc.id %>" data-nature="revenu">
-                                                    <%= sc.nom %>
-                                                </option>
-                                            <% }); %>
-                                        </optgroup>
-                                    <% }); %>
-                                </optgroup>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="date">Date *</label>
+                    <div class="filters-row">
+                        <!-- Date début -->
+                        <div class="filter-group">
+                            <label for="date_debut">Du</label>
                             <input 
                                 type="date" 
-                                id="date" 
-                                name="date" 
-                                required
-                                value="<%= new Date().toISOString().split('T')[0] %>"
+                                id="date_debut" 
+                                name="date_debut"
+                                value="<%= filters.date_debut %>"
                             >
                         </div>
-                    </div>
 
-                    <button type="submit" class="btn btn-primary">
-                        Ajouter la transaction
-                    </button>
+                        <!-- Date fin -->
+                        <div class="filter-group">
+                            <label for="date_fin">Au</label>
+                            <input 
+                                type="date" 
+                                id="date_fin" 
+                                name="date_fin"
+                                value="<%= filters.date_fin %>"
+                            >
+                        </div>
+
+                        <!-- Boutons -->
+                        <div class="filter-group filter-actions">
+                            <button type="submit" class="btn btn-primary">
+                                🔍 Filtrer
+                            </button>
+                            <a href="/transactions" class="btn btn-secondary">
+                                ❌ Réinitialiser
+                            </a>
+                        </div>
+                    </div>
                 </form>
             </div>
 
-            <!-- Transactions List -->
+            <!-- Suite dans le prochain message... -->
+            <!-- Catégorisation en masse -->
+            <% if (transactions.length > 0) { %>
             <div class="card">
-                <h2>Historique des Transactions</h2>
-                <% if (transactions.length === 0) { %>
-                    <p class="empty-state">Aucune transaction pour le moment. Commencez par en ajouter une !</p>
-                <% } else { %>
-                    <div class="transactions-list">
-                        <% transactions.forEach(transaction => { %>
-                            <div class="transaction-item <%= transaction.nature %>">
-                                <div class="transaction-info">
-                                    <div class="transaction-header">
-                                        <span class="transaction-description">
-                                            <%= transaction.objet %>
-                                        </span>
-                                        <span class="transaction-amount <%= transaction.nature %>">
-                                            <%= transaction.nature === 'revenu' ? '+' : '-' %> 
-                                            <%= parseFloat(transaction.montant).toFixed(2) %> €
-                                        </span>
-                                    </div>
-                                    <div class="transaction-meta">
-                                        <span class="transaction-date">
-                                            <%= new Date(transaction.date).toLocaleDateString('fr-FR', { 
-                                                weekday: 'short', 
-                                                year: 'numeric', 
-                                                month: 'short', 
-                                                day: 'numeric' 
-                                            }) %>
-                                        </span>
-                                        <% if (transaction.nature === 'revenu' && transaction.sous_categorie_revenu) { %>
-                                            <span class="transaction-category revenu">
-                                                <%= transaction.sous_categorie_revenu.nom %>
-                                            </span>
-                                        <% } %>
-                                        <% if (transaction.nature === 'depense' && transaction.sous_categorie_depense) { %>
-                                            <span class="transaction-category depense">
-                                                <%= transaction.sous_categorie_depense.nom %>
-                                            </span>
-                                        <% } %>
-                                    </div>
+                <div class="bulk-actions-header">
+                    <h2>📋 Transactions (<%= transactions.length %>)</h2>
+                    <div class="bulk-actions">
+                        <button type="button" class="btn btn-secondary" onclick="selectAll()">
+                            ☑️ Tout sélectionner
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="deselectAll()">
+                            ⬜ Tout désélectionner
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="openBulkCategorizeModal()">
+                            🏷️ Catégoriser la sélection
+                        </button>
+                    </div>
+                </div>
+
+                <form id="bulkCategorizeForm" action="/transactions/categorize-bulk" method="POST" style="display: none;">
+                    <!-- Les IDs sélectionnés seront ajoutés dynamiquement ici -->
+                </form>
+
+                <!-- Liste des transactions -->
+                <div class="transactions-list">
+                    <% transactions.forEach(transaction => { %>
+                        <div class="transaction-item <%= transaction.nature %>">
+                            <!-- Checkbox de sélection -->
+                            <input 
+                                type="checkbox" 
+                                class="transaction-checkbox" 
+                                data-id="<%= transaction.id %>"
+                                data-nature="<%= transaction.nature %>"
+                            >
+
+                            <div class="transaction-info">
+                                <div class="transaction-header">
+                                    <span class="transaction-description">
+                                        <%= transaction.objet %>
+                                    </span>
+                                    <span class="transaction-amount <%= transaction.nature %>">
+                                        <%= transaction.nature === 'revenu' ? '+' : '-' %> 
+                                        <%= parseFloat(transaction.montant).toFixed(2) %> €
+                                    </span>
                                 </div>
+                                <div class="transaction-meta">
+                                    <span class="transaction-date">
+                                        <%= new Date(transaction.date).toLocaleDateString('fr-FR', { 
+                                            weekday: 'short', 
+                                            year: 'numeric', 
+                                            month: 'short', 
+                                            day: 'numeric' 
+                                        }) %>
+                                    </span>
+                                    <% if (transaction.nature === 'revenu' && transaction.sous_categorie_revenu) { %>
+                                        <span class="transaction-category revenu">
+                                            <%= transaction.sous_categorie_revenu.nom %>
+                                        </span>
+                                    <% } else if (transaction.nature === 'depense' && transaction.sous_categorie_depense) { %>
+                                        <span class="transaction-category depense">
+                                            <%= transaction.sous_categorie_depense.nom %>
+                                        </span>
+                                    <% } else { %>
+                                        <span class="transaction-category uncategorized">
+                                            Non catégorisée
+                                        </span>
+                                    <% } %>
+                                </div>
+                            </div>
+
+                            <div class="transaction-actions">
+                                <button 
+                                    type="button" 
+                                    class="btn-action btn-categorize" 
+                                    onclick="openCategorizeModal('<%= transaction.id %>', '<%= transaction.nature %>')"
+                                    title="Catégoriser"
+                                >
+                                    🏷️
+                                </button>
                                 <form action="/transactions/<%= transaction.id %>/delete" method="POST" 
                                       style="display: inline;"
                                       onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette transaction ?');">
-                                    <button type="submit" class="btn-delete" title="Supprimer">
+                                    <button type="submit" class="btn-action btn-delete" title="Supprimer">
                                         🗑️
                                     </button>
                                 </form>
                             </div>
-                        <% }); %>
-                    </div>
-                <% } %>
+                        </div>
+                    <% }); %>
+                </div>
             </div>
+            <% } else { %>
+                <div class="card">
+                    <p class="empty-state">Aucune transaction trouvée avec ces filtres.</p>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Modal de catégorisation individuelle -->
+    <div id="categorizeModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeCategorizeModal()">&times;</span>
+            <h2>🏷️ Catégoriser la transaction</h2>
+            <form id="categorizeForm" action="" method="POST">
+                <input type="hidden" name="nature" id="categorizeNature">
+                
+                <div class="form-group">
+                    <label for="categorizeSubcategory">Sous-catégorie *</label>
+                    <select id="categorizeSubcategory" name="sous_categorie_id" required>
+                        <option value="">Sélectionnez une catégorie</option>
+                        <optgroup label="REVENUS" id="modal-revenus">
+                            <% categories.revenus.forEach(cat => { %>
+                                <optgroup label="  <%= cat.nom %>">
+                                    <% cat.sous_categories.forEach(sc => { %>
+                                        <option value="<%= sc.id %>" data-nature="revenu">
+                                            <%= sc.nom %>
+                                        </option>
+                                    <% }); %>
+                                </optgroup>
+                            <% }); %>
+                        </optgroup>
+                        <optgroup label="DÉPENSES" id="modal-depenses">
+                            <% categories.depenses.forEach(cat => { %>
+                                <optgroup label="  <%= cat.nom %>">
+                                    <% cat.sous_categories.forEach(sc => { %>
+                                        <option value="<%= sc.id %>" data-nature="depense">
+                                            <%= sc.nom %>
+                                        </option>
+                                    <% }); %>
+                                </optgroup>
+                            <% }); %>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">
+                        ✅ Catégoriser
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeCategorizeModal()">
+                        Annuler
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de catégorisation en masse -->
+    <div id="bulkCategorizeModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeBulkCategorizeModal()">&times;</span>
+            <h2>🏷️ Catégoriser les transactions sélectionnées</h2>
+            <p id="bulkSelectionCount" style="color: #666; margin-bottom: 20px;"></p>
+            <form id="bulkCategorizeFormContent" action="/transactions/categorize-bulk" method="POST">
+                <input type="hidden" name="nature" id="bulkCategorizeNature">
+                
+                <div class="form-group">
+                    <label for="bulkCategorizeSubcategory">Sous-catégorie *</label>
+                    <select id="bulkCategorizeSubcategory" name="sous_categorie_id" required>
+                        <option value="">Sélectionnez une catégorie</option>
+                        <optgroup label="REVENUS" id="bulk-modal-revenus">
+                            <% categories.revenus.forEach(cat => { %>
+                                <optgroup label="  <%= cat.nom %>">
+                                    <% cat.sous_categories.forEach(sc => { %>
+                                        <option value="<%= sc.id %>" data-nature="revenu">
+                                            <%= sc.nom %>
+                                        </option>
+                                    <% }); %>
+                                </optgroup>
+                            <% }); %>
+                        </optgroup>
+                        <optgroup label="DÉPENSES" id="bulk-modal-depenses">
+                            <% categories.depenses.forEach(cat => { %>
+                                <optgroup label="  <%= cat.nom %>">
+                                    <% cat.sous_categories.forEach(sc => { %>
+                                        <option value="<%= sc.id %>" data-nature="depense">
+                                            <%= sc.nom %>
+                                        </option>
+                                    <% }); %>
+                                </optgroup>
+                            <% }); %>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">
+                        ✅ Catégoriser
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeBulkCategorizeModal()">
+                        Annuler
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
     <script>
-        // Fonction pour mettre à jour les catégories selon le type de transaction
-        function updateCategories() {
-            const nature = document.getElementById('nature').value;
-            const select = document.getElementById('sous_categorie_id');
-            const depensesGroup = document.getElementById('depenses-group');
-            const revenusGroup = document.getElementById('revenus-group');
+        // Gestion des filtres
+        function updateCategoryFilter() {
+            const type = document.getElementById('type').value;
+            const revenusGroup = document.getElementById('revenus-categories');
+            const depensesGroup = document.getElementById('depenses-categories');
             
-            // Réinitialiser la sélection
-            select.value = '';
-            
-            // Afficher/masquer les groupes appropriés
-            if (nature === 'depense') {
-                depensesGroup.style.display = '';
-                revenusGroup.style.display = 'none';
-            } else {
-                depensesGroup.style.display = 'none';
+            if (type === 'revenu') {
                 revenusGroup.style.display = '';
+                depensesGroup.style.display = 'none';
+            } else if (type === 'depense') {
+                revenusGroup.style.display = 'none';
+                depensesGroup.style.display = '';
+            } else {
+                revenusGroup.style.display = '';
+                depensesGroup.style.display = '';
             }
         }
-        
-        // Initialiser au chargement de la page
+
+        function updateSubcategoryFilter() {
+            const categorieId = document.getElementById('categorie').value;
+            const subOptions = document.querySelectorAll('#sous_categorie option[data-parent]');
+            
+            subOptions.forEach(opt => {
+                if (!categorieId || opt.dataset.parent === categorieId) {
+                    opt.style.display = '';
+                } else {
+                    opt.style.display = 'none';
+                }
+            });
+        }
+
+        // Sélection des transactions
+        function selectAll() {
+            document.querySelectorAll('.transaction-checkbox').forEach(cb => cb.checked = true);
+        }
+
+        function deselectAll() {
+            document.querySelectorAll('.transaction-checkbox').forEach(cb => cb.checked = false);
+        }
+
+        function getSelectedTransactions() {
+            const checkboxes = document.querySelectorAll('.transaction-checkbox:checked');
+            return Array.from(checkboxes).map(cb => ({
+                id: cb.dataset.id,
+                nature: cb.dataset.nature
+            }));
+        }
+
+        // Modal de catégorisation individuelle
+        function openCategorizeModal(id, nature) {
+            document.getElementById('categorizeForm').action = `/transactions/${id}/categorize`;
+            document.getElementById('categorizeNature').value = nature;
+            
+            // Filtrer les catégories selon la nature
+            const revenusGroup = document.getElementById('modal-revenus');
+            const depensesGroup = document.getElementById('modal-depenses');
+            
+            if (nature === 'revenu') {
+                revenusGroup.style.display = '';
+                depensesGroup.style.display = 'none';
+            } else {
+                revenusGroup.style.display = 'none';
+                depensesGroup.style.display = '';
+            }
+            
+            document.getElementById('categorizeModal').style.display = 'block';
+        }
+
+        function closeCategorizeModal() {
+            document.getElementById('categorizeModal').style.display = 'none';
+        }
+
+        // Modal de catégorisation en masse
+        function openBulkCategorizeModal() {
+            const selected = getSelectedTransactions();
+            
+            if (selected.length === 0) {
+                alert('Veuillez sélectionner au moins une transaction');
+                return;
+            }
+
+            // Vérifier que toutes les transactions ont la même nature
+            const natures = [...new Set(selected.map(t => t.nature))];
+            if (natures.length > 1) {
+                alert('Veuillez sélectionner uniquement des revenus OU des dépenses, pas les deux');
+                return;
+            }
+
+            const nature = natures[0];
+            document.getElementById('bulkCategorizeNature').value = nature;
+            document.getElementById('bulkSelectionCount').textContent = 
+                `${selected.length} transaction(s) sélectionnée(s)`;
+
+            // Filtrer les catégories
+            const revenusGroup = document.getElementById('bulk-modal-revenus');
+            const depensesGroup = document.getElementById('bulk-modal-depenses');
+            
+            if (nature === 'revenu') {
+                revenusGroup.style.display = '';
+                depensesGroup.style.display = 'none';
+            } else {
+                revenusGroup.style.display = 'none';
+                depensesGroup.style.display = '';
+            }
+
+            // Ajouter les IDs au formulaire
+            const form = document.getElementById('bulkCategorizeFormContent');
+            // Supprimer les anciens inputs
+            form.querySelectorAll('input[name="transaction_ids[]"]').forEach(i => i.remove());
+            
+            // Ajouter les nouveaux
+            selected.forEach(t => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'transaction_ids[]';
+                input.value = t.id;
+                form.appendChild(input);
+            });
+
+            document.getElementById('bulkCategorizeModal').style.display = 'block';
+        }
+
+        function closeBulkCategorizeModal() {
+            document.getElementById('bulkCategorizeModal').style.display = 'none';
+        }
+
+        // Fermer les modals en cliquant en dehors
+        window.onclick = function(event) {
+            const categorizeModal = document.getElementById('categorizeModal');
+            const bulkModal = document.getElementById('bulkCategorizeModal');
+            
+            if (event.target === categorizeModal) {
+                closeCategorizeModal();
+            }
+            if (event.target === bulkModal) {
+                closeBulkCategorizeModal();
+            }
+        }
+
+        // Initialiser les filtres au chargement
         document.addEventListener('DOMContentLoaded', function() {
-            updateCategories();
+            updateCategoryFilter();
+            updateSubcategoryFilter();
         });
     </script>
+
+    <style>
+        /* Filtres */
+        .filters-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .filters-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Actions en masse */
+        .bulk-actions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .bulk-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* Transactions avec checkbox */
+        .transaction-item {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .transaction-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .transaction-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            padding: 8px 12px;
+            border: none;
+            background: #f3f4f6;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            background: #e5e7eb;
+            transform: scale(1.1);
+        }
+
+        .btn-categorize:hover {
+            background: #dbeafe;
+        }
+
+        .btn-delete:hover {
+            background: #fee2e2;
+        }
+
+        .transaction-category.uncategorized {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+    </style>
 </body>
 </html>
