@@ -140,11 +140,16 @@ class CsvController {
       const transactions = [];
       const errors = [];
 
+      // Supprimer le BOM UTF-8 si présent
+      if (content.charCodeAt(0) === 0xFEFF) {
+        content = content.slice(1);
+      }
+
       const stream = Readable.from(content);
 
       stream
         .pipe(csv({
-          separator: [';', ','],
+          separator: ';', // FORCER le point-virgule uniquement
           mapHeaders: ({ header }) => header.trim().toLowerCase()
         }))
         .on('data', (row) => {
