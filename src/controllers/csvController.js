@@ -59,8 +59,12 @@ class CsvController {
       await CsvImport.updateStatus(csvImport.id, 'processing');
 
       // 3. Parser le CSV
-      const transactions = await CsvController.parseCsvContent(fileContent);
-      console.log(`📊 ${transactions.length} transaction(s) trouvée(s)`);
+      const parsedTransactions = await CsvController.parseCsvContent(fileContent);
+      
+      // Filtrer les transactions valides (avec objet non vide)
+      const transactions = parsedTransactions.filter(t => t && t.objet && t.objet.trim().length > 0);
+      
+      console.log(`📊 ${transactions.length} transaction(s) valide(s) trouvée(s) (${parsedTransactions.length - transactions.length} ignorée(s))`);
 
       if (transactions.length === 0) {
         await CsvImport.updateStatus(
@@ -216,17 +220,17 @@ class CsvController {
     for (const key of descKeys) {
       if (keys.includes(key) && row[key]) {
         // Nettoyer la description
-        description = row[key]
+        const cleaned = row[key]
           .toString()
           .trim()
           .replace(/^["']|["']$/g, ''); // Supprimer guillemets au début et fin
         
-        // Si après nettoyage c'est vide, ignorer
-        if (description && description.length > 0) {
+        // Si après nettoyage c'est valide, l'utiliser
+        if (cleaned && cleaned.length > 0) {
+          description = cleaned;
           break;
-        } else {
-          description = null;
         }
+        // Sinon, continuer à chercher dans les autres clés
       }
     }
 
