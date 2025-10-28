@@ -89,15 +89,15 @@ class CsvController {
         }
         
         try {
-          await Transaction.create(
-            userId,
-            transaction.objet,
-            transaction.montant,
-            transaction.nature,
-            transaction.date,
-            null, // sous_categorie_revenu_id
-            null  // sous_categorie_depense_id
-          );
+          await Transaction.create({
+            user_id: userId,
+            objet: transaction.objet,
+            montant: transaction.montant,
+            nature: transaction.nature,
+            date: transaction.date,
+            sous_categorie_revenu_id: null,
+            sous_categorie_depense_id: null
+          });
           imported++;
         } catch (error) {
           errors++;
