@@ -208,8 +208,18 @@ class CsvController {
     const descKeys = ['libelle', 'libellé', 'description', 'intitule', 'intitulé', 'label', 'details', 'détails'];
     for (const key of descKeys) {
       if (keys.includes(key) && row[key]) {
-        description = row[key].trim().replace(/^"|"$/g, ''); // Supprimer les guillemets
-        break;
+        // Nettoyer la description
+        description = row[key]
+          .toString()
+          .trim()
+          .replace(/^["']|["']$/g, ''); // Supprimer guillemets au début et fin
+        
+        // Si après nettoyage c'est vide, ignorer
+        if (description && description.length > 0) {
+          break;
+        } else {
+          description = null;
+        }
       }
     }
 
