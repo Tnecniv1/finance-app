@@ -176,7 +176,7 @@ class CsvController {
     let date, description, montant;
 
     // Recherche de la date
-    const dateKeys = ['date', 'date operation', 'date opération', 'date de l\'opération', 'date valeur'];
+    const dateKeys = ['date', 'dateop', 'date operation', 'date opération', 'date de l\'opération', 'date valeur', 'dateval'];
     for (const key of dateKeys) {
       if (keys.includes(key) && row[key]) {
         date = CsvController.parseDate(row[key]);
@@ -188,7 +188,7 @@ class CsvController {
     const descKeys = ['libelle', 'libellé', 'description', 'intitule', 'intitulé', 'label', 'details', 'détails'];
     for (const key of descKeys) {
       if (keys.includes(key) && row[key]) {
-        description = row[key].trim();
+        description = row[key].trim().replace(/^"|"$/g, ''); // Supprimer les guillemets
         break;
       }
     }
@@ -265,11 +265,20 @@ class CsvController {
     if (!montantStr) return null;
 
     montantStr = montantStr.toString().trim();
-    montantStr = montantStr.replace(/[€$£]/g, '');
+    
+    // Supprimer les symboles monétaires et espaces
+    montantStr = montantStr.replace(/[€$£\s]/g, '');
+    
+    // Si le montant est vide après nettoyage
+    if (!montantStr || montantStr === '') return null;
+    
+    // Remplacer la virgule par un point (format français)
+    // Important : le faire APRÈS avoir supprimé les espaces
     montantStr = montantStr.replace(',', '.');
-    montantStr = montantStr.replace(/\s/g, '');
 
+    // Parser en nombre
     const montant = parseFloat(montantStr);
+
     return isNaN(montant) ? null : montant;
   }
 
