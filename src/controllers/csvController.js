@@ -149,9 +149,24 @@ class CsvController {
         }))
         .on('data', (row) => {
           try {
+            // DEBUG: Afficher la première ligne
+            if (transactions.length === 0 && errors.length === 0) {
+              console.log('🔍 DEBUG - Première ligne parsée:', JSON.stringify(row, null, 2));
+              console.log('🔍 DEBUG - Clés trouvées:', Object.keys(row));
+            }
+            
             const transaction = CsvController.parseTransaction(row);
             if (transaction) {
               transactions.push(transaction);
+            } else {
+              // DEBUG: Pourquoi la transaction est null ?
+              if (transactions.length < 3) {
+                console.log('⚠️ Transaction ignorée:', {
+                  date: row.dateop || row.date,
+                  label: row.label,
+                  amount: row.amount
+                });
+              }
             }
           } catch (err) {
             errors.push(`Ligne ignorée: ${err.message}`);
