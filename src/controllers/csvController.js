@@ -80,6 +80,11 @@ class CsvController {
 
       for (const transaction of transactions) {
         try {
+          // DEBUG: Afficher les 3 premières transactions
+          if (imported < 3) {
+            console.log(`🔍 DEBUG - Transaction #${imported + 1}:`, JSON.stringify(transaction, null, 2));
+          }
+          
           await Transaction.create(
             userId,
             transaction.objet,
