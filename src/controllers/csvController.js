@@ -150,6 +150,8 @@ class CsvController {
       stream
         .pipe(csv({
           separator: ';', // FORCER le point-virgule uniquement
+          quote: '"', // Caractère de citation
+          escape: '"', // Caractère d'échappement
           mapHeaders: ({ header }) => header.trim().toLowerCase()
         }))
         .on('data', (row) => {
@@ -246,6 +248,13 @@ class CsvController {
 
     // Validation
     if (!date || !description || montant === null) {
+      // DEBUG: Afficher pourquoi la transaction est rejetée
+      if (!description) {
+        console.log('❌ Description null pour:', {
+          rawLabel: row.label,
+          keys: Object.keys(row)
+        });
+      }
       return null;
     }
 
