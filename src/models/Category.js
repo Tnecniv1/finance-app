@@ -89,6 +89,16 @@ class Category {
       }))
     };
   }
+
+  /**
+   * Alias de getAllOrganized pour compatibilité
+   */
+  static async getAllWithSubcategories() {
+    return this.getAllOrganized();
+  }
+  
 }
+
+
 
 module.exports = Category;
