@@ -34,33 +34,14 @@
                 </div>
             <% } %>
 
-            <!-- Instructions -->
+            <!-- Upload Form -->
             <div class="card">
                 <h2>📥 Importer vos transactions</h2>
                 <p style="color: #666; margin-bottom: 20px;">
-                    Importez vos relevés bancaires au format CSV pour ajouter plusieurs transactions en une fois.
+                    Importez vos relevés bancaires au format CSV. Le fichier sera sauvegardé et traité automatiquement.
                 </p>
 
-                <!-- Format CSV -->
-                <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6; margin-bottom: 20px;">
-                    <h3 style="color: #1e40af; margin-top: 0;">📋 Format du fichier CSV</h3>
-                    <p style="color: #1e40af; margin-bottom: 10px;">Votre fichier CSV doit contenir au minimum ces colonnes :</p>
-                    <ul style="color: #1e40af; padding-left: 20px; line-height: 1.8;">
-                        <li><strong>Date</strong> : Au format JJ/MM/AAAA ou AAAA-MM-JJ</li>
-                        <li><strong>Description</strong> : Le libellé de la transaction</li>
-                        <li><strong>Montant</strong> : Le montant (positif = revenu, négatif = dépense)</li>
-                    </ul>
-                </div>
-
-                <!-- Download Template -->
-                <div style="margin-bottom: 30px;">
-                    <a href="/transactions/import-csv/template" class="btn btn-secondary" download>
-                        📄 Télécharger un exemple de fichier CSV
-                    </a>
-                </div>
-
-                <!-- Upload Form -->
-                <form action="/transactions/import-csv" method="POST" enctype="multipart/form-data" style="border-top: 2px solid #e5e7eb; padding-top: 30px;">
+                <form action="/transactions/import-csv" method="POST" enctype="multipart/form-data">
                     <div class="form-group">
                         <label for="csvFile">Sélectionnez votre fichier CSV *</label>
                         <input 
@@ -69,10 +50,10 @@
                             name="csvFile" 
                             accept=".csv,.txt"
                             required
-                            style="padding: 10px; border: 2px dashed #d1d5db; border-radius: 8px; width: 100%;"
+                            style="padding: 10px; border: 2px dashed #d1d5db; border-radius: 8px; width: 100%; cursor: pointer;"
                         >
                         <p style="color: #888; font-size: 0.9rem; margin-top: 8px;">
-                            Formats acceptés : .csv, .txt (séparateur : ; ou ,)
+                            Formats acceptés : .csv, .txt • Taille max : 5 MB
                         </p>
                     </div>
 
@@ -80,141 +61,186 @@
                         ⬆️ Importer les transactions
                     </button>
                 </form>
-            </div>
 
-            <!-- Guide bancaire -->
-            <div class="card">
-                <h2>🏦 Comment télécharger vos relevés bancaires ?</h2>
-                <div class="bank-guides">
-                    <details class="bank-guide-item">
-                        <summary>Crédit Agricole</summary>
-                        <ol>
-                            <li>Connectez-vous à votre espace client</li>
-                            <li>Sélectionnez votre compte</li>
-                            <li>Cliquez sur "Télécharger les opérations"</li>
-                            <li>Choisissez le format CSV</li>
-                            <li>Sélectionnez la période souhaitée</li>
-                            <li>Téléchargez le fichier</li>
-                        </ol>
-                    </details>
-
-                    <details class="bank-guide-item">
-                        <summary>BNP Paribas</summary>
-                        <ol>
-                            <li>Accédez à votre compte en ligne</li>
-                            <li>Allez dans "Mes comptes"</li>
-                            <li>Cliquez sur "Exporter" ou "Télécharger"</li>
-                            <li>Sélectionnez CSV comme format</li>
-                            <li>Validez et téléchargez</li>
-                        </ol>
-                    </details>
-
-                    <details class="bank-guide-item">
-                        <summary>Société Générale</summary>
-                        <ol>
-                            <li>Connectez-vous à l'espace client</li>
-                            <li>Sélectionnez le compte</li>
-                            <li>Cliquez sur "Export des opérations"</li>
-                            <li>Choisissez le format Excel ou CSV</li>
-                            <li>Téléchargez le fichier</li>
-                        </ol>
-                    </details>
-
-                    <details class="bank-guide-item">
-                        <summary>Boursorama</summary>
-                        <ol>
-                            <li>Dans votre espace client</li>
-                            <li>Allez dans "Historique"</li>
-                            <li>Cliquez sur l'icône de téléchargement</li>
-                            <li>Sélectionnez CSV</li>
-                            <li>Téléchargez</li>
-                        </ol>
-                    </details>
-
-                    <details class="bank-guide-item">
-                        <summary>LCL</summary>
-                        <ol>
-                            <li>Connectez-vous à votre espace</li>
-                            <li>Ouvrez le compte concerné</li>
-                            <li>Cliquez sur "Télécharger"</li>
-                            <li>Choisissez le format CSV</li>
-                            <li>Validez</li>
-                        </ol>
-                    </details>
-
-                    <details class="bank-guide-item">
-                        <summary>Autre banque</summary>
-                        <ol>
-                            <li>Connectez-vous à votre banque en ligne</li>
-                            <li>Cherchez "Exporter", "Télécharger" ou "Export des opérations"</li>
-                            <li>Sélectionnez le format CSV ou Excel</li>
-                            <li>Si Excel uniquement, ouvrez-le et sauvegardez en CSV</li>
-                        </ol>
-                    </details>
+                <div style="margin-top: 20px;">
+                    <a href="/transactions/import-csv/template" class="btn btn-secondary" download>
+                        📄 Télécharger un exemple de fichier CSV
+                    </a>
                 </div>
             </div>
 
-            <!-- Info Box -->
-            <div class="card" style="background: #fef3c7; border-left: 4px solid #f59e0b;">
-                <h3 style="color: #92400e; margin-bottom: 10px;">💡 Bon à savoir</h3>
-                <ul style="color: #92400e; padding-left: 20px; line-height: 1.8;">
-                    <li>L'import détecte automatiquement si c'est un revenu ou une dépense</li>
-                    <li>Les doublons sont automatiquement ignorés</li>
-                    <li>Vous pourrez catégoriser les transactions importées ensuite</li>
-                    <li>Les formats de date courants sont automatiquement reconnus</li>
-                    <li>Le séparateur (virgule ou point-virgule) est détecté automatiquement</li>
+            <!-- Recent Imports History -->
+            <% if (recentImports && recentImports.length > 0) { %>
+            <div class="card">
+                <h2>📋 Derniers imports</h2>
+                <div class="imports-list">
+                    <% recentImports.forEach(imp => { %>
+                        <div class="import-item status-<%= imp.status %>">
+                            <div class="import-icon">
+                                <% if (imp.status === 'completed') { %>
+                                    ✅
+                                <% } else if (imp.status === 'error') { %>
+                                    ❌
+                                <% } else if (imp.status === 'processing') { %>
+                                    ⏳
+                                <% } else { %>
+                                    📄
+                                <% } %>
+                            </div>
+                            <div class="import-info">
+                                <div class="import-header">
+                                    <strong><%= imp.filename %></strong>
+                                    <span class="import-date">
+                                        <%= new Date(imp.created_at).toLocaleDateString('fr-FR', {
+                                            day: '2-digit',
+                                            month: 'short',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        }) %>
+                                    </span>
+                                </div>
+                                <div class="import-stats">
+                                    <% if (imp.status === 'completed') { %>
+                                        <span class="stat-success">
+                                            <%= imp.imported_count %> importée(s)
+                                        </span>
+                                        <% if (imp.error_count > 0) { %>
+                                            <span class="stat-error">
+                                                <%= imp.error_count %> erreur(s)
+                                            </span>
+                                        <% } %>
+                                    <% } else if (imp.status === 'error') { %>
+                                        <span class="stat-error">Erreur</span>
+                                    <% } else if (imp.status === 'processing') { %>
+                                        <span class="stat-pending">En cours...</span>
+                                    <% } else { %>
+                                        <span class="stat-pending">En attente</span>
+                                    <% } %>
+                                </div>
+                                <% if (imp.error_details && imp.status === 'error') { %>
+                                    <div class="import-error">
+                                        <%= imp.error_details.split('\n')[0] %>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+            <% } %>
+
+            <!-- Format Info -->
+            <div class="card" style="background: #f0f9ff; border-left: 4px solid #3b82f6;">
+                <h3 style="color: #1e40af; margin-top: 0;">📋 Format du fichier CSV</h3>
+                <p style="color: #1e40af; margin-bottom: 10px;">Colonnes minimum requises :</p>
+                <ul style="color: #1e40af; padding-left: 20px; line-height: 1.8;">
+                    <li><strong>Date</strong> : JJ/MM/AAAA ou AAAA-MM-JJ</li>
+                    <li><strong>Description</strong> : Libellé de la transaction</li>
+                    <li><strong>Montant</strong> : Positif (revenu) ou négatif (dépense)</li>
                 </ul>
+            </div>
+
+            <!-- Bank Guides -->
+            <div class="card">
+                <h2>🏦 Télécharger depuis votre banque</h2>
+                <details class="bank-guide">
+                    <summary>📖 Voir les guides par banque</summary>
+                    <div style="margin-top: 15px;">
+                        <p><strong>Crédit Agricole :</strong> Compte → Télécharger opérations → CSV</p>
+                        <p><strong>BNP Paribas :</strong> Mes comptes → Exporter → CSV</p>
+                        <p><strong>Société Générale :</strong> Export des opérations → CSV</p>
+                        <p><strong>Boursorama :</strong> Historique → Télécharger → CSV</p>
+                    </div>
+                </details>
             </div>
         </div>
     </div>
 
     <style>
-        .bank-guides {
+        .imports-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
-        .bank-guide-item {
+        .import-item {
+            display: flex;
+            gap: 15px;
             padding: 15px;
             border: 2px solid #e5e7eb;
             border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .bank-guide-item:hover {
-            border-color: #6366f1;
             background: #fafafa;
         }
 
-        .bank-guide-item summary {
+        .import-item.status-completed {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .import-item.status-error {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .import-icon {
+            font-size: 2rem;
+        }
+
+        .import-info {
+            flex: 1;
+        }
+
+        .import-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .import-date {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .import-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+        }
+
+        .stat-success {
+            color: #10b981;
             font-weight: 600;
-            color: #333;
-            font-size: 1.05rem;
+        }
+
+        .stat-error {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .stat-pending {
+            color: #f59e0b;
+            font-weight: 600;
+        }
+
+        .import-error {
+            margin-top: 8px;
+            padding: 8px;
+            background: #fee2e2;
+            border-radius: 4px;
+            color: #991b1b;
+            font-size: 0.9rem;
+        }
+
+        .bank-guide summary {
             cursor: pointer;
-            user-select: none;
+            color: #6366f1;
+            font-weight: 600;
+            padding: 10px;
         }
 
-        .bank-guide-item ol {
-            margin-top: 15px;
-            padding-left: 20px;
-            line-height: 1.8;
-            color: #555;
-        }
-
-        .bank-guide-item[open] {
-            background: #f9fafb;
-            border-color: #6366f1;
-        }
-
-        input[type="file"] {
-            cursor: pointer;
-        }
-
-        input[type="file"]:hover {
-            border-color: #6366f1;
-            background: #fafafa;
+        .bank-guide summary:hover {
+            background: #f3f4f6;
+            border-radius: 4px;
         }
     </style>
 </body>
