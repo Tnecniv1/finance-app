@@ -187,6 +187,74 @@
             background: #e0e0e0;
         }
 
+        /* ✨ NOUVEAU : Contrôles de période */
+        .period-controls {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .period-controls-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .period-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .period-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .period-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .period-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .zoom-btn {
+            padding: 10px 20px;
+            border: 2px solid #10b981;
+            background: white;
+            color: #10b981;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-left: auto;
+        }
+
+        .zoom-btn.active {
+            background: #10b981;
+            color: white;
+        }
+
+        .zoom-btn:hover {
+            background: #10b981;
+            color: white;
+        }
+
         .chart-container {
             background: white;
             padding: 30px;
@@ -287,6 +355,18 @@
             #transactionsChart {
                 height: 400px !important;
             }
+
+            .period-buttons {
+                flex-direction: column;
+            }
+
+            .period-btn, .zoom-btn {
+                width: 100%;
+            }
+
+            .zoom-btn {
+                margin-left: 0;
+            }
         }
     </style>
 </head>
@@ -330,6 +410,18 @@
             </div>
         </div>
 
+        <!-- ✨ NOUVEAU : Contrôles de période -->
+        <div class="period-controls">
+            <div class="period-controls-title">📅 Période d'affichage</div>
+            <div class="period-buttons">
+                <button class="period-btn active" data-period="daily">📅 Journalier</button>
+                <button class="period-btn" data-period="weekly">📅 Hebdomadaire</button>
+                <button class="period-btn" data-period="monthly">📅 Mensuel</button>
+                <button class="period-btn" data-period="yearly">📅 Annuel</button>
+                <button class="zoom-btn" id="zoomBtn">🔍 Zoom</button>
+            </div>
+        </div>
+
         <!-- Filtres -->
         <div class="filters-section">
             <div class="filters-title">🔍 Filtres et Tri</div>
@@ -365,16 +457,6 @@
                         <label for="date_fin">Date fin</label>
                         <input type="date" name="date_fin" id="date_fin" value="<%= filters.date_fin || '' %>">
                     </div>
-
-                    <div class="filter-group">
-                        <label for="sort">Trier par</label>
-                        <select name="sort" id="sort">
-                            <option value="date_desc" <%= filters.sort === 'date_desc' ? 'selected' : '' %>>Date (récent)</option>
-                            <option value="date_asc" <%= filters.sort === 'date_asc' ? 'selected' : '' %>>Date (ancien)</option>
-                            <option value="montant_desc" <%= filters.sort === 'montant_desc' ? 'selected' : '' %>>Montant (élevé)</option>
-                            <option value="montant_asc" <%= filters.sort === 'montant_asc' ? 'selected' : '' %>>Montant (faible)</option>
-                        </select>
-                    </div>
                 </div>
 
                 <div class="filter-actions">
@@ -408,96 +490,252 @@
     </div>
 
     <script>
-        // Préparer les données pour Chart.js
+        // ✅ FIX : Utiliser 'nature' au lieu de 'type'
         const transactions = <%- JSON.stringify(transactions) %>;
         
-        // Trier les transactions par date
-        transactions.sort((a, b) => new Date(a.date) - new Date(b.date));
+        // Variables globales
+        let chart = null;
+        let currentPeriod = 'daily';
+        let isZoomed = false;
 
-        // Grouper les transactions par date
-        const dataByDate = {};
-        transactions.forEach(t => {
-            const date = t.date.split('T')[0];
-            if (!dataByDate[date]) {
-                dataByDate[date] = { revenus: 0, depenses: 0, profit: 0 };
-            }
-            
-            const montant = parseFloat(t.montant);
-            if (t.type === 'revenu') {
-                dataByDate[date].revenus += montant;
-                dataByDate[date].profit += montant;
-            } else {
-                dataByDate[date].depenses += Math.abs(montant);
-                dataByDate[date].profit -= Math.abs(montant);
-            }
+        // Boutons de période
+        const periodButtons = document.querySelectorAll('.period-btn');
+        const zoomBtn = document.getElementById('zoomBtn');
+
+        periodButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                periodButtons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentPeriod = this.dataset.period;
+                isZoomed = false;
+                zoomBtn.classList.remove('active');
+                updateChart();
+            });
         });
 
-        // Créer des données cumulatives
-        const dates = Object.keys(dataByDate).sort();
-        let cumulativeRevenus = 0;
-        let cumulativeDepenses = 0;
-        let cumulativeProfit = 0;
+        zoomBtn.addEventListener('click', function() {
+            isZoomed = !isZoomed;
+            this.classList.toggle('active');
+            updateChart();
+        });
 
-        const chartData = {
-            labels: dates.map(date => new Date(date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })),
-            datasets: [
-                {
-                    label: 'Revenus',
-                    data: dates.map(date => { cumulativeRevenus += dataByDate[date].revenus; return cumulativeRevenus; }),
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    borderWidth: 3,
-                    tension: 0.4,
-                    fill: false,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
-                },
-                {
-                    label: 'Dépenses',
-                    data: dates.map(date => { cumulativeDepenses += dataByDate[date].depenses; return cumulativeDepenses; }),
-                    borderColor: '#ef4444',
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                    borderWidth: 3,
-                    tension: 0.4,
-                    fill: false,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
-                },
-                {
-                    label: 'Profit',
-                    data: dates.map(date => { cumulativeProfit += dataByDate[date].profit; return cumulativeProfit; }),
-                    borderColor: '#8b5cf6',
-                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                    borderWidth: 3,
-                    tension: 0.4,
-                    fill: false,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
+        function updateChart() {
+            const data = prepareChartData(currentPeriod, isZoomed);
+            
+            if (chart) {
+                chart.destroy();
+            }
+
+            const ctx = document.getElementById('transactionsChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: data,
+                options: getChartOptions()
+            });
+        }
+
+        function prepareChartData(period, zoomed) {
+            // Trier les transactions par date
+            const sortedTransactions = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            let groupedData = {};
+            let labels = [];
+
+            const now = new Date();
+
+            // Définir la plage de dates selon la période et le zoom
+            let startDate, endDate;
+            
+            if (zoomed) {
+                endDate = new Date();
+                switch(period) {
+                    case 'daily': // Aujourd'hui uniquement
+                        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                        break;
+                    case 'weekly': // Cette semaine
+                        const dayOfWeek = now.getDay();
+                        startDate = new Date(now);
+                        startDate.setDate(now.getDate() - dayOfWeek);
+                        break;
+                    case 'monthly': // Ce mois (30 derniers jours)
+                        startDate = new Date(now);
+                        startDate.setDate(now.getDate() - 30);
+                        break;
+                    case 'yearly': // Cette année
+                        startDate = new Date(now.getFullYear(), 0, 1);
+                        break;
                 }
-            ]
-        };
+            } else {
+                endDate = new Date();
+                switch(period) {
+                    case 'daily': // 36 derniers jours
+                        startDate = new Date(now);
+                        startDate.setDate(now.getDate() - 36);
+                        break;
+                    case 'weekly': // 36 dernières semaines
+                        startDate = new Date(now);
+                        startDate.setDate(now.getDate() - (36 * 7));
+                        break;
+                    case 'monthly': // 36 derniers mois
+                        startDate = new Date(now);
+                        startDate.setMonth(now.getMonth() - 36);
+                        break;
+                    case 'yearly': // 36 dernières années
+                        startDate = new Date(now);
+                        startDate.setFullYear(now.getFullYear() - 36);
+                        break;
+                }
+            }
 
-        // Configurer et créer le graphique
-        const ctx = document.getElementById('transactionsChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: chartData,
-            options: {
+            // Filtrer les transactions dans la plage
+            const filteredTransactions = sortedTransactions.filter(t => {
+                const tDate = new Date(t.date);
+                return tDate >= startDate && tDate <= endDate;
+            });
+
+            // Grouper par période
+            filteredTransactions.forEach(t => {
+                const date = new Date(t.date);
+                let key;
+
+                switch(period) {
+                    case 'daily':
+                        key = date.toISOString().split('T')[0];
+                        break;
+                    case 'weekly':
+                        const weekStart = new Date(date);
+                        weekStart.setDate(date.getDate() - date.getDay());
+                        key = weekStart.toISOString().split('T')[0];
+                        break;
+                    case 'monthly':
+                        key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                        break;
+                    case 'yearly':
+                        key = `${date.getFullYear()}`;
+                        break;
+                }
+
+                if (!groupedData[key]) {
+                    groupedData[key] = { revenus: 0, depenses: 0, profit: 0 };
+                }
+
+                const montant = parseFloat(t.montant);
+                // ✅ FIX : Utiliser 'nature' au lieu de 'type'
+                if (t.nature === 'revenu') {
+                    groupedData[key].revenus += montant;
+                    groupedData[key].profit += montant;
+                } else {
+                    groupedData[key].depenses += Math.abs(montant);
+                    groupedData[key].profit -= Math.abs(montant);
+                }
+            });
+
+            // Créer les labels et données cumulatives
+            const dates = Object.keys(groupedData).sort();
+            let cumulativeRevenus = 0;
+            let cumulativeDepenses = 0;
+            let cumulativeProfit = 0;
+
+            labels = dates.map(date => {
+                switch(period) {
+                    case 'daily':
+                        return new Date(date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+                    case 'weekly':
+                        return `S${Math.ceil((new Date(date).getDate()) / 7)} ${new Date(date).toLocaleDateString('fr-FR', { month: 'short' })}`;
+                    case 'monthly':
+                        const [year, month] = date.split('-');
+                        return new Date(year, month - 1).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+                    case 'yearly':
+                        return date;
+                }
+            });
+
+            const revenusData = dates.map(date => {
+                cumulativeRevenus += groupedData[date].revenus;
+                return cumulativeRevenus;
+            });
+
+            const depensesData = dates.map(date => {
+                cumulativeDepenses += groupedData[date].depenses;
+                return cumulativeDepenses;
+            });
+
+            const profitData = dates.map(date => {
+                cumulativeProfit += groupedData[date].profit;
+                return cumulativeProfit;
+            });
+
+            return {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Revenus',
+                        data: revenusData,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: false,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    },
+                    {
+                        label: 'Dépenses',
+                        data: depensesData,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: false,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    },
+                    {
+                        label: 'Profit',
+                        data: profitData,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: false,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }
+                ]
+            };
+        }
+
+        function getChartOptions() {
+            return {
                 responsive: true,
                 maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
                 plugins: {
-                    legend: { display: false },
+                    legend: {
+                        display: false
+                    },
                     tooltip: {
                         backgroundColor: 'rgba(0, 0, 0, 0.8)',
                         padding: 12,
-                        titleFont: { size: 14 },
-                        bodyFont: { size: 13 },
+                        titleFont: {
+                            size: 14
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
                         callbacks: {
                             label: function(context) {
                                 let label = context.dataset.label || '';
-                                if (label) label += ': ';
-                                label += new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(context.parsed.y);
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += new Intl.NumberFormat('fr-FR', {
+                                    style: 'currency',
+                                    currency: 'EUR'
+                                }).format(context.parsed.y);
                                 return label;
                             }
                         }
@@ -505,22 +743,42 @@
                 },
                 scales: {
                     x: {
-                        grid: { display: false },
-                        ticks: { maxRotation: 45, minRotation: 45, font: { size: 11 } }
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45,
+                            font: {
+                                size: 11
+                            }
+                        }
                     },
                     y: {
                         beginAtZero: true,
-                        grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
                         ticks: {
                             callback: function(value) {
-                                return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
+                                return new Intl.NumberFormat('fr-FR', {
+                                    style: 'currency',
+                                    currency: 'EUR',
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0
+                                }).format(value);
                             },
-                            font: { size: 12 }
+                            font: {
+                                size: 12
+                            }
                         }
                     }
                 }
-            }
-        });
+            };
+        }
+
+        // Initialiser le graphique au chargement
+        updateChart();
     </script>
 </body>
 </html>
