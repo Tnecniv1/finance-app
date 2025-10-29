@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Graphiques - Finance App</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -26,144 +25,33 @@
 
         .header {
             background: white;
-            padding: 20px;
-            border-radius: 10px;
+            padding: 20px 30px;
+            border-radius: 15px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
         }
 
         .header h1 {
             color: #333;
-            font-size: 24px;
-        }
-
-        .view-switcher {
-            display: flex;
-            gap: 10px;
-        }
-
-        .view-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .view-btn.active {
-            background: #667eea;
-            color: white;
-        }
-
-        .view-btn:not(.active) {
-            background: #f0f0f0;
-            color: #666;
-        }
-
-        .view-btn:not(.active):hover {
-            background: #e0e0e0;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .stat-label {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 5px;
-        }
-
-        .stat-value {
             font-size: 28px;
-            font-weight: bold;
         }
 
-        .stat-value.positive {
-            color: #10b981;
-        }
-
-        .stat-value.negative {
-            color: #ef4444;
-        }
-
-        .stat-value.neutral {
-            color: #667eea;
-        }
-
-        .filters-section {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .filters-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: #333;
-        }
-
-        .filters-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .filter-group label {
-            font-size: 14px;
-            color: #666;
-            font-weight: 500;
-        }
-
-        .filter-group select,
-        .filter-group input {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        .filter-actions {
+        .nav-buttons {
             display: flex;
             gap: 10px;
-            margin-top: 15px;
         }
 
         .btn {
             padding: 10px 20px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
-            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
             transition: all 0.3s;
         }
 
@@ -174,611 +62,655 @@
 
         .btn-primary:hover {
             background: #5568d3;
+            transform: translateY(-2px);
         }
 
         .btn-secondary {
-            background: #f0f0f0;
-            color: #666;
-            text-decoration: none;
-            display: inline-block;
+            background: #e0e7ff;
+            color: #667eea;
         }
 
         .btn-secondary:hover {
-            background: #e0e0e0;
+            background: #c7d2fe;
         }
 
-        /* ✨ NOUVEAU : Contrôles de période */
-        .period-controls {
+        /* Filters Section */
+        .filters-container {
             background: white;
-            padding: 20px;
-            border-radius: 10px;
+            padding: 20px 30px;
+            border-radius: 15px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        .period-controls-title {
-            font-size: 18px;
+        .filters-row {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-group label {
             font-weight: 600;
-            margin-bottom: 15px;
             color: #333;
+            font-size: 14px;
         }
 
-        .period-buttons {
+        .filter-buttons {
             display: flex;
             gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
         }
 
-        .period-btn {
-            padding: 10px 20px;
-            border: 2px solid #667eea;
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e0e7ff;
             background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
             color: #667eea;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
             transition: all 0.3s;
+            font-weight: 500;
         }
 
-        .period-btn.active {
+        .filter-btn:hover {
+            border-color: #667eea;
+            background: #f5f7ff;
+        }
+
+        .filter-btn.active {
             background: #667eea;
             color: white;
+            border-color: #667eea;
         }
 
-        .period-btn:hover {
-            background: #667eea;
-            color: white;
-        }
-
-        .zoom-btn {
-            padding: 10px 20px;
-            border: 2px solid #10b981;
-            background: white;
-            color: #10b981;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s;
-            margin-left: auto;
-        }
-
-        .zoom-btn.active {
-            background: #10b981;
-            color: white;
-        }
-
-        .zoom-btn:hover {
-            background: #10b981;
-            color: white;
-        }
-
+        /* Chart Container */
         .chart-container {
             background: white;
             padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: relative;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
         }
 
-        .chart-legend {
-            position: absolute;
-            top: 40px;
-            left: 40px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            z-index: 10;
+        .chart-wrapper {
+            position: relative;
+            height: 500px;
+        }
+
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .stat-card.positive .value {
+            color: #10b981;
+        }
+
+        .stat-card.negative .value {
+            color: #ef4444;
+        }
+
+        .stat-card.neutral .value {
+            color: #667eea;
+        }
+
+        /* Legend */
+        .legend-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .legend-item:last-child {
-            margin-bottom: 0;
+            gap: 8px;
         }
 
         .legend-color {
-            width: 20px;
-            height: 3px;
-            border-radius: 2px;
-        }
-
-        .legend-color.revenus {
-            background: #10b981;
-        }
-
-        .legend-color.depenses {
-            background: #ef4444;
-        }
-
-        .legend-color.profit {
-            background: #8b5cf6;
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
         }
 
         .legend-label {
-            font-weight: 600;
-        }
-
-        .legend-value {
+            font-size: 14px;
             color: #666;
-            margin-left: auto;
-        }
-
-        #transactionsChart {
-            width: 100% !important;
-            height: 500px !important;
-        }
-
-        .logout-btn {
-            padding: 10px 20px;
-            background: #ef4444;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .logout-btn:hover {
-            background: #dc2626;
-        }
-
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .view-switcher {
-                width: 100%;
-            }
-
-            .view-btn {
-                flex: 1;
-                text-align: center;
-            }
-
-            .chart-legend {
-                position: static;
-                margin-bottom: 20px;
-            }
-
-            #transactionsChart {
-                height: 400px !important;
-            }
-
-            .period-buttons {
-                flex-direction: column;
-            }
-
-            .period-btn, .zoom-btn {
-                width: 100%;
-            }
-
-            .zoom-btn {
-                margin-left: 0;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- En-tête avec navigation -->
+        <!-- Header -->
         <div class="header">
-            <h1>📊 Analyse Financière</h1>
-            <div class="view-switcher">
-                <a href="/transactions" class="view-btn">📋 Vue Liste</a>
-                <a href="/transactions/graph" class="view-btn active">📈 Vue Graphique</a>
+            <h1>📊 Graphiques Financiers</h1>
+            <div class="nav-buttons">
+                <a href="/transactions" class="btn btn-secondary">← Retour</a>
+                <form action="/auth/logout" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-primary">Déconnexion</button>
+                </form>
             </div>
-            <a href="/auth/logout" class="logout-btn">Déconnexion</a>
         </div>
 
-        <!-- Statistiques -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-label">Solde Total</div>
-                <div class="stat-value <%= solde >= 0 ? 'positive' : 'negative' %>">
-                    <%= solde.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' }) %>
+        <!-- Filters -->
+        <div class="filters-container">
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label>Période</label>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-filter="period" data-value="daily">Journalier</button>
+                        <button class="filter-btn" data-filter="period" data-value="weekly">Hebdomadaire</button>
+                        <button class="filter-btn" data-filter="period" data-value="monthly">Mensuel</button>
+                        <button class="filter-btn" data-filter="period" data-value="yearly">Annuel</button>
+                    </div>
                 </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Total Revenus</div>
-                <div class="stat-value positive">
-                    <%= totalRevenus.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' }) %>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Total Dépenses</div>
-                <div class="stat-value negative">
-                    <%= totalDepenses.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' }) %>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Nombre de Transactions</div>
-                <div class="stat-value neutral">
-                    <%= transactions.length %>
+
+                <div class="filter-group">
+                    <label>Type</label>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-filter="type" data-value="profit">Profit</button>
+                        <button class="filter-btn" data-filter="type" data-value="revenus">Revenus</button>
+                        <button class="filter-btn" data-filter="type" data-value="depenses">Dépenses</button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- ✨ NOUVEAU : Contrôles de période -->
-        <div class="period-controls">
-            <div class="period-controls-title">📅 Période d'affichage</div>
-            <div class="period-buttons">
-                <button class="period-btn active" data-period="daily">📅 Journalier</button>
-                <button class="period-btn" data-period="weekly">📅 Hebdomadaire</button>
-                <button class="period-btn" data-period="monthly">📅 Mensuel</button>
-                <button class="period-btn" data-period="yearly">📅 Annuel</button>
-                <button class="zoom-btn" id="zoomBtn">🔍 Zoom</button>
+        <!-- Stats Cards -->
+        <div class="stats-container">
+            <div class="stat-card positive">
+                <h3>Total Revenus</h3>
+                <div class="value" id="total-revenus">0 €</div>
+            </div>
+            <div class="stat-card negative">
+                <h3>Total Dépenses</h3>
+                <div class="value" id="total-depenses">0 €</div>
+            </div>
+            <div class="stat-card neutral">
+                <h3>Solde</h3>
+                <div class="value" id="solde">0 €</div>
             </div>
         </div>
 
-        <!-- Filtres -->
-        <div class="filters-section">
-            <div class="filters-title">🔍 Filtres et Tri</div>
-            <form method="GET" action="/transactions/graph">
-                <div class="filters-grid">
-                    <div class="filter-group">
-                        <label for="type">Type</label>
-                        <select name="type" id="type">
-                            <option value="">Tous</option>
-                            <option value="revenu" <%= filters.type === 'revenu' ? 'selected' : '' %>>Revenus</option>
-                            <option value="depense" <%= filters.type === 'depense' ? 'selected' : '' %>>Dépenses</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label for="categorie">Catégorie</label>
-                        <select name="categorie" id="categorie">
-                            <option value="">Toutes</option>
-                            <% categories.forEach(cat => { %>
-                                <option value="<%= cat.id %>" <%= filters.categorie == cat.id ? 'selected' : '' %>>
-                                    <%= cat.nom %>
-                                </option>
-                            <% }); %>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label for="date_debut">Date début</label>
-                        <input type="date" name="date_debut" id="date_debut" value="<%= filters.date_debut || '' %>">
-                    </div>
-
-                    <div class="filter-group">
-                        <label for="date_fin">Date fin</label>
-                        <input type="date" name="date_fin" id="date_fin" value="<%= filters.date_fin || '' %>">
-                    </div>
-                </div>
-
-                <div class="filter-actions">
-                    <button type="submit" class="btn btn-primary">Appliquer les filtres</button>
-                    <a href="/transactions/graph" class="btn btn-secondary">Réinitialiser</a>
-                </div>
-            </form>
-        </div>
-
-        <!-- Graphique -->
+        <!-- Chart -->
         <div class="chart-container">
-            <div class="chart-legend">
-                <div class="legend-item">
-                    <div class="legend-color revenus"></div>
-                    <span class="legend-label">Revenus</span>
-                    <span class="legend-value"><%= totalRevenus.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' }) %></span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color depenses"></div>
-                    <span class="legend-label">Dépenses</span>
-                    <span class="legend-value"><%= Math.abs(totalDepenses).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' }) %></span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color profit"></div>
-                    <span class="legend-label">Profit</span>
-                    <span class="legend-value"><%= solde.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' }) %></span>
-                </div>
+            <div class="chart-wrapper">
+                <canvas id="financeChart"></canvas>
             </div>
-            <canvas id="transactionsChart"></canvas>
+            <div class="legend-container" id="customLegend"></div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // ✅ FIX : Utiliser 'nature' au lieu de 'type'
+        // Current filters state
+        let currentFilters = {
+            period: 'daily',
+            type: 'profit'
+        };
+
+        // Raw transactions data
         const transactions = <%- JSON.stringify(transactions) %>;
-        
-        // Variables globales
+        const categoriesRevenus = <%- JSON.stringify(categoriesRevenus) %>;
+        const categoriesDepenses = <%- JSON.stringify(categoriesDepenses) %>;
+
         let chart = null;
-        let currentPeriod = 'daily';
-        let isZoomed = false;
 
-        // Boutons de période
-        const periodButtons = document.querySelectorAll('.period-btn');
-        const zoomBtn = document.getElementById('zoomBtn');
-
-        periodButtons.forEach(btn => {
+        // Filter button handlers
+        document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', function() {
-                periodButtons.forEach(b => b.classList.remove('active'));
+                const filterType = this.dataset.filter;
+                const value = this.dataset.value;
+
+                // Update active state
+                document.querySelectorAll(`[data-filter="${filterType}"]`).forEach(b => {
+                    b.classList.remove('active');
+                });
                 this.classList.add('active');
-                currentPeriod = this.dataset.period;
-                isZoomed = false;
-                zoomBtn.classList.remove('active');
+
+                // Update filters
+                currentFilters[filterType] = value;
+
+                // Refresh chart
                 updateChart();
             });
         });
 
-        zoomBtn.addEventListener('click', function() {
-            isZoomed = !isZoomed;
-            this.classList.toggle('active');
-            updateChart();
-        });
-
-        function updateChart() {
-            const data = prepareChartData(currentPeriod, isZoomed);
-            
-            if (chart) {
-                chart.destroy();
-            }
-
-            const ctx = document.getElementById('transactionsChart').getContext('2d');
-            chart = new Chart(ctx, {
-                type: 'line',
-                data: data,
-                options: getChartOptions()
-            });
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('fr-FR', {
+                style: 'currency',
+                currency: 'EUR'
+            }).format(amount);
         }
 
-        function prepareChartData(period, zoomed) {
-            // Trier les transactions par date
-            const sortedTransactions = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
-
-            let groupedData = {};
-            let labels = [];
-
+        // Get date labels based on period
+        function getDateLabels(period) {
+            const labels = [];
             const now = new Date();
 
-            // Définir la plage de dates selon la période et le zoom
-            let startDate, endDate;
-            
-            if (zoomed) {
-                endDate = new Date();
+            for (let i = 11; i >= 0; i--) {
+                const date = new Date(now);
+                
                 switch(period) {
-                    case 'daily': // Aujourd'hui uniquement
-                        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    case 'daily':
+                        date.setDate(date.getDate() - i);
+                        labels.push(date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }));
                         break;
-                    case 'weekly': // Cette semaine
-                        const dayOfWeek = now.getDay();
-                        startDate = new Date(now);
-                        startDate.setDate(now.getDate() - dayOfWeek);
+                    case 'weekly':
+                        date.setDate(date.getDate() - (i * 7));
+                        const weekStart = new Date(date);
+                        weekStart.setDate(date.getDate() - date.getDay() + 1);
+                        labels.push(`S${getWeekNumber(weekStart)}`);
                         break;
-                    case 'monthly': // Ce mois (30 derniers jours)
-                        startDate = new Date(now);
-                        startDate.setDate(now.getDate() - 30);
+                    case 'monthly':
+                        date.setMonth(date.getMonth() - i);
+                        labels.push(date.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }));
                         break;
-                    case 'yearly': // Cette année
-                        startDate = new Date(now.getFullYear(), 0, 1);
-                        break;
-                }
-            } else {
-                endDate = new Date();
-                switch(period) {
-                    case 'daily': // 36 derniers jours
-                        startDate = new Date(now);
-                        startDate.setDate(now.getDate() - 36);
-                        break;
-                    case 'weekly': // 36 dernières semaines
-                        startDate = new Date(now);
-                        startDate.setDate(now.getDate() - (36 * 7));
-                        break;
-                    case 'monthly': // 36 derniers mois
-                        startDate = new Date(now);
-                        startDate.setMonth(now.getMonth() - 36);
-                        break;
-                    case 'yearly': // 36 dernières années
-                        startDate = new Date(now);
-                        startDate.setFullYear(now.getFullYear() - 36);
+                    case 'yearly':
+                        date.setFullYear(date.getFullYear() - i);
+                        labels.push(date.getFullYear().toString());
                         break;
                 }
             }
 
-            // Filtrer les transactions dans la plage
-            const filteredTransactions = sortedTransactions.filter(t => {
+            return labels;
+        }
+
+        // Get week number
+        function getWeekNumber(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+
+        // Get date range for a period point
+        function getDateRangeForPoint(index, period) {
+            const now = new Date();
+            const pointIndex = 11 - index;
+            let start, end;
+
+            switch(period) {
+                case 'daily':
+                    start = new Date(now);
+                    start.setDate(now.getDate() - pointIndex);
+                    start.setHours(0, 0, 0, 0);
+                    end = new Date(start);
+                    end.setHours(23, 59, 59, 999);
+                    break;
+                case 'weekly':
+                    start = new Date(now);
+                    start.setDate(now.getDate() - (pointIndex * 7));
+                    start.setDate(start.getDate() - start.getDay() + 1);
+                    start.setHours(0, 0, 0, 0);
+                    end = new Date(start);
+                    end.setDate(start.getDate() + 6);
+                    end.setHours(23, 59, 59, 999);
+                    break;
+                case 'monthly':
+                    start = new Date(now);
+                    start.setMonth(now.getMonth() - pointIndex);
+                    start.setDate(1);
+                    start.setHours(0, 0, 0, 0);
+                    end = new Date(start);
+                    end.setMonth(start.getMonth() + 1);
+                    end.setDate(0);
+                    end.setHours(23, 59, 59, 999);
+                    break;
+                case 'yearly':
+                    start = new Date(now);
+                    start.setFullYear(now.getFullYear() - pointIndex);
+                    start.setMonth(0, 1);
+                    start.setHours(0, 0, 0, 0);
+                    end = new Date(start);
+                    end.setFullYear(start.getFullYear() + 1);
+                    end.setMonth(0, 0);
+                    end.setHours(23, 59, 59, 999);
+                    break;
+            }
+
+            return { start, end };
+        }
+
+        // Process transactions data
+        function processTransactions() {
+            const period = currentFilters.period;
+            const type = currentFilters.type;
+            const labels = getDateLabels(period);
+
+            if (type === 'profit') {
+                return processProfitData(labels, period);
+            } else if (type === 'revenus') {
+                return processRevenusData(labels, period);
+            } else {
+                return processDepensesData(labels, period);
+            }
+        }
+
+        // Process profit data (3 simple lines)
+        function processProfitData(labels, period) {
+            const revenus = new Array(12).fill(0);
+            const depenses = new Array(12).fill(0);
+
+            transactions.forEach(t => {
                 const tDate = new Date(t.date);
-                return tDate >= startDate && tDate <= endDate;
-            });
-
-            // Grouper par période
-            filteredTransactions.forEach(t => {
-                const date = new Date(t.date);
-                let key;
-
-                switch(period) {
-                    case 'daily':
-                        key = date.toISOString().split('T')[0];
-                        break;
-                    case 'weekly':
-                        const weekStart = new Date(date);
-                        weekStart.setDate(date.getDate() - date.getDay());
-                        key = weekStart.toISOString().split('T')[0];
-                        break;
-                    case 'monthly':
-                        key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                        break;
-                    case 'yearly':
-                        key = `${date.getFullYear()}`;
-                        break;
-                }
-
-                if (!groupedData[key]) {
-                    groupedData[key] = { revenus: 0, depenses: 0, profit: 0 };
-                }
-
-                const montant = parseFloat(t.montant);
-                // ✅ FIX : Utiliser 'nature' au lieu de 'type'
-                if (t.nature === 'revenu') {
-                    groupedData[key].revenus += montant;
-                    groupedData[key].profit += montant;
-                } else {
-                    groupedData[key].depenses += Math.abs(montant);
-                    groupedData[key].profit -= Math.abs(montant);
+                
+                for (let i = 0; i < 12; i++) {
+                    const { start, end } = getDateRangeForPoint(i, period);
+                    
+                    if (tDate >= start && tDate <= end) {
+                        if (t.type === 'revenu') {
+                            revenus[i] += parseFloat(t.montant);
+                        } else {
+                            depenses[i] += parseFloat(t.montant);
+                        }
+                    }
                 }
             });
 
-            // Créer les labels et données cumulatives
-            const dates = Object.keys(groupedData).sort();
-            let cumulativeRevenus = 0;
-            let cumulativeDepenses = 0;
-            let cumulativeProfit = 0;
-
-            labels = dates.map(date => {
-                switch(period) {
-                    case 'daily':
-                        return new Date(date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
-                    case 'weekly':
-                        return `S${Math.ceil((new Date(date).getDate()) / 7)} ${new Date(date).toLocaleDateString('fr-FR', { month: 'short' })}`;
-                    case 'monthly':
-                        const [year, month] = date.split('-');
-                        return new Date(year, month - 1).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
-                    case 'yearly':
-                        return date;
-                }
-            });
-
-            const revenusData = dates.map(date => {
-                cumulativeRevenus += groupedData[date].revenus;
-                return cumulativeRevenus;
-            });
-
-            const depensesData = dates.map(date => {
-                cumulativeDepenses += groupedData[date].depenses;
-                return cumulativeDepenses;
-            });
-
-            const profitData = dates.map(date => {
-                cumulativeProfit += groupedData[date].profit;
-                return cumulativeProfit;
-            });
+            const profit = revenus.map((r, i) => r - depenses[i]);
 
             return {
-                labels: labels,
+                labels,
                 datasets: [
                     {
                         label: 'Revenus',
-                        data: revenusData,
+                        data: revenus,
                         borderColor: '#10b981',
                         backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        borderWidth: 3,
-                        tension: 0.4,
+                        borderWidth: 2,
                         fill: false,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
+                        tension: 0.4
                     },
                     {
                         label: 'Dépenses',
-                        data: depensesData,
+                        data: depenses,
                         borderColor: '#ef4444',
                         backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                        borderWidth: 3,
-                        tension: 0.4,
+                        borderWidth: 2,
                         fill: false,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
+                        tension: 0.4
                     },
                     {
                         label: 'Profit',
-                        data: profitData,
-                        borderColor: '#8b5cf6',
-                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                        borderWidth: 3,
-                        tension: 0.4,
+                        data: profit,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 2,
                         fill: false,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
+                        tension: 0.4
                     }
                 ]
             };
         }
 
-        function getChartOptions() {
-            return {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: {
-                    mode: 'index',
-                    intersect: false,
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        padding: 12,
-                        titleFont: {
-                            size: 14
-                        },
-                        bodyFont: {
-                            size: 13
-                        },
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                label += new Intl.NumberFormat('fr-FR', {
-                                    style: 'currency',
-                                    currency: 'EUR'
-                                }).format(context.parsed.y);
-                                return label;
-                            }
+        // Process revenus data with categories (stacked)
+        function processRevenusData(labels, period) {
+            // Map category ID to name
+            const categoryMap = {};
+            categoriesRevenus.forEach(cat => {
+                categoryMap[cat.id] = cat.nom;
+            });
+
+            // Initialize data structure for each category
+            const categoryData = {};
+            categoriesRevenus.forEach(cat => {
+                categoryData[cat.id] = new Array(12).fill(0);
+            });
+
+            // Process transactions
+            transactions.forEach(t => {
+                if (t.type === 'revenu' && t.categorie_id) {
+                    const tDate = new Date(t.date);
+                    
+                    for (let i = 0; i < 12; i++) {
+                        const { start, end } = getDateRangeForPoint(i, period);
+                        
+                        if (tDate >= start && tDate <= end) {
+                            categoryData[t.categorie_id][i] += parseFloat(t.montant);
                         }
                     }
-                },
-                scales: {
-                    x: {
-                        grid: {
+                }
+            });
+
+            // Create datasets (stacked area chart)
+            const colors = [
+                { border: '#10b981', bg: 'rgba(16, 185, 129, 0.5)' },
+                { border: '#3b82f6', bg: 'rgba(59, 130, 246, 0.5)' },
+                { border: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.5)' },
+                { border: '#ec4899', bg: 'rgba(236, 72, 153, 0.5)' },
+                { border: '#f59e0b', bg: 'rgba(245, 158, 11, 0.5)' },
+                { border: '#06b6d4', bg: 'rgba(6, 182, 212, 0.5)' },
+                { border: '#84cc16', bg: 'rgba(132, 204, 22, 0.5)' }
+            ];
+
+            const datasets = [];
+            let colorIndex = 0;
+
+            Object.keys(categoryData).forEach(catId => {
+                const color = colors[colorIndex % colors.length];
+                datasets.push({
+                    label: categoryMap[catId],
+                    data: categoryData[catId],
+                    borderColor: color.border,
+                    backgroundColor: color.bg,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                });
+                colorIndex++;
+            });
+
+            return { labels, datasets };
+        }
+
+        // Process depenses data with categories (stacked)
+        function processDepensesData(labels, period) {
+            // Map category ID to name
+            const categoryMap = {};
+            categoriesDepenses.forEach(cat => {
+                categoryMap[cat.id] = cat.nom;
+            });
+
+            // Initialize data structure for each category
+            const categoryData = {};
+            categoriesDepenses.forEach(cat => {
+                categoryData[cat.id] = new Array(12).fill(0);
+            });
+
+            // Process transactions
+            transactions.forEach(t => {
+                if (t.type === 'depense' && t.categorie_id) {
+                    const tDate = new Date(t.date);
+                    
+                    for (let i = 0; i < 12; i++) {
+                        const { start, end } = getDateRangeForPoint(i, period);
+                        
+                        if (tDate >= start && tDate <= end) {
+                            categoryData[t.categorie_id][i] += parseFloat(t.montant);
+                        }
+                    }
+                }
+            });
+
+            // Create datasets (stacked area chart)
+            const colors = [
+                { border: '#ef4444', bg: 'rgba(239, 68, 68, 0.5)' },
+                { border: '#f97316', bg: 'rgba(249, 115, 22, 0.5)' },
+                { border: '#eab308', bg: 'rgba(234, 179, 8, 0.5)' },
+                { border: '#84cc16', bg: 'rgba(132, 204, 22, 0.5)' },
+                { border: '#06b6d4', bg: 'rgba(6, 182, 212, 0.5)' },
+                { border: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.5)' },
+                { border: '#ec4899', bg: 'rgba(236, 72, 153, 0.5)' }
+            ];
+
+            const datasets = [];
+            let colorIndex = 0;
+
+            Object.keys(categoryData).forEach(catId => {
+                const color = colors[colorIndex % colors.length];
+                datasets.push({
+                    label: categoryMap[catId],
+                    data: categoryData[catId],
+                    borderColor: color.border,
+                    backgroundColor: color.bg,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                });
+                colorIndex++;
+            });
+
+            return { labels, datasets };
+        }
+
+        // Update stats
+        function updateStats() {
+            let totalRevenus = 0;
+            let totalDepenses = 0;
+
+            transactions.forEach(t => {
+                if (t.type === 'revenu') {
+                    totalRevenus += parseFloat(t.montant);
+                } else {
+                    totalDepenses += parseFloat(t.montant);
+                }
+            });
+
+            document.getElementById('total-revenus').textContent = formatCurrency(totalRevenus);
+            document.getElementById('total-depenses').textContent = formatCurrency(totalDepenses);
+            
+            const solde = totalRevenus - totalDepenses;
+            const soldeElement = document.getElementById('solde');
+            soldeElement.textContent = formatCurrency(solde);
+            
+            const soldeCard = soldeElement.closest('.stat-card');
+            soldeCard.classList.remove('positive', 'negative', 'neutral');
+            if (solde > 0) {
+                soldeCard.classList.add('positive');
+            } else if (solde < 0) {
+                soldeCard.classList.add('negative');
+            } else {
+                soldeCard.classList.add('neutral');
+            }
+        }
+
+        // Update chart
+        function updateChart() {
+            const chartData = processTransactions();
+
+            if (chart) {
+                chart.destroy();
+            }
+
+            const ctx = document.getElementById('financeChart').getContext('2d');
+            
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    stacked: currentFilters.type !== 'profit',
+                    plugins: {
+                        legend: {
                             display: false
                         },
-                        ticks: {
-                            maxRotation: 45,
-                            minRotation: 45,
-                            font: {
-                                size: 11
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
+                                }
                             }
                         }
                     },
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.05)'
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            }
                         },
-                        ticks: {
-                            callback: function(value) {
-                                return new Intl.NumberFormat('fr-FR', {
-                                    style: 'currency',
-                                    currency: 'EUR',
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 0
-                                }).format(value);
-                            },
-                            font: {
-                                size: 12
+                        y: {
+                            stacked: currentFilters.type !== 'profit',
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
                             }
                         }
                     }
                 }
-            };
+            });
+
+            // Update custom legend
+            updateLegend(chartData.datasets);
         }
 
-        // Initialiser le graphique au chargement
+        // Update custom legend
+        function updateLegend(datasets) {
+            const legendContainer = document.getElementById('customLegend');
+            legendContainer.innerHTML = '';
+
+            datasets.forEach(dataset => {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+
+                const color = document.createElement('div');
+                color.className = 'legend-color';
+                color.style.backgroundColor = dataset.borderColor;
+
+                const label = document.createElement('span');
+                label.className = 'legend-label';
+                label.textContent = dataset.label;
+
+                item.appendChild(color);
+                item.appendChild(label);
+                legendContainer.appendChild(item);
+            });
+        }
+
+        // Initialize
+        updateStats();
         updateChart();
     </script>
 </body>
 </html>
+
