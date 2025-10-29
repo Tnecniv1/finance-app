@@ -6,6 +6,9 @@ const { requireAuth } = require('../middleware/auth');
 // Toutes les routes nécessitent une authentification
 router.use(requireAuth);
 
+// ✨ NOUVELLE ROUTE : Vue graphique (DOIT être AVANT la route '/')
+router.get('/graph', TransactionController.graphView);
+
 // Afficher les transactions avec filtres et suggestions IA
 router.get('/', TransactionController.index);
 
