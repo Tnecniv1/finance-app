@@ -671,41 +671,6 @@
                 </form>
             </div>
 
-                    <div class="filters-row">
-                        <!-- Date début -->
-                        <div class="filter-group">
-                            <label for="date_debut">Du</label>
-                            <input 
-                                type="date" 
-                                id="date_debut" 
-                                name="date_debut"
-                                value="<%= filters.date_debut %>"
-                            >
-                        </div>
-
-                        <!-- Date fin -->
-                        <div class="filter-group">
-                            <label for="date_fin">Au</label>
-                            <input 
-                                type="date" 
-                                id="date_fin" 
-                                name="date_fin"
-                                value="<%= filters.date_fin %>"
-                            >
-                        </div>
-
-                        <!-- Boutons -->
-                        <div class="filter-group filter-actions">
-                            <button type="submit" class="btn btn-primary">
-                                🔍 Filtrer
-                            </button>
-                            <a href="/transactions" class="btn btn-secondary">
-                                ❌ Réinitialiser
-                            </a>
-                        </div>
-                    </div>
-                </form>
-            </div>
 
             <!-- Catégorisation en masse -->
             <% if (transactions.length > 0) { %>
