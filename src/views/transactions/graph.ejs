@@ -432,7 +432,7 @@
                     const { start, end } = getDateRangeForPoint(i, period);
                     
                     if (tDate >= start && tDate <= end) {
-                        if (t.type === 'revenu') {
+                        if (t.nature === 'revenu') {
                             revenus[i] += parseFloat(t.montant);
                         } else {
                             depenses[i] += parseFloat(t.montant);
@@ -493,7 +493,7 @@
 
             // Process transactions
             transactions.forEach(t => {
-                if (t.type === 'revenu' && t.categorie_id) {
+                if (t.nature === 'revenu' && t.categorie_id) {
                     const tDate = new Date(t.date);
                     
                     for (let i = 0; i < 12; i++) {
@@ -529,7 +529,8 @@
                     backgroundColor: color.bg,
                     borderWidth: 2,
                     fill: true,
-                    tension: 0.4
+                    tension: 0.4,
+                    stack: 'revenus'
                 });
                 colorIndex++;
             });
@@ -553,7 +554,7 @@
 
             // Process transactions
             transactions.forEach(t => {
-                if (t.type === 'depense' && t.categorie_id) {
+                if (t.nature === 'depense' && t.categorie_id) {
                     const tDate = new Date(t.date);
                     
                     for (let i = 0; i < 12; i++) {
@@ -589,7 +590,8 @@
                     backgroundColor: color.bg,
                     borderWidth: 2,
                     fill: true,
-                    tension: 0.4
+                    tension: 0.4,
+                    stack: 'depenses'
                 });
                 colorIndex++;
             });
@@ -603,7 +605,7 @@
             let totalDepenses = 0;
 
             transactions.forEach(t => {
-                if (t.type === 'revenu') {
+                if (t.nature === 'revenu') {
                     totalRevenus += parseFloat(t.montant);
                 } else {
                     totalDepenses += parseFloat(t.montant);
@@ -648,7 +650,6 @@
                         mode: 'index',
                         intersect: false,
                     },
-                    stacked: currentFilters.type !== 'profit',
                     plugins: {
                         legend: {
                             display: false
@@ -659,6 +660,9 @@
                                     return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
                                 }
                             }
+                        },
+                        filler: {
+                            propagate: true
                         }
                     },
                     scales: {
@@ -675,6 +679,11 @@
                                     return formatCurrency(value);
                                 }
                             }
+                        }
+                    },
+                    elements: {
+                        line: {
+                            tension: 0.4
                         }
                     }
                 }
@@ -713,4 +722,3 @@
     </script>
 </body>
 </html>
-
