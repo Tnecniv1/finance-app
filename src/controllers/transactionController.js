@@ -101,11 +101,18 @@ class TransactionController {
       const transactionId = req.params.id;
       const { sous_categorie_id, nature } = req.body;
 
-      // Vérifier que la transaction appartient à l'utilisateur
+      // ✅ FIX 1 : Récupérer la transaction AVANT mise à jour
       const transaction = await Transaction.findById(transactionId, userId);
       if (!transaction) {
         return res.redirect('/transactions?error=Transaction introuvable');
       }
+
+      // ✅ FIX 2 : Log pour debug
+      console.log('🔍 Transaction récupérée:', {
+        id: transaction.id,
+        objet: transaction.objet,
+        montant: transaction.montant
+      });
 
       // Mettre à jour la catégorie
       await Transaction.updateCategory(
@@ -115,17 +122,31 @@ class TransactionController {
         sous_categorie_id
       );
 
+      // ✅ FIX 3 : Créer un objet transaction enrichi AVEC la nouvelle catégorie
+      const enrichedTransaction = {
+        ...transaction,
+        nature: nature,
+        sous_categorie_revenu_id: nature === 'revenu' ? sous_categorie_id : null,
+        sous_categorie_depense_id: nature === 'depense' ? sous_categorie_id : null
+      };
+
+      console.log('🤖 Apprentissage IA avec:', {
+        objet: enrichedTransaction.objet,
+        nature: nature,
+        sous_categorie_id: sous_categorie_id
+      });
+
       // 🤖 APPRENTISSAGE IA : Apprendre de cette catégorisation
       await CategorizationAI.learnFromTransaction(
         userId,
-        transaction,
+        enrichedTransaction,
         sous_categorie_id,
         nature
       );
 
       res.redirect('/transactions?success=Transaction catégorisée');
     } catch (error) {
-      console.error('Erreur catégorisation:', error);
+      console.error('❌ Erreur catégorisation:', error);
       res.redirect('/transactions?error=Erreur lors de la catégorisation');
     }
   }
@@ -150,7 +171,7 @@ class TransactionController {
       let success = 0;
       for (const transactionId of transaction_ids) {
         try {
-          // Récupérer la transaction
+          // ✅ FIX : Récupérer la transaction AVANT mise à jour
           const transaction = await Transaction.findById(transactionId, userId);
           if (!transaction) continue;
 
@@ -162,10 +183,18 @@ class TransactionController {
             sous_categorie_id
           );
 
+          // ✅ FIX : Créer un objet enrichi avec la nouvelle catégorie
+          const enrichedTransaction = {
+            ...transaction,
+            nature: nature,
+            sous_categorie_revenu_id: nature === 'revenu' ? sous_categorie_id : null,
+            sous_categorie_depense_id: nature === 'depense' ? sous_categorie_id : null
+          };
+
           // 🤖 APPRENTISSAGE IA
           await CategorizationAI.learnFromTransaction(
             userId,
-            transaction,
+            enrichedTransaction,
             sous_categorie_id,
             nature
           );
@@ -224,13 +253,23 @@ class TransactionController {
           : suggestion.suggested_sous_categorie_depense_id
       );
 
-      // Récupérer la transaction pour l'apprentissage
+      // ✅ FIX : Récupérer la transaction AVANT d'enrichir
       const transaction = await Transaction.findById(suggestion.transaction_id, userId);
       
+      // ✅ FIX : Créer un objet enrichi
+      const enrichedTransaction = {
+        ...transaction,
+        nature: suggestion.suggested_nature,
+        sous_categorie_revenu_id: suggestion.suggested_nature === 'revenu' 
+          ? suggestion.suggested_sous_categorie_revenu_id : null,
+        sous_categorie_depense_id: suggestion.suggested_nature === 'depense' 
+          ? suggestion.suggested_sous_categorie_depense_id : null
+      };
+
       // Renforcer l'apprentissage (double la confiance)
       await CategorizationAI.learnFromTransaction(
         userId,
-        transaction,
+        enrichedTransaction,
         suggestion.suggested_nature === 'revenu' 
           ? suggestion.suggested_sous_categorie_revenu_id 
           : suggestion.suggested_sous_categorie_depense_id,
