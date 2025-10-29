@@ -351,7 +351,13 @@ class TransactionController {
       const transactions = await Transaction.findWithFilters(filters);
 
       // Récupérer les catégories pour les filtres
-      const categories = await Category.getAllWithSubcategories();
+      const categoriesData = await Category.getAllWithSubcategories();
+      
+      // ✅ FIX : Fusionner les catégories revenus et dépenses en un seul tableau
+      const categories = [
+        ...(categoriesData.revenus || []),
+        ...(categoriesData.depenses || [])
+      ];
 
       // Calculer les totaux
       let totalRevenus = 0;
