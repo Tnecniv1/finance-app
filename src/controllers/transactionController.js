@@ -321,6 +321,73 @@ class TransactionController {
       res.redirect('/transactions?error=Erreur lors du chargement des stats');
     }
   }
+
+  /**
+   * ✨ NOUVELLE FONCTION : Afficher la vue graphique des transactions
+   */
+  static async graphView(req, res) {
+    try {
+      const userId = req.session.userId;
+      const pseudo = req.session.pseudo;
+
+      // Récupérer les paramètres de filtrage (identiques à index)
+      const {
+        type,
+        categorie,
+        date_debut,
+        date_fin
+      } = req.query;
+
+      // Construire les filtres
+      const filters = {
+        userId: userId,
+        nature: type || null,
+        categorieId: categorie || null,
+        dateDebut: date_debut || null,
+        dateFin: date_fin || null
+      };
+
+      // Récupérer les transactions filtrées
+      const transactions = await Transaction.findWithFilters(filters);
+
+      // Récupérer les catégories pour les filtres
+      const categories = await Category.getAllWithSubcategories();
+
+      // Calculer les totaux
+      let totalRevenus = 0;
+      let totalDepenses = 0;
+
+      transactions.forEach(t => {
+        const montant = parseFloat(t.montant);
+        if (t.nature === 'revenu') {
+          totalRevenus += montant;
+        } else {
+          totalDepenses += Math.abs(montant);
+        }
+      });
+
+      const solde = totalRevenus - totalDepenses;
+
+      res.render('transactions/graph', {
+        transactions,
+        categories,
+        totalRevenus,
+        totalDepenses,
+        solde,
+        pseudo,
+        filters: {
+          type: type || '',
+          categorie: categorie || '',
+          date_debut: date_debut || '',
+          date_fin: date_fin || '',
+          sort: 'date_desc'
+        }
+      });
+    } catch (error) {
+      console.error('Erreur chargement graphique:', error);
+      res.redirect('/transactions?error=Erreur lors du chargement du graphique');
+    }
+  }
 }
 
 module.exports = TransactionController;

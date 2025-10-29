@@ -12,6 +12,13 @@
         <header class="header">
             <div class="header-content">
                 <h1>💰 Finance App</h1>
+
+                <!-- Boutons de navigation -->
+                <div class="view-switcher">
+                    <a href="/transactions" class="view-btn active">📋 Vue Liste</a>
+                    <a href="/transactions/graph" class="view-btn">📈 Vue Graphique</a>
+                </div>
+
                 <div class="user-info">
                     <span>Bonjour, <strong><%= pseudo %></strong></span>
                     <a href="/transactions/import-csv" class="btn btn-small">📥 Importer CSV</a>
@@ -1017,6 +1024,77 @@
     </script>
 
     <style>
+        /* ==========================================
+           BOUTONS DE NAVIGATION VUE LISTE/GRAPHIQUE
+        ========================================== */
+        .view-switcher {
+            display: flex;
+            gap: 10px;
+            margin: 0 auto;
+        }
+
+        .view-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .view-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .view-btn:not(.active) {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .view-btn:not(.active):hover {
+            background: #e0e0e0;
+        }
+
+        /* Adapter le header pour les boutons */
+        .header-content {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            gap: 20px !important;
+            flex-wrap: wrap !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: stretch !important;
+            }
+
+            .view-switcher {
+                width: 100%;
+                order: 2;
+            }
+
+            .view-btn {
+                flex: 1;
+                text-align: center;
+            }
+
+            .user-info {
+                order: 3;
+                width: 100%;
+                justify-content: center !important;
+            }
+        }
+
+        /* Filtres */
+
+
         /* Filtres */
         .filters-form {
             display: flex;
