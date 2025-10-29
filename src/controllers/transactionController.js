@@ -353,11 +353,9 @@ class TransactionController {
       // Récupérer les catégories pour les filtres
       const categoriesData = await Category.getAllWithSubcategories();
       
-      // ✅ FIX : Fusionner les catégories revenus et dépenses en un seul tableau
-      const categories = [
-        ...(categoriesData.revenus || []),
-        ...(categoriesData.depenses || [])
-      ];
+      // ✅ FIX : Garder les catégories séparées pour les graphiques
+      const categoriesRevenus = categoriesData.revenus || [];
+      const categoriesDepenses = categoriesData.depenses || [];
 
       // Calculer les totaux
       let totalRevenus = 0;
@@ -376,7 +374,8 @@ class TransactionController {
 
       res.render('transactions/graph', {
         transactions,
-        categories,
+        categoriesRevenus,    // ✅ Passer séparément
+        categoriesDepenses,   // ✅ Passer séparément
         totalRevenus,
         totalDepenses,
         solde,
