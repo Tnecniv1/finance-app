@@ -146,9 +146,11 @@
             </div>
             <% } %>
 
-            <!-- Styles CSS pour l'IA -->
+<!-- Styles CSS -->
             <style>
-                /* Carte de contrôle IA */
+                /* ==========================================
+                   CARTE DE CONTRÔLE IA
+                ========================================== */
                 .ai-control-card {
                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                     color: white;
@@ -196,10 +198,13 @@
                     transform: translateY(-2px);
                 }
 
-                /* Carte des suggestions */
+                /* ==========================================
+                   CARTE DES SUGGESTIONS IA
+                ========================================== */
                 .ai-suggestions-card {
                     background: #f8f9fa;
                     border: 2px solid #667eea;
+                    margin-bottom: 20px;
                 }
 
                 .ai-suggestions-header {
@@ -295,8 +300,9 @@
                 }
 
                 .suggestion-arrow {
-                    color: #9ca3af;
-                    font-size: 1.2rem;
+                    color: #667eea;
+                    font-size: 1.5rem;
+                    font-weight: bold;
                 }
 
                 .suggestion-category-info {
@@ -307,7 +313,7 @@
 
                 .category-badge {
                     padding: 6px 14px;
-                    border-radius: 8px;
+                    border-radius: 20px;
                     font-weight: 600;
                     font-size: 0.9rem;
                 }
@@ -323,32 +329,29 @@
                 }
 
                 .confidence-score {
-                    padding: 4px 10px;
-                    border-radius: 6px;
-                    font-weight: 600;
+                    padding: 4px 12px;
+                    border-radius: 15px;
+                    font-weight: 700;
                     font-size: 0.85rem;
                 }
 
                 .confidence-score.confidence-90,
-                .confidence-score.confidence-95 {
+                .confidence-score.confidence-95,
+                .confidence-score.confidence-100 {
                     background: #d1fae5;
                     color: #065f46;
                 }
 
+                .confidence-score.confidence-75,
                 .confidence-score.confidence-80,
                 .confidence-score.confidence-85 {
-                    background: #dbeafe;
-                    color: #1e40af;
-                }
-
-                .confidence-score.confidence-70,
-                .confidence-score.confidence-75 {
                     background: #fef3c7;
                     color: #92400e;
                 }
 
                 .confidence-score.confidence-60,
                 .confidence-score.confidence-65,
+                .confidence-score.confidence-70,
                 .confidence-score.confidence-50,
                 .confidence-score.confidence-55 {
                     background: #fee2e2;
@@ -356,7 +359,7 @@
                 }
 
                 .suggestion-keyword {
-                    color: #6b7280;
+                    color: #667eea;
                     font-size: 0.85rem;
                     font-style: italic;
                 }
@@ -367,34 +370,143 @@
                 }
 
                 .btn-icon {
-                    padding: 12px 16px;
+                    width: 45px;
+                    height: 45px;
                     border: none;
                     border-radius: 10px;
                     cursor: pointer;
                     font-size: 1.3rem;
                     transition: all 0.2s;
-                    background: #f3f4f6;
+                }
+
+                .btn-accept {
+                    background: #d1fae5;
                 }
 
                 .btn-accept:hover {
-                    background: #d1fae5;
-                    transform: scale(1.15);
+                    background: #10b981;
+                    transform: scale(1.1);
+                }
+
+                .btn-reject {
+                    background: #fee2e2;
                 }
 
                 .btn-reject:hover {
-                    background: #fee2e2;
-                    transform: scale(1.15);
+                    background: #ef4444;
+                    transform: scale(1.1);
                 }
 
-                /* Responsive */
+                /* ==========================================
+                   FILTRES OPTIMISÉS (2 LIGNES)
+                ========================================== */
+                .filters-form {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 15px;
+                }
+
+                /* Ligne 1 : 4 champs */
+                .filters-row-main {
+                    display: grid;
+                    grid-template-columns: 2fr 1.2fr 1.5fr 1.5fr;
+                    gap: 12px;
+                    align-items: end;
+                }
+
+                /* Ligne 2 : 2 dates + boutons */
+                .filters-row-dates {
+                    display: grid;
+                    grid-template-columns: 1.5fr 1.5fr auto;
+                    gap: 12px;
+                    align-items: end;
+                }
+
+                .filter-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 5px;
+                }
+
+                .filter-group label {
+                    font-weight: 600;
+                    font-size: 0.9rem;
+                    color: #333;
+                }
+
+                .filter-group input,
+                .filter-group select {
+                    padding: 10px;
+                    border: 2px solid #e5e7eb;
+                    border-radius: 8px;
+                    font-size: 1rem;
+                    transition: border-color 0.2s;
+                }
+
+                .filter-group input:focus,
+                .filter-group select:focus {
+                    outline: none;
+                    border-color: #667eea;
+                }
+
+                /* Boutons compacts côte à côte */
+                .filter-actions {
+                    display: flex;
+                    gap: 8px;
+                    align-items: flex-end;
+                }
+
+                .btn-filter,
+                .btn-reset {
+                    padding: 10px 18px;
+                    border: none;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    font-size: 0.95rem;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    text-decoration: none;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    white-space: nowrap;
+                }
+
+                .btn-filter {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    min-width: 110px;
+                }
+
+                .btn-filter:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+                }
+
+                .btn-reset {
+                    background: #f3f4f6;
+                    color: #374151;
+                    min-width: 130px;
+                }
+
+                .btn-reset:hover {
+                    background: #e5e7eb;
+                    transform: translateY(-2px);
+                }
+
+                /* ==========================================
+                   RESPONSIVE MOBILE
+                ========================================== */
                 @media (max-width: 768px) {
+                    /* IA */
                     .ai-control-header {
                         flex-direction: column;
-                        align-items: stretch;
+                        align-items: flex-start;
                     }
 
                     .ai-control-actions {
                         flex-direction: column;
+                        width: 100%;
                     }
 
                     .ai-suggestion-item {
@@ -407,202 +519,29 @@
                     }
 
                     .suggestion-actions {
-                        justify-content: flex-end;
+                        width: 100%;
+                        justify-content: center;
+                    }
+
+                    /* Filtres */
+                    .filters-row-main {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .filters-row-dates {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .filter-actions {
+                        width: 100%;
+                    }
+
+                    .btn-filter,
+                    .btn-reset {
+                        flex: 1;
                     }
                 }
             </style>
-
-            <style>
-                .ai-suggestions-card {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    margin-bottom: 20px;
-                }
-
-                .ai-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 20px;
-                }
-
-                .ai-header h2 {
-                    color: white;
-                    margin: 0;
-                }
-
-                .ai-badge {
-                    background: rgba(255, 255, 255, 0.2);
-                    padding: 5px 15px;
-                    border-radius: 20px;
-                    font-size: 0.9rem;
-                    font-weight: 600;
-                }
-
-                .ai-suggestions-list {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 15px;
-                    margin-bottom: 20px;
-                }
-
-                .ai-suggestion-item {
-                    background: white;
-                    border-radius: 12px;
-                    padding: 15px;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    gap: 15px;
-                    transition: transform 0.2s;
-                }
-
-                .ai-suggestion-item:hover {
-                    transform: translateX(5px);
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-                }
-
-                .suggestion-info {
-                    flex: 1;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 8px;
-                }
-
-                .suggestion-transaction {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
-
-                .suggestion-description {
-                    color: #333;
-                    font-weight: 600;
-                    font-size: 0.95rem;
-                }
-
-                .suggestion-amount {
-                    font-weight: bold;
-                    font-size: 1rem;
-                }
-
-                .suggestion-amount.revenu {
-                    color: #10b981;
-                }
-
-                .suggestion-amount.depense {
-                    color: #ef4444;
-                }
-
-                .suggestion-category {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    color: #666;
-                    font-size: 0.9rem;
-                }
-
-                .confidence-badge {
-                    background: #f3f4f6;
-                    color: #666;
-                    padding: 4px 10px;
-                    border-radius: 6px;
-                    font-size: 0.85rem;
-                    font-weight: 600;
-                }
-
-                .confidence-badge[data-confidence*="0.9"],
-                .confidence-badge[data-confidence*="0.8"] {
-                    background: #d1fae5;
-                    color: #065f46;
-                }
-
-                .confidence-badge[data-confidence*="0.7"],
-                .confidence-badge[data-confidence*="0.6"] {
-                    background: #fef3c7;
-                    color: #92400e;
-                }
-
-                .category-label {
-                    padding: 4px 12px;
-                    border-radius: 6px;
-                    font-weight: 600;
-                    font-size: 0.85rem;
-                }
-
-                .category-label.revenu {
-                    background: #d1fae5;
-                    color: #065f46;
-                }
-
-                .category-label.depense {
-                    background: #fee2e2;
-                    color: #991b1b;
-                }
-
-                .suggestion-meta {
-                    color: #999;
-                    font-size: 0.85rem;
-                    font-style: italic;
-                }
-
-                .suggestion-actions {
-                    display: flex;
-                    gap: 8px;
-                }
-
-                .btn-suggestion {
-                    padding: 10px 16px;
-                    border: none;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-size: 1.2rem;
-                    transition: all 0.2s;
-                    background: #f3f4f6;
-                }
-
-                .btn-accept:hover {
-                    background: #d1fae5;
-                    transform: scale(1.1);
-                }
-
-                .btn-reject:hover {
-                    background: #fee2e2;
-                    transform: scale(1.1);
-                }
-
-                .ai-footer {
-                    display: flex;
-                    gap: 10px;
-                    padding-top: 15px;
-                    border-top: 1px solid rgba(255, 255, 255, 0.2);
-                }
-
-                .ai-footer .btn {
-                    background: rgba(255, 255, 255, 0.2);
-                    color: white;
-                    border: 1px solid rgba(255, 255, 255, 0.3);
-                }
-
-                .ai-footer .btn:hover {
-                    background: rgba(255, 255, 255, 0.3);
-                }
-
-                @media (max-width: 768px) {
-                    .ai-suggestion-item {
-                        flex-direction: column;
-                        align-items: stretch;
-                    }
-
-                    .suggestion-actions {
-                        justify-content: flex-end;
-                    }
-                }
-            </style>
-
-
-
-
 
 
             <!-- Messages -->
@@ -619,10 +558,11 @@
             <% } %>
 
             <!-- Filtres -->
-            <div class="card">
+<div class="card">
                 <h2>🔍 Filtrer les transactions</h2>
                 <form action="/transactions" method="GET" class="filters-form">
-                    <div class="filters-row">
+                    <!-- Ligne 1 : Recherche + Type + Catégorie + Sous-catégorie -->
+                    <div class="filters-row-main">
                         <!-- Recherche -->
                         <div class="filter-group">
                             <label for="recherche">Recherche</label>
@@ -650,14 +590,14 @@
                             <label for="categorie">Catégorie</label>
                             <select id="categorie" name="categorie" onchange="updateSubcategoryFilter()">
                                 <option value="">Toutes</option>
-                                <optgroup label="REVENUS" id="revenus-categories">
+                                <optgroup label="💰 REVENUS" id="revenus-categories">
                                     <% categories.revenus.forEach(cat => { %>
                                         <option value="<%= cat.id %>" <%= filters.categorie == cat.id ? 'selected' : '' %>>
                                             <%= cat.nom %>
                                         </option>
                                     <% }); %>
                                 </optgroup>
-                                <optgroup label="DÉPENSES" id="depenses-categories">
+                                <optgroup label="💸 DÉPENSES" id="depenses-categories">
                                     <% categories.depenses.forEach(cat => { %>
                                         <option value="<%= cat.id %>" <%= filters.categorie == cat.id ? 'selected' : '' %>>
                                             <%= cat.nom %>
@@ -672,7 +612,7 @@
                             <label for="sous_categorie">Sous-catégorie</label>
                             <select id="sous_categorie" name="sous_categorie">
                                 <option value="">Toutes</option>
-                                <optgroup label="REVENUS" id="revenus-subcategories">
+                                <optgroup label="💰 REVENUS" id="revenus-subcategories">
                                     <% categories.revenus.forEach(cat => { %>
                                         <% cat.sous_categories.forEach(sc => { %>
                                             <option value="<%= sc.id %>" data-parent="<%= cat.id %>" data-nature="revenu" <%= filters.sous_categorie == sc.id ? 'selected' : '' %>>
@@ -681,7 +621,7 @@
                                         <% }); %>
                                     <% }); %>
                                 </optgroup>
-                                <optgroup label="DÉPENSES" id="depenses-subcategories">
+                                <optgroup label="💸 DÉPENSES" id="depenses-subcategories">
                                     <% categories.depenses.forEach(cat => { %>
                                         <% cat.sous_categories.forEach(sc => { %>
                                             <option value="<%= sc.id %>" data-parent="<%= cat.id %>" data-nature="depense" <%= filters.sous_categorie == sc.id ? 'selected' : '' %>>
@@ -693,6 +633,43 @@
                             </select>
                         </div>
                     </div>
+
+                    <!-- Ligne 2 : Dates + Boutons compacts -->
+                    <div class="filters-row-dates">
+                        <!-- Date début -->
+                        <div class="filter-group">
+                            <label for="date_debut">Du</label>
+                            <input 
+                                type="date" 
+                                id="date_debut" 
+                                name="date_debut"
+                                value="<%= filters.date_debut %>"
+                            >
+                        </div>
+
+                        <!-- Date fin -->
+                        <div class="filter-group">
+                            <label for="date_fin">Au</label>
+                            <input 
+                                type="date" 
+                                id="date_fin" 
+                                name="date_fin"
+                                value="<%= filters.date_fin %>"
+                            >
+                        </div>
+
+                        <!-- Boutons compacts côte à côte -->
+                        <div class="filter-actions">
+                            <button type="submit" class="btn-filter">
+                                🔍 Filtrer
+                            </button>
+                            <a href="/transactions" class="btn-reset">
+                                ✖️ Réinitialiser
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
 
                     <div class="filters-row">
                         <!-- Date début -->
@@ -730,7 +707,6 @@
                 </form>
             </div>
 
-            <!-- Suite dans le prochain message... -->
             <!-- Catégorisation en masse -->
             <% if (transactions.length > 0) { %>
             <div class="card">
