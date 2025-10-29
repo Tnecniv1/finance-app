@@ -493,14 +493,17 @@
 
             // Process transactions
             transactions.forEach(t => {
-                if (t.nature === 'revenu' && t.categorie_id) {
+                if (t.nature === 'revenu' && t.sous_categorie_revenu && t.sous_categorie_revenu.categorie_revenu_id) {
                     const tDate = new Date(t.date);
+                    const categorieId = t.sous_categorie_revenu.categorie_revenu_id;
                     
                     for (let i = 0; i < 12; i++) {
                         const { start, end } = getDateRangeForPoint(i, period);
                         
                         if (tDate >= start && tDate <= end) {
-                            categoryData[t.categorie_id][i] += parseFloat(t.montant);
+                            if (categoryData[categorieId]) {
+                                categoryData[categorieId][i] += parseFloat(t.montant);
+                            }
                         }
                     }
                 }
@@ -554,14 +557,17 @@
 
             // Process transactions
             transactions.forEach(t => {
-                if (t.nature === 'depense' && t.categorie_id) {
+                if (t.nature === 'depense' && t.sous_categorie_depense && t.sous_categorie_depense.categorie_depense_id) {
                     const tDate = new Date(t.date);
+                    const categorieId = t.sous_categorie_depense.categorie_depense_id;
                     
                     for (let i = 0; i < 12; i++) {
                         const { start, end } = getDateRangeForPoint(i, period);
                         
                         if (tDate >= start && tDate <= end) {
-                            categoryData[t.categorie_id][i] += parseFloat(t.montant);
+                            if (categoryData[categorieId]) {
+                                categoryData[categorieId][i] += parseFloat(t.montant);
+                            }
                         }
                     }
                 }
