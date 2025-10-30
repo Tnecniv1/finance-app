@@ -309,7 +309,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 80px 40px;
+            padding: 140px 40px 60px 40px;
         }
 
         .gauge-container {
@@ -372,15 +372,15 @@
             transform: translateX(-50%);
         }
 
+        .cursor-revenus {
+            bottom: calc(100% + 80px);
+        }
+
         .cursor-depenses {
-            bottom: calc(100% + 20px);
+            bottom: calc(100% + 50px);
         }
 
         .cursor-profit {
-            top: calc(100% + 20px);
-        }
-
-        .cursor-revenus {
             bottom: calc(100% + 20px);
         }
 
@@ -391,19 +391,22 @@
             border-style: solid;
         }
 
-        .cursor-depenses::before {
+        .cursor-revenus::before,
+        .cursor-depenses::before,
+        .cursor-profit::before {
             border-width: 12px 8px 0 8px;
+        }
+
+        .cursor-revenus::before {
+            border-color: #10b981 transparent transparent transparent;
+        }
+
+        .cursor-depenses::before {
             border-color: #ef4444 transparent transparent transparent;
         }
 
         .cursor-profit::before {
-            border-width: 0 8px 12px 8px;
-            border-color: transparent transparent #8b5cf6 transparent;
-        }
-
-        .cursor-revenus::before {
-            border-width: 12px 8px 0 8px;
-            border-color: #10b981 transparent transparent transparent;
+            border-color: #8b5cf6 transparent transparent transparent;
         }
 
         .cursor-label {
@@ -1123,5 +1126,4 @@
     </script>
 </body>
 </html>
-
 
