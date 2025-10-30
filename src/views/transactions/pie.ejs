@@ -277,9 +277,9 @@
                 <div class="filter-group">
                     <label>Période</label>
                     <div class="filter-buttons">
-                        <button class="filter-btn active" data-filter="period" data-value="daily">Journalier</button>
+                        <button class="filter-btn" data-filter="period" data-value="daily">Journalier</button>
                         <button class="filter-btn" data-filter="period" data-value="weekly">Hebdomadaire</button>
-                        <button class="filter-btn" data-filter="period" data-value="monthly">Mensuel</button>
+                        <button class="filter-btn active" data-filter="period" data-value="monthly">Mensuel</button>
                         <button class="filter-btn" data-filter="period" data-value="yearly">Annuel</button>
                     </div>
                 </div>
@@ -327,7 +327,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Current filter state
-        let currentPeriod = 'daily';
+        let currentPeriod = 'monthly';  // Default to monthly to match the active button
 
         // Raw data
         const transactions = <%- JSON.stringify(transactions) %>;
