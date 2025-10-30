@@ -256,6 +256,203 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Volatility Gauge Styles */
+        .volatility-container {
+            margin-bottom: 20px;
+        }
+
+        .volatility-card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .volatility-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .volatility-header h2 {
+            color: #333;
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .tendency-badge {
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .tendency-badge.creation {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .tendency-badge.destruction {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .tendency-badge.stagnation {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .gauge-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 500px;
+            padding: 40px 0;
+        }
+
+        .gauge-container {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            position: relative;
+        }
+
+        .gauge-scale {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 400px;
+            padding-right: 10px;
+        }
+
+        .scale-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .gauge-bar {
+            width: 8px;
+            height: 400px;
+            background: linear-gradient(to bottom, #10b981 0%, #10b981 25%, #e5e7eb 50%, #ef4444 100%);
+            border-radius: 4px;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .gauge-zero-line {
+            position: absolute;
+            top: 50%;
+            left: -10px;
+            right: -10px;
+            height: 3px;
+            background: #1f2937;
+            transform: translateY(-50%);
+        }
+
+        .gauge-cursors {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 400px;
+            pointer-events: none;
+        }
+
+        .cursor {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cursor-depenses {
+            right: calc(100% + 60px);
+        }
+
+        .cursor-profit {
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .cursor-revenus {
+            left: calc(100% + 60px);
+        }
+
+        .cursor::before {
+            content: '';
+            width: 0;
+            height: 0;
+            border-style: solid;
+        }
+
+        .cursor-depenses::before {
+            border-width: 8px 12px 8px 0;
+            border-color: transparent #ef4444 transparent transparent;
+        }
+
+        .cursor-profit::before {
+            border-width: 8px 0 8px 12px;
+            border-color: transparent transparent transparent #8b5cf6;
+        }
+
+        .cursor-revenus::before {
+            border-width: 8px 0 8px 12px;
+            border-color: transparent transparent transparent #10b981;
+        }
+
+        .cursor-label {
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .cursor-depenses .cursor-label {
+            color: #ef4444;
+        }
+
+        .cursor-profit .cursor-label {
+            color: #8b5cf6;
+        }
+
+        .cursor-revenus .cursor-label {
+            color: #10b981;
+        }
+
+        .cursor-value {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 4px 12px;
+            border-radius: 8px;
+            background: #f3f4f6;
+        }
+
+        .volatility-legend {
+            margin-top: 40px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .volatility-legend p {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .volatility-legend ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #666;
+        }
+
+        .volatility-legend li {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
@@ -274,6 +471,14 @@
         <!-- Filters -->
         <div class="filters-container">
             <div class="filters-row">
+                <div class="filter-group">
+                    <label>Mode</label>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-filter="mode" data-value="moyenne">Moyenne</button>
+                        <button class="filter-btn" data-filter="mode" data-value="volatilite">Volatilité</button>
+                    </div>
+                </div>
+
                 <div class="filter-group">
                     <label>Période</label>
                     <div class="filter-buttons">
@@ -302,8 +507,8 @@
             </div>
         </div>
 
-        <!-- Charts -->
-        <div class="charts-container">
+        <!-- Charts (Moyenne mode) -->
+        <div class="charts-container" id="chartsContainer">
             <!-- Revenus Pie Chart -->
             <div class="chart-card">
                 <h2>💰 Revenus par Catégorie</h2>
@@ -322,12 +527,75 @@
                 <div class="legend-container" id="depensesLegend"></div>
             </div>
         </div>
+
+        <!-- Volatility Gauge (Volatilité mode) -->
+        <div class="volatility-container" id="volatilityContainer" style="display: none;">
+            <div class="volatility-card">
+                <div class="volatility-header">
+                    <h2>📊 Analyse de Volatilité</h2>
+                    <div class="tendency-badge" id="tendencyBadge">
+                        <span id="tendencyText">Tendance à la stagnation</span>
+                    </div>
+                </div>
+
+                <div class="gauge-wrapper">
+                    <!-- Vertical gauge -->
+                    <div class="gauge-container">
+                        <!-- Scale markers -->
+                        <div class="gauge-scale">
+                            <span class="scale-label">+2%</span>
+                            <span class="scale-label">+1%</span>
+                            <span class="scale-label">0%</span>
+                            <span class="scale-label">-1%</span>
+                            <span class="scale-label">-2%</span>
+                        </div>
+
+                        <!-- Vertical bar -->
+                        <div class="gauge-bar">
+                            <div class="gauge-zero-line"></div>
+                        </div>
+
+                        <!-- Cursors -->
+                        <div class="gauge-cursors">
+                            <!-- Dépenses (left) -->
+                            <div class="cursor cursor-depenses" id="cursorDepenses">
+                                <div class="cursor-label">🔴 Dépenses</div>
+                                <div class="cursor-value" id="valueDepenses">0%</div>
+                            </div>
+
+                            <!-- Profit (center) -->
+                            <div class="cursor cursor-profit" id="cursorProfit">
+                                <div class="cursor-label">🟣 Profit</div>
+                                <div class="cursor-value" id="valueProfit">0%</div>
+                            </div>
+
+                            <!-- Revenus (right) -->
+                            <div class="cursor cursor-revenus" id="cursorRevenus">
+                                <div class="cursor-label">🟢 Revenus</div>
+                                <div class="cursor-value" id="valueRevenus">0%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legend/Explanation -->
+                <div class="volatility-legend">
+                    <p><strong>Interprétation :</strong></p>
+                    <ul>
+                        <li>Curseur vers le <strong>haut</strong> (positif) → Croissance</li>
+                        <li>Curseur vers le <strong>bas</strong> (négatif) → Décroissance</li>
+                        <li>Position au <strong>centre</strong> (0%) → Stabilité</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Current filter state
         let currentPeriod = 'monthly';  // Default to monthly to match the active button
+        let currentMode = 'moyenne';  // Default to moyenne
 
         // Raw data
         const transactions = <%- JSON.stringify(transactions) %>;
@@ -350,12 +618,41 @@
                 this.classList.add('active');
 
                 // Update filter
-                currentPeriod = value;
+                if (filterType === 'period') {
+                    currentPeriod = value;
+                } else if (filterType === 'mode') {
+                    currentMode = value;
+                    toggleView();
+                }
 
-                // Refresh charts
-                updateCharts();
+                // Refresh display
+                updateDisplay();
             });
         });
+
+        // Toggle between Moyenne and Volatilité views
+        function toggleView() {
+            const chartsContainer = document.getElementById('chartsContainer');
+            const volatilityContainer = document.getElementById('volatilityContainer');
+
+            if (currentMode === 'moyenne') {
+                chartsContainer.style.display = 'grid';
+                volatilityContainer.style.display = 'none';
+            } else {
+                chartsContainer.style.display = 'none';
+                volatilityContainer.style.display = 'block';
+            }
+        }
+
+        // Update display based on current mode
+        function updateDisplay() {
+            if (currentMode === 'moyenne') {
+                updateCharts();
+            } else {
+                updateVolatility();
+            }
+            updateStats();
+        }
 
         // Format currency
         function formatCurrency(amount) {
@@ -672,8 +969,168 @@
             updateStats();
         }
 
+        // Calculate volatility (average growth rate over periods)
+        function calculateVolatility(period) {
+            // Get 12 data points
+            const dataPoints = getDataPointsByPeriod(period);
+            
+            // Calculate growth rates between consecutive points
+            const revenusRates = [];
+            const depensesRates = [];
+            
+            for (let i = 1; i < dataPoints.length; i++) {
+                const prevRev = dataPoints[i-1].revenus;
+                const currRev = dataPoints[i].revenus;
+                const prevDep = dataPoints[i-1].depenses;
+                const currDep = dataPoints[i].depenses;
+                
+                // Growth rate = (current - previous) / previous * 100
+                if (prevRev > 0) {
+                    revenusRates.push(((currRev - prevRev) / prevRev) * 100);
+                }
+                if (prevDep > 0) {
+                    depensesRates.push(((currDep - prevDep) / prevDep) * 100);
+                }
+            }
+            
+            // Calculate average rates
+            const avgRevenus = revenusRates.length > 0 
+                ? revenusRates.reduce((a, b) => a + b, 0) / revenusRates.length 
+                : 0;
+            const avgDepenses = depensesRates.length > 0 
+                ? depensesRates.reduce((a, b) => a + b, 0) / depensesRates.length 
+                : 0;
+            
+            // Profit volatility = revenus volatility - depenses volatility
+            const avgProfit = avgRevenus - avgDepenses;
+            
+            return {
+                revenus: avgRevenus,
+                depenses: avgDepenses,
+                profit: avgProfit
+            };
+        }
+
+        // Get data points grouped by period
+        function getDataPointsByPeriod(period) {
+            const points = [];
+            const now = new Date();
+            
+            for (let i = 11; i >= 0; i--) {
+                const { start, end } = getDateRangeForPoint(i, period, now);
+                
+                let revenus = 0;
+                let depenses = 0;
+                
+                transactions.forEach(t => {
+                    const tDate = new Date(t.date);
+                    if (tDate >= start && tDate <= end) {
+                        if (t.nature === 'revenu') {
+                            revenus += parseFloat(t.montant);
+                        } else {
+                            depenses += parseFloat(t.montant);
+                        }
+                    }
+                });
+                
+                points.push({ revenus, depenses });
+            }
+            
+            return points;
+        }
+
+        // Get date range for a specific point
+        function getDateRangeForPoint(index, period, referenceDate = new Date()) {
+            const start = new Date(referenceDate);
+            const end = new Date(referenceDate);
+            
+            switch(period) {
+                case 'daily':
+                    start.setDate(referenceDate.getDate() - index);
+                    start.setHours(0, 0, 0, 0);
+                    end.setDate(referenceDate.getDate() - index);
+                    end.setHours(23, 59, 59, 999);
+                    break;
+                case 'weekly':
+                    const weekStart = new Date(referenceDate);
+                    weekStart.setDate(referenceDate.getDate() - (index * 7));
+                    weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
+                    weekStart.setHours(0, 0, 0, 0);
+                    start.setTime(weekStart.getTime());
+                    end.setTime(weekStart.getTime());
+                    end.setDate(weekStart.getDate() + 6);
+                    end.setHours(23, 59, 59, 999);
+                    break;
+                case 'monthly':
+                    start.setMonth(referenceDate.getMonth() - index);
+                    start.setDate(1);
+                    start.setHours(0, 0, 0, 0);
+                    end.setMonth(referenceDate.getMonth() - index + 1);
+                    end.setDate(0);
+                    end.setHours(23, 59, 59, 999);
+                    break;
+                case 'yearly':
+                    start.setFullYear(referenceDate.getFullYear() - index);
+                    start.setMonth(0, 1);
+                    start.setHours(0, 0, 0, 0);
+                    end.setFullYear(referenceDate.getFullYear() - index);
+                    end.setMonth(11, 31);
+                    end.setHours(23, 59, 59, 999);
+                    break;
+            }
+            
+            return { start, end };
+        }
+
+        // Update volatility gauge
+        function updateVolatility() {
+            const volatility = calculateVolatility(currentPeriod);
+            
+            // Update cursor positions (400px height, -2% to +2% range)
+            // 0% = 200px (center), +2% = 0px (top), -2% = 400px (bottom)
+            const scale = 100; // 100px per 1%
+            
+            function getPosition(rate) {
+                // Clamp between -2% and +2%
+                const clampedRate = Math.max(-2, Math.min(2, rate));
+                // Convert to position (inverted: positive = up = lower px value)
+                return 200 - (clampedRate * scale);
+            }
+            
+            const posRevenus = getPosition(volatility.revenus);
+            const posDepenses = getPosition(volatility.depenses);
+            const posProfit = getPosition(volatility.profit);
+            
+            // Update cursors
+            document.getElementById('cursorRevenus').style.top = posRevenus + 'px';
+            document.getElementById('cursorDepenses').style.top = posDepenses + 'px';
+            document.getElementById('cursorProfit').style.top = posProfit + 'px';
+            
+            // Update values
+            document.getElementById('valueRevenus').textContent = volatility.revenus.toFixed(2) + '%';
+            document.getElementById('valueDepenses').textContent = volatility.depenses.toFixed(2) + '%';
+            document.getElementById('valueProfit').textContent = volatility.profit.toFixed(2) + '%';
+            
+            // Update tendency badge
+            const tendencyBadge = document.getElementById('tendencyBadge');
+            const tendencyText = document.getElementById('tendencyText');
+            
+            tendencyBadge.classList.remove('creation', 'destruction', 'stagnation');
+            
+            if (volatility.profit > 0.1) {
+                tendencyBadge.classList.add('creation');
+                tendencyText.textContent = 'Tendance à la création';
+            } else if (volatility.profit < -0.1) {
+                tendencyBadge.classList.add('destruction');
+                tendencyText.textContent = 'Tendance à la destruction';
+            } else {
+                tendencyBadge.classList.add('stagnation');
+                tendencyText.textContent = 'Tendance à la stagnation';
+            }
+        }
+
         // Initialize
-        updateCharts();
+        updateDisplay();
     </script>
 </body>
 </html>
