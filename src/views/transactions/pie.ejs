@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -546,11 +547,11 @@
                     <div class="gauge-container">
                         <!-- Scale markers -->
                         <div class="gauge-scale">
-                            <span class="scale-label">+100%</span>
-                            <span class="scale-label">+50%</span>
-                            <span class="scale-label">0%</span>
                             <span class="scale-label">-50%</span>
-                            <span class="scale-label">-100%</span>
+                            <span class="scale-label">-25%</span>
+                            <span class="scale-label">0%</span>
+                            <span class="scale-label">+25%</span>
+                            <span class="scale-label">+50%</span>
                         </div>
 
                         <!-- Vertical bar -->
@@ -967,6 +968,10 @@
             // Get 12 data points
             const dataPoints = getDataPointsByPeriod(period);
             
+            console.log('=== VOLATILITY DEBUG ===');
+            console.log('Period:', period);
+            console.log('Data points:', dataPoints);
+            
             // Calculate growth rates between consecutive points
             const revenusRates = [];
             const depensesRates = [];
@@ -979,12 +984,19 @@
                 
                 // Growth rate = (current - previous) / previous * 100
                 if (prevRev > 0) {
-                    revenusRates.push(((currRev - prevRev) / prevRev) * 100);
+                    const revRate = ((currRev - prevRev) / prevRev) * 100;
+                    revenusRates.push(revRate);
+                    console.log(`Revenus ${i-1}→${i}: ${prevRev.toFixed(2)} → ${currRev.toFixed(2)} = ${revRate.toFixed(2)}%`);
                 }
                 if (prevDep > 0) {
-                    depensesRates.push(((currDep - prevDep) / prevDep) * 100);
+                    const depRate = ((currDep - prevDep) / prevDep) * 100;
+                    depensesRates.push(depRate);
+                    console.log(`Dépenses ${i-1}→${i}: ${prevDep.toFixed(2)} → ${currDep.toFixed(2)} = ${depRate.toFixed(2)}%`);
                 }
             }
+            
+            console.log('Revenus rates:', revenusRates);
+            console.log('Dépenses rates:', depensesRates);
             
             // Calculate average rates
             const avgRevenus = revenusRates.length > 0 
@@ -996,6 +1008,10 @@
             
             // Profit volatility = revenus volatility - depenses volatility
             const avgProfit = avgRevenus - avgDepenses;
+            
+            console.log('Average Revenus:', avgRevenus.toFixed(2) + '%');
+            console.log('Average Dépenses:', avgDepenses.toFixed(2) + '%');
+            console.log('Average Profit:', avgProfit.toFixed(2) + '%');
             
             return {
                 revenus: avgRevenus,
@@ -1079,14 +1095,14 @@
         function updateVolatility() {
             const volatility = calculateVolatility(currentPeriod);
             
-            // Update cursor positions (horizontal: -100% to +100% range)
-            // 0% = 50% (center), -100% = 0% (left), +100% = 100% (right)
+            // Update cursor positions (horizontal: -50% to +50% range)
+            // -50% = 0% (left), 0% = 50% (center), +50% = 100% (right)
             
             function getPosition(rate) {
-                // Clamp between -100% and +100%
-                const clampedRate = Math.max(-100, Math.min(100, rate));
+                // Clamp between -50% and +50%
+                const clampedRate = Math.max(-50, Math.min(50, rate));
                 // Convert to position percentage (0% to 100%)
-                return ((clampedRate + 100) / 2);
+                return ((clampedRate + 50) / 1);
             }
             
             const posRevenus = getPosition(volatility.revenus);
@@ -1102,6 +1118,10 @@
             document.getElementById('valueRevenus').textContent = volatility.revenus.toFixed(2) + '%';
             document.getElementById('valueDepenses').textContent = volatility.depenses.toFixed(2) + '%';
             document.getElementById('valueProfit').textContent = volatility.profit.toFixed(2) + '%';
+            
+            // Debug log
+            console.log('Volatility calculated:', volatility);
+            console.log('Positions:', { revenus: posRevenus, depenses: posDepenses, profit: posProfit });
             
             // Update tendency badge
             const tendencyBadge = document.getElementById('tendencyBadge');
