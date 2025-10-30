@@ -482,7 +482,6 @@
                 <div class="filter-group">
                     <label>Période</label>
                     <div class="filter-buttons">
-                        <button class="filter-btn" data-filter="period" data-value="daily">Journalier</button>
                         <button class="filter-btn" data-filter="period" data-value="weekly">Hebdomadaire</button>
                         <button class="filter-btn active" data-filter="period" data-value="monthly">Mensuel</button>
                         <button class="filter-btn" data-filter="period" data-value="yearly">Annuel</button>
@@ -543,11 +542,11 @@
                     <div class="gauge-container">
                         <!-- Scale markers -->
                         <div class="gauge-scale">
-                            <span class="scale-label">+2%</span>
-                            <span class="scale-label">+1%</span>
+                            <span class="scale-label">+100%</span>
+                            <span class="scale-label">+50%</span>
                             <span class="scale-label">0%</span>
-                            <span class="scale-label">-1%</span>
-                            <span class="scale-label">-2%</span>
+                            <span class="scale-label">-50%</span>
+                            <span class="scale-label">-100%</span>
                         </div>
 
                         <!-- Vertical bar -->
@@ -1086,13 +1085,13 @@
         function updateVolatility() {
             const volatility = calculateVolatility(currentPeriod);
             
-            // Update cursor positions (400px height, -2% to +2% range)
-            // 0% = 200px (center), +2% = 0px (top), -2% = 400px (bottom)
-            const scale = 100; // 100px per 1%
+            // Update cursor positions (400px height, -100% to +100% range)
+            // 0% = 200px (center), +100% = 0px (top), -100% = 400px (bottom)
+            const scale = 2; // 2px per 1%
             
             function getPosition(rate) {
-                // Clamp between -2% and +2%
-                const clampedRate = Math.max(-2, Math.min(2, rate));
+                // Clamp between -100% and +100%
+                const clampedRate = Math.max(-100, Math.min(100, rate));
                 // Convert to position (inverted: positive = up = lower px value)
                 return 200 - (clampedRate * scale);
             }
