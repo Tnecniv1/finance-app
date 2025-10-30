@@ -229,45 +229,65 @@
         }
 
         .legend-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+        }
+
+        .legend-label {
             font-size: 14px;
+            font-weight: 600;
             color: #333;
-            flex-grow: 1;
         }
 
-        .legend-value {
-            font-weight: bold;
-            color: #667eea;
+        .legend-amount {
+            font-size: 12px;
+            color: #666;
         }
 
-        /* Volatility Section */
+        .legend-percent {
+            font-size: 12px;
+            color: #999;
+        }
+
+        @media (max-width: 1100px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Volatility Gauge Styles */
+        .volatility-container {
+            margin-bottom: 20px;
+        }
+
         .volatility-card {
             background: white;
-            padding: 30px;
+            padding: 40px;
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
         }
 
         .volatility-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
 
         .volatility-header h2 {
             color: #333;
             font-size: 24px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            margin: 0;
         }
 
         .tendency-badge {
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 14px;
+            padding: 12px 24px;
+            border-radius: 25px;
             font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
         }
 
         .tendency-badge.creation {
@@ -281,8 +301,65 @@
         }
 
         .tendency-badge.stagnation {
-            background: #e5e7eb;
-            color: #374151;
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .gauge-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 140px 40px 60px 40px;
+        }
+
+        .gauge-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px;
+            position: relative;
+        }
+
+        .gauge-scale {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding-bottom: 10px;
+        }
+
+        .scale-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .gauge-bar {
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(to right, #ef4444 0%, #e5e7eb 50%, #10b981 100%);
+            border-radius: 4px;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .gauge-zero-line {
+            position: absolute;
+            left: 50%;
+            top: -10px;
+            bottom: -10px;
+            width: 3px;
+            background: #1f2937;
+            transform: translateX(-50%);
+        }
+
+        .gauge-cursors {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
         }
 
         /* ============================================ */
@@ -337,55 +414,6 @@
             color: #111827;
         }
 
-        /* Gauge container */
-        .gauge-container {
-            width: 100%;
-            max-width: 1000px;
-            position: relative;
-            margin: 0 auto;
-        }
-
-        .gauge-scale {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            padding-bottom: 10px;
-        }
-
-        .scale-label {
-            font-size: 14px;
-            color: #666;
-            font-weight: 600;
-        }
-
-        .gauge-bar {
-            width: 100%;
-            height: 8px;
-            background: linear-gradient(to right, #ef4444 0%, #e5e7eb 50%, #10b981 100%);
-            border-radius: 4px;
-            position: relative;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .gauge-zero-line {
-            position: absolute;
-            left: 50%;
-            top: -10px;
-            bottom: -10px;
-            width: 3px;
-            background: #1f2937;
-            transform: translateX(-50%);
-        }
-
-        .gauge-cursors {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
         /* Curseurs simplifiés (petits cercles uniquement) */
         .cursor {
             position: absolute;
@@ -414,31 +442,27 @@
             background: #8b5cf6;
         }
 
-        .volatility-info {
-            margin-top: 30px;
+        .volatility-legend {
+            margin-top: 40px;
             padding: 20px;
             background: #f9fafb;
             border-radius: 10px;
             border-left: 4px solid #667eea;
         }
 
-        .volatility-info p {
-            margin: 0;
-            color: #374151;
-            font-size: 14px;
-            line-height: 1.6;
+        .volatility-legend p {
+            margin: 0 0 10px 0;
+            color: #333;
         }
 
-        @media (max-width: 768px) {
-            .volatility-legend-compact {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-            
-            .charts-container {
-                grid-template-columns: 1fr;
-            }
+        .volatility-legend ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #666;
+        }
+
+        .volatility-legend li {
+            margin: 5px 0;
         }
     </style>
 </head>
@@ -446,67 +470,67 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>📊 Analyses Financières</h1>
+            <h1>🥧 Répartition des Finances</h1>
             <div class="nav-buttons">
-                <a href="/transactions" class="btn btn-primary">← Retour aux transactions</a>
+                <a href="/transactions" class="btn btn-secondary">← Retour</a>
+                <form action="/auth/logout" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-primary">Déconnexion</button>
+                </form>
             </div>
         </div>
 
         <!-- Filters -->
         <div class="filters-container">
             <div class="filters-row">
-                <!-- Period Filter -->
                 <div class="filter-group">
-                    <label>Période d'analyse :</label>
-                    <div class="filter-buttons">
-                        <button class="filter-btn" data-filter="period" data-value="daily">Journalier</button>
-                        <button class="filter-btn" data-filter="period" data-value="weekly">Hebdomadaire</button>
-                        <button class="filter-btn active" data-filter="period" data-value="monthly">Mensuel</button>
-                        <button class="filter-btn" data-filter="period" data-value="yearly">Annuel</button>
-                    </div>
-                </div>
-
-                <!-- Mode Filter -->
-                <div class="filter-group">
-                    <label>Mode d'affichage :</label>
+                    <label>Mode</label>
                     <div class="filter-buttons">
                         <button class="filter-btn active" data-filter="mode" data-value="moyenne">Moyenne</button>
                         <button class="filter-btn" data-filter="mode" data-value="volatilite">Volatilité</button>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label>Période</label>
+                    <div class="filter-buttons">
+                        <button class="filter-btn" data-filter="period" data-value="weekly">Hebdomadaire</button>
+                        <button class="filter-btn active" data-filter="period" data-value="monthly">Mensuel</button>
+                        <button class="filter-btn" data-filter="period" data-value="yearly">Annuel</button>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Stats Cards -->
-        <div class="stats-container" id="statsContainer">
-            <div class="stat-card neutral">
+        <div class="stats-container">
+            <div class="stat-card positive">
                 <h3>Total Revenus</h3>
-                <div class="value" id="statRevenus">0 €</div>
+                <div class="value" id="total-revenus">0 €</div>
             </div>
-            <div class="stat-card neutral">
+            <div class="stat-card negative">
                 <h3>Total Dépenses</h3>
-                <div class="value" id="statDepenses">0 €</div>
+                <div class="value" id="total-depenses">0 €</div>
             </div>
             <div class="stat-card neutral">
-                <h3>Solde Net</h3>
-                <div class="value" id="statSolde">0 €</div>
+                <h3>Solde</h3>
+                <div class="value" id="solde">0 €</div>
             </div>
         </div>
 
-        <!-- Charts Container (Moyenne) -->
+        <!-- Charts (Moyenne mode) -->
         <div class="charts-container" id="chartsContainer">
-            <!-- Revenus Chart -->
+            <!-- Revenus Pie Chart -->
             <div class="chart-card">
-                <h2>📈 Répartition des Revenus</h2>
+                <h2>💰 Revenus par Catégorie</h2>
                 <div class="chart-wrapper">
                     <canvas id="revenusChart"></canvas>
                 </div>
                 <div class="legend-container" id="revenusLegend"></div>
             </div>
 
-            <!-- Depenses Chart -->
+            <!-- Depenses Pie Chart -->
             <div class="chart-card">
-                <h2>📉 Répartition des Dépenses</h2>
+                <h2>💸 Dépenses par Catégorie</h2>
                 <div class="chart-wrapper">
                     <canvas id="depensesChart"></canvas>
                 </div>
@@ -514,70 +538,66 @@
             </div>
         </div>
 
-        <!-- Volatility Container -->
-        <div class="volatility-card" id="volatilityContainer" style="display: none;">
-            <div class="volatility-header">
-                <h2>📊 Analyse de Volatilité</h2>
-                <div class="tendency-badge" id="tendencyBadge">
-                    <span id="tendencyText">Calculant...</span>
-                </div>
-            </div>
-
-            <!-- NOUVELLE LÉGENDE COMPACTE -->
-            <div class="volatility-legend-compact">
-                <div class="legend-item-compact">
-                    <span class="legend-dot revenus"></span>
-                    <span>Revenus</span>
-                    <strong id="valueRevenus">0%</strong>
-                </div>
-                <div class="legend-item-compact">
-                    <span class="legend-dot depenses"></span>
-                    <span>Dépenses</span>
-                    <strong id="valueDepenses">0%</strong>
-                </div>
-                <div class="legend-item-compact">
-                    <span class="legend-dot profit"></span>
-                    <span>Profit</span>
-                    <strong id="valueProfit">0%</strong>
-                </div>
-            </div>
-
-            <!-- Gauge -->
-            <div class="gauge-container">
-                <div class="gauge-scale">
-                    <span class="scale-label">-50%</span>
-                    <span class="scale-label">-25%</span>
-                    <span class="scale-label">0%</span>
-                    <span class="scale-label">+25%</span>
-                    <span class="scale-label">+50%</span>
+        <!-- Volatility Gauge (Volatilité mode) -->
+        <div class="volatility-container" id="volatilityContainer" style="display: none;">
+            <div class="volatility-card">
+                <div class="volatility-header">
+                    <h2>📊 Analyse de Volatilité</h2>
+                    <div class="tendency-badge" id="tendencyBadge">
+                        <span id="tendencyText">Tendance à la stagnation</span>
+                    </div>
                 </div>
 
-                <div class="gauge-bar">
-                    <div class="gauge-zero-line"></div>
-
-                    <!-- Curseurs simplifiés (juste des points) -->
-                    <div class="gauge-cursors">
-                        <div class="cursor cursor-revenus" id="cursorRevenus">
-                            <div class="cursor-marker"></div>
+                <div class="gauge-wrapper">
+                    <!-- NOUVELLE LÉGENDE COMPACTE -->
+                    <div class="volatility-legend-compact">
+                        <div class="legend-item-compact">
+                            <span class="legend-dot revenus"></span>
+                            <span>Revenus</span>
+                            <strong id="valueRevenus">0%</strong>
                         </div>
-                        <div class="cursor cursor-depenses" id="cursorDepenses">
-                            <div class="cursor-marker"></div>
+                        <div class="legend-item-compact">
+                            <span class="legend-dot depenses"></span>
+                            <span>Dépenses</span>
+                            <strong id="valueDepenses">0%</strong>
                         </div>
-                        <div class="cursor cursor-profit" id="cursorProfit">
-                            <div class="cursor-marker"></div>
+                        <div class="legend-item-compact">
+                            <span class="legend-dot profit"></span>
+                            <span>Profit</span>
+                            <strong id="valueProfit">0%</strong>
+                        </div>
+                    </div>
+
+                    <!-- Vertical gauge -->
+                    <div class="gauge-container">
+                        <!-- Scale markers -->
+                        <div class="gauge-scale">
+                            <span class="scale-label">-50%</span>
+                            <span class="scale-label">-25%</span>
+                            <span class="scale-label">0%</span>
+                            <span class="scale-label">+25%</span>
+                            <span class="scale-label">+50%</span>
+                        </div>
+
+                        <!-- Vertical bar -->
+                        <div class="gauge-bar">
+                            <div class="gauge-zero-line"></div>
+
+                            <!-- Curseurs simplifiés (juste des points) -->
+                            <div class="gauge-cursors">
+                                <div class="cursor cursor-revenus" id="cursorRevenus">
+                                    <div class="cursor-marker"></div>
+                                </div>
+                                <div class="cursor cursor-depenses" id="cursorDepenses">
+                                    <div class="cursor-marker"></div>
+                                </div>
+                                <div class="cursor cursor-profit" id="cursorProfit">
+                                    <div class="cursor-marker"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Info -->
-            <div class="volatility-info">
-                <p>
-                    <strong>📌 Comment lire ce graphique :</strong><br>
-                    La volatilité mesure le taux de croissance moyen de vos finances entre les périodes. 
-                    Un pourcentage positif indique une tendance à la hausse, négatif à la baisse. 
-                    Le profit combine les variations de revenus et dépenses pour montrer l'évolution nette.
-                </p>
             </div>
         </div>
     </div>
@@ -585,8 +605,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Current filter state
-        let currentPeriod = 'monthly';
-        let currentMode = 'moyenne';
+        let currentPeriod = 'monthly';  // Default to monthly to match the active button
+        let currentMode = 'moyenne';  // Default to moyenne
 
         // Raw data
         const transactions = <%- JSON.stringify(transactions) %>;
@@ -635,6 +655,16 @@
             }
         }
 
+        // Update display based on current mode
+        function updateDisplay() {
+            if (currentMode === 'moyenne') {
+                updateCharts();
+            } else {
+                updateVolatility();
+            }
+            updateStats();
+        }
+
         // Format currency
         function formatCurrency(amount) {
             return new Intl.NumberFormat('fr-FR', {
@@ -643,35 +673,170 @@
             }).format(amount);
         }
 
-        // Generate color palette
-        function generateColor(index, total) {
-            const hue = (index * 360 / total) % 360;
-            return `hsl(${hue}, 70%, 60%)`;
+        // Get date range based on period (last 12 points)
+        function getDateRange(period) {
+            const now = new Date();
+            const start = new Date(now);
+
+            switch(period) {
+                case 'daily':
+                    start.setDate(now.getDate() - 11);
+                    break;
+                case 'weekly':
+                    start.setDate(now.getDate() - (11 * 7));
+                    break;
+                case 'monthly':
+                    start.setMonth(now.getMonth() - 11);
+                    break;
+                case 'yearly':
+                    start.setFullYear(now.getFullYear() - 11);
+                    break;
+            }
+
+            start.setHours(0, 0, 0, 0);
+            now.setHours(23, 59, 59, 999);
+
+            return { start, end: now };
+        }
+
+        // Filter transactions by date range
+        function filterTransactionsByPeriod(transactions, period) {
+            const { start, end } = getDateRange(period);
+            return transactions.filter(t => {
+                const tDate = new Date(t.date);
+                return tDate >= start && tDate <= end;
+            });
+        }
+
+        // Process revenus data
+        function processRevenusData(period) {
+            const filteredTransactions = filterTransactionsByPeriod(transactions, period);
+
+            // Map category ID to data
+            const categoryData = {};
+            const categoryCount = {};
+            const categoryMap = {};
+
+            categoriesRevenus.forEach(cat => {
+                categoryData[cat.id] = 0;
+                categoryCount[cat.id] = 0;
+                categoryMap[cat.id] = cat.nom;
+            });
+
+            // Sum transactions and count by category
+            filteredTransactions.forEach(t => {
+                if (t.nature === 'revenu' && t.sous_categorie_revenu && t.sous_categorie_revenu.categorie_revenu_id) {
+                    const categorieId = t.sous_categorie_revenu.categorie_revenu_id;
+                    if (categoryData[categorieId] !== undefined) {
+                        categoryData[categorieId] += parseFloat(t.montant);
+                        categoryCount[categorieId]++;
+                    }
+                }
+            });
+
+            // Calculate averages and filter out zero values
+            const labels = [];
+            const data = [];
+            const colors = [
+                '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', 
+                '#f59e0b', '#06b6d4', '#84cc16', '#f97316',
+                '#14b8a6', '#6366f1', '#a855f7', '#ef4444'
+            ];
+            const backgroundColors = [];
+
+            let colorIndex = 0;
+            Object.keys(categoryData).forEach(catId => {
+                const count = categoryCount[catId];
+                if (count > 0) {
+                    const average = categoryData[catId] / count;
+                    labels.push(categoryMap[catId]);
+                    data.push(average);
+                    backgroundColors.push(colors[colorIndex % colors.length]);
+                    colorIndex++;
+                }
+            });
+
+            return { labels, data, backgroundColors };
+        }
+
+        // Process depenses data
+        function processDepensesData(period) {
+            const filteredTransactions = filterTransactionsByPeriod(transactions, period);
+
+            // Map category ID to data
+            const categoryData = {};
+            const categoryCount = {};
+            const categoryMap = {};
+
+            categoriesDepenses.forEach(cat => {
+                categoryData[cat.id] = 0;
+                categoryCount[cat.id] = 0;
+                categoryMap[cat.id] = cat.nom;
+            });
+
+            // Sum transactions and count by category
+            filteredTransactions.forEach(t => {
+                if (t.nature === 'depense' && t.sous_categorie_depense && t.sous_categorie_depense.categorie_depense_id) {
+                    const categorieId = t.sous_categorie_depense.categorie_depense_id;
+                    if (categoryData[categorieId] !== undefined) {
+                        categoryData[categorieId] += parseFloat(t.montant);
+                        categoryCount[categorieId]++;
+                    }
+                }
+            });
+
+            // Calculate averages and filter out zero values
+            const labels = [];
+            const data = [];
+            const colors = [
+                '#ef4444', '#f97316', '#f59e0b', '#eab308',
+                '#84cc16', '#22c55e', '#10b981', '#14b8a6',
+                '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1',
+                '#8b5cf6'
+            ];
+            const backgroundColors = [];
+
+            let colorIndex = 0;
+            Object.keys(categoryData).forEach(catId => {
+                const count = categoryCount[catId];
+                if (count > 0) {
+                    const average = categoryData[catId] / count;
+                    labels.push(categoryMap[catId]);
+                    data.push(average);
+                    backgroundColors.push(colors[colorIndex % colors.length]);
+                    colorIndex++;
+                }
+            });
+
+            return { labels, data, backgroundColors };
         }
 
         // Update stats
         function updateStats() {
-            const filteredTransactions = getFilteredTransactions();
-
+            const { start, end } = getDateRange(currentPeriod);
+            
             let totalRevenus = 0;
             let totalDepenses = 0;
 
-            filteredTransactions.forEach(t => {
-                if (t.nature === 'revenu') {
-                    totalRevenus += parseFloat(t.montant);
-                } else {
-                    totalDepenses += parseFloat(t.montant);
+            transactions.forEach(t => {
+                const tDate = new Date(t.date);
+                if (tDate >= start && tDate <= end) {
+                    if (t.nature === 'revenu') {
+                        totalRevenus += parseFloat(t.montant);
+                    } else {
+                        totalDepenses += parseFloat(t.montant);
+                    }
                 }
             });
 
+            document.getElementById('total-revenus').textContent = formatCurrency(totalRevenus);
+            document.getElementById('total-depenses').textContent = formatCurrency(totalDepenses);
+            
             const solde = totalRevenus - totalDepenses;
-
-            document.getElementById('statRevenus').textContent = formatCurrency(totalRevenus);
-            document.getElementById('statDepenses').textContent = formatCurrency(totalDepenses);
-            document.getElementById('statSolde').textContent = formatCurrency(solde);
-
-            // Update card classes
-            const soldeCard = document.getElementById('statSolde').parentElement;
+            const soldeElement = document.getElementById('solde');
+            soldeElement.textContent = formatCurrency(solde);
+            
+            const soldeCard = soldeElement.closest('.stat-card');
             soldeCard.classList.remove('positive', 'negative', 'neutral');
             if (solde > 0) {
                 soldeCard.classList.add('positive');
@@ -682,96 +847,60 @@
             }
         }
 
-        // Get filtered transactions based on period
-        function getFilteredTransactions() {
-            const now = new Date();
-            let startDate = new Date();
-
-            switch(currentPeriod) {
-                case 'daily':
-                    startDate.setDate(now.getDate() - 1);
-                    break;
-                case 'weekly':
-                    startDate.setDate(now.getDate() - 7);
-                    break;
-                case 'monthly':
-                    startDate.setMonth(now.getMonth() - 1);
-                    break;
-                case 'yearly':
-                    startDate.setFullYear(now.getFullYear() - 1);
-                    break;
-            }
-
-            return transactions.filter(t => new Date(t.date) >= startDate);
-        }
-
-        // Prepare chart data
-        function prepareChartData(nature) {
-            const filteredTransactions = getFilteredTransactions();
-            const categoryData = {};
-
-            filteredTransactions.forEach(t => {
-                if (t.nature === nature) {
-                    const catName = t.categorie_nom || 'Non catégorisé';
-                    categoryData[catName] = (categoryData[catName] || 0) + parseFloat(t.montant);
-                }
-            });
-
-            const labels = Object.keys(categoryData);
-            const data = Object.values(categoryData);
-            const backgroundColors = labels.map((_, i) => generateColor(i, labels.length));
-
-            return { labels, data, backgroundColors };
-        }
-
         // Update legend
         function updateLegend(containerId, labels, data, colors) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
 
-            const total = data.reduce((a, b) => a + b, 0);
+            const total = data.reduce((sum, val) => sum + val, 0);
 
             labels.forEach((label, index) => {
-                const value = data[index];
-                const percentage = ((value / total) * 100).toFixed(1);
-
+                const percentage = ((data[index] / total) * 100).toFixed(1);
+                
                 const item = document.createElement('div');
                 item.className = 'legend-item';
-                item.innerHTML = `
-                    <div class="legend-color" style="background-color: ${colors[index]}"></div>
-                    <div class="legend-text">${label}</div>
-                    <div class="legend-value">${formatCurrency(value)} (${percentage}%)</div>
-                `;
+
+                const colorBox = document.createElement('div');
+                colorBox.className = 'legend-color';
+                colorBox.style.backgroundColor = colors[index];
+
+                const textContainer = document.createElement('div');
+                textContainer.className = 'legend-text';
+
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'legend-label';
+                labelSpan.textContent = label;
+
+                const amountSpan = document.createElement('span');
+                amountSpan.className = 'legend-amount';
+                amountSpan.textContent = formatCurrency(data[index]);
+
+                const percentSpan = document.createElement('span');
+                percentSpan.className = 'legend-percent';
+                percentSpan.textContent = `${percentage}%`;
+
+                textContainer.appendChild(labelSpan);
+                textContainer.appendChild(amountSpan);
+                textContainer.appendChild(percentSpan);
+
+                item.appendChild(colorBox);
+                item.appendChild(textContainer);
                 container.appendChild(item);
             });
         }
 
-        // Update display
-        function updateDisplay() {
-            if (currentMode === 'moyenne') {
-                updateCharts();
-            } else {
-                updateVolatility();
-            }
-        }
-
         // Update charts
         function updateCharts() {
-            // Destroy existing charts
+            const revenusData = processRevenusData(currentPeriod);
+            const depensesData = processDepensesData(currentPeriod);
+
+            // Update Revenus Chart
             if (revenusChart) {
                 revenusChart.destroy();
             }
-            if (depensesChart) {
-                depensesChart.destroy();
-            }
 
-            // Prepare data
-            const revenusData = prepareChartData('revenu');
-            const depensesData = prepareChartData('depense');
-
-            // Create Revenus chart
             const revenusCtx = document.getElementById('revenusChart').getContext('2d');
-
+            
             if (revenusData.data.length === 0) {
                 revenusCtx.canvas.parentElement.innerHTML = '<div class="no-data">Aucune donnée de revenus pour cette période</div>';
             } else {
@@ -809,6 +938,11 @@
                 });
 
                 updateLegend('revenusLegend', revenusData.labels, revenusData.data, revenusData.backgroundColors);
+            }
+
+            // Update Depenses Chart
+            if (depensesChart) {
+                depensesChart.destroy();
             }
 
             const depensesCtx = document.getElementById('depensesChart').getContext('2d');
@@ -856,67 +990,55 @@
             updateStats();
         }
 
-        // ============================================
-        // CALCUL DE VOLATILITÉ CORRIGÉ
-        // ============================================
+        // Calculate volatility (average growth rate over periods)
         function calculateVolatility(period) {
-            // Récupérer les 12 derniers points de données
+            // Get 12 data points
             const dataPoints = getDataPointsByPeriod(period);
             
-            console.log('=== VOLATILITY DEBUG (CORRECTED) ===');
+            console.log('=== VOLATILITY DEBUG ===');
             console.log('Period:', period);
             console.log('Data points:', dataPoints);
             
-            // Filtrer les points avec des valeurs > 0 pour éviter division par zéro
-            const validPoints = dataPoints.filter(p => p.revenus > 0 && p.depenses > 0);
-            
-            if (validPoints.length < 2) {
-                console.log('Pas assez de données valides pour calculer la volatilité');
-                return { revenus: 0, depenses: 0, profit: 0 };
-            }
-            
-            // Calculer les taux de croissance entre périodes consécutives
+            // Calculate growth rates between consecutive points
             const revenusRates = [];
             const depensesRates = [];
             
-            for (let i = 1; i < validPoints.length; i++) {
-                const prevRev = validPoints[i-1].revenus;
-                const currRev = validPoints[i].revenus;
-                const prevDep = validPoints[i-1].depenses;
-                const currDep = validPoints[i].depenses;
+            for (let i = 1; i < dataPoints.length; i++) {
+                const prevRev = dataPoints[i-1].revenus;
+                const currRev = dataPoints[i].revenus;
+                const prevDep = dataPoints[i-1].depenses;
+                const currDep = dataPoints[i].depenses;
                 
-                // Formule : Taux de croissance = ((valeur_actuelle - valeur_précédente) / valeur_précédente) * 100
-                const revRate = ((currRev - prevRev) / prevRev) * 100;
-                const depRate = ((currDep - prevDep) / prevDep) * 100;
-                
-                revenusRates.push(revRate);
-                depensesRates.push(depRate);
-                
-                console.log(`Point ${i-1}→${i}:`);
-                console.log(`  Revenus: ${prevRev.toFixed(2)} → ${currRev.toFixed(2)} = ${revRate.toFixed(2)}%`);
-                console.log(`  Dépenses: ${prevDep.toFixed(2)} → ${currDep.toFixed(2)} = ${depRate.toFixed(2)}%`);
+                // Growth rate = (current - previous) / previous * 100
+                if (prevRev > 0) {
+                    const revRate = ((currRev - prevRev) / prevRev) * 100;
+                    revenusRates.push(revRate);
+                    console.log(`Revenus ${i-1}→${i}: ${prevRev.toFixed(2)} → ${currRev.toFixed(2)} = ${revRate.toFixed(2)}%`);
+                }
+                if (prevDep > 0) {
+                    const depRate = ((currDep - prevDep) / prevDep) * 100;
+                    depensesRates.push(depRate);
+                    console.log(`Dépenses ${i-1}→${i}: ${prevDep.toFixed(2)} → ${currDep.toFixed(2)} = ${depRate.toFixed(2)}%`);
+                }
             }
             
-            console.log('Taux de croissance Revenus:', revenusRates);
-            console.log('Taux de croissance Dépenses:', depensesRates);
+            console.log('Revenus rates:', revenusRates);
+            console.log('Dépenses rates:', depensesRates);
             
-            // Calculer la MOYENNE des taux de croissance (volatilité)
+            // Calculate average rates
             const avgRevenus = revenusRates.length > 0 
-                ? revenusRates.reduce((sum, rate) => sum + rate, 0) / revenusRates.length
+                ? revenusRates.reduce((a, b) => a + b, 0) / revenusRates.length 
                 : 0;
-                
             const avgDepenses = depensesRates.length > 0 
-                ? depensesRates.reduce((sum, rate) => sum + rate, 0) / depensesRates.length
+                ? depensesRates.reduce((a, b) => a + b, 0) / depensesRates.length 
                 : 0;
             
-            // Profit = croissance des revenus - croissance des dépenses
-            // (Plus les revenus croissent et moins les dépenses croissent, meilleur est le profit)
+            // Profit volatility = revenus volatility - depenses volatility
             const avgProfit = avgRevenus - avgDepenses;
             
-            console.log('Volatilité Moyenne Revenus:', avgRevenus.toFixed(2) + '%');
-            console.log('Volatilité Moyenne Dépenses:', avgDepenses.toFixed(2) + '%');
-            console.log('Volatilité Profit (Revenus - Dépenses):', avgProfit.toFixed(2) + '%');
-            console.log('====================================');
+            console.log('Average Revenus:', avgRevenus.toFixed(2) + '%');
+            console.log('Average Dépenses:', avgDepenses.toFixed(2) + '%');
+            console.log('Average Profit:', avgProfit.toFixed(2) + '%');
             
             return {
                 revenus: avgRevenus,
@@ -1000,35 +1122,35 @@
         function updateVolatility() {
             const volatility = calculateVolatility(currentPeriod);
             
-            // Fonction pour convertir un taux (-50% à +50%) en position (0% à 100%)
+            // Update cursor positions (horizontal: -50% to +50% range)
+            // -50% = 0% (left), 0% = 50% (center), +50% = 100% (right)
+            
             function getPosition(rate) {
-                // Limiter le taux entre -50% et +50%
+                // Clamp between -50% and +50%
                 const clampedRate = Math.max(-50, Math.min(50, rate));
-                // Convertir en position: -50% → 0%, 0% → 50%, +50% → 100%
-                return ((clampedRate + 50) / 100) * 100;
+                // Convert to position percentage (0% to 100%)
+                return ((clampedRate + 50) / 1);
             }
             
             const posRevenus = getPosition(volatility.revenus);
             const posDepenses = getPosition(volatility.depenses);
             const posProfit = getPosition(volatility.profit);
             
-            // Mettre à jour les positions des curseurs
+            // Update cursors (horizontal positioning)
             document.getElementById('cursorRevenus').style.left = posRevenus + '%';
             document.getElementById('cursorDepenses').style.left = posDepenses + '%';
             document.getElementById('cursorProfit').style.left = posProfit + '%';
             
-            // Mettre à jour les valeurs affichées
+            // Update values
             document.getElementById('valueRevenus').textContent = volatility.revenus.toFixed(2) + '%';
             document.getElementById('valueDepenses').textContent = volatility.depenses.toFixed(2) + '%';
             document.getElementById('valueProfit').textContent = volatility.profit.toFixed(2) + '%';
             
-            console.log('Positions des curseurs:', { 
-                revenus: posRevenus + '%', 
-                depenses: posDepenses + '%', 
-                profit: posProfit + '%' 
-            });
+            // Debug log
+            console.log('Volatility calculated:', volatility);
+            console.log('Positions:', { revenus: posRevenus, depenses: posDepenses, profit: posProfit });
             
-            // Mettre à jour le badge de tendance
+            // Update tendency badge
             const tendencyBadge = document.getElementById('tendencyBadge');
             const tendencyText = document.getElementById('tendencyText');
             
