@@ -309,8 +309,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 500px;
-            padding: 40px 0;
+            min-height: 600px;
+            padding: 60px 0;
         }
 
         .gauge-container {
@@ -324,7 +324,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            height: 400px;
+            height: 500px;
             padding-right: 10px;
         }
 
@@ -336,7 +336,7 @@
 
         .gauge-bar {
             width: 8px;
-            height: 400px;
+            height: 500px;
             background: linear-gradient(to bottom, #10b981 0%, #10b981 25%, #e5e7eb 50%, #ef4444 100%);
             border-radius: 4px;
             position: relative;
@@ -358,7 +358,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 400px;
+            height: 500px;
             pointer-events: none;
         }
 
@@ -575,16 +575,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Legend/Explanation -->
-                <div class="volatility-legend">
-                    <p><strong>Interprétation :</strong></p>
-                    <ul>
-                        <li>Curseur vers le <strong>haut</strong> (positif) → Croissance</li>
-                        <li>Curseur vers le <strong>bas</strong> (négatif) → Décroissance</li>
-                        <li>Position au <strong>centre</strong> (0%) → Stabilité</li>
-                    </ul>
                 </div>
             </div>
         </div>
@@ -1085,15 +1075,15 @@
         function updateVolatility() {
             const volatility = calculateVolatility(currentPeriod);
             
-            // Update cursor positions (400px height, -100% to +100% range)
-            // 0% = 200px (center), +100% = 0px (top), -100% = 400px (bottom)
-            const scale = 2; // 2px per 1%
+            // Update cursor positions (500px height, -100% to +100% range)
+            // 0% = 250px (center), +100% = 0px (top), -100% = 500px (bottom)
+            const scale = 2.5; // 2.5px per 1%
             
             function getPosition(rate) {
                 // Clamp between -100% and +100%
                 const clampedRate = Math.max(-100, Math.min(100, rate));
                 // Convert to position (inverted: positive = up = lower px value)
-                return 200 - (clampedRate * scale);
+                return 250 - (clampedRate * scale);
             }
             
             const posRevenus = getPosition(volatility.revenus);
@@ -1133,3 +1123,4 @@
     </script>
 </body>
 </html>
+
