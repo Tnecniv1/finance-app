@@ -393,6 +393,43 @@ class TransactionController {
       res.redirect('/transactions?error=Erreur lors du chargement du graphique');
     }
   }
+
+  /**
+   * 🥧 NOUVELLE FONCTION : Afficher la vue camembert des transactions
+   */
+  static async pieView(req, res) {
+    try {
+      const userId = req.session.userId;
+      const pseudo = req.session.pseudo;
+
+      // Récupérer toutes les transactions (filtrage par période fait en JS côté client)
+      const filters = {
+        userId: userId,
+        nature: null,
+        categorieId: null,
+        dateDebut: null,
+        dateFin: null
+      };
+
+      const transactions = await Transaction.findWithFilters(filters);
+
+      // Récupérer les catégories
+      const categoriesData = await Category.getAllWithSubcategories();
+      
+      const categoriesRevenus = categoriesData.revenus || [];
+      const categoriesDepenses = categoriesData.depenses || [];
+
+      res.render('transactions/pie', {
+        transactions,
+        categoriesRevenus,
+        categoriesDepenses,
+        pseudo
+      });
+    } catch (error) {
+      console.error('Erreur chargement camemberts:', error);
+      res.redirect('/transactions?error=Erreur lors du chargement des camemberts');
+    }
+  }
 }
 
 module.exports = TransactionController;

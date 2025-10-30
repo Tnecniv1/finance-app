@@ -6,16 +6,14 @@ const { requireAuth } = require('../middleware/auth');
 // Toutes les routes nécessitent une authentification
 router.use(requireAuth);
 
-// ✨ NOUVELLE ROUTE : Vue graphique (DOIT être AVANT la route '/')
 router.get('/graph', TransactionController.graphView);
 
-// Afficher les transactions avec filtres et suggestions IA
+router.get('/pie', TransactionController.pieView);
+
 router.get('/', TransactionController.index);
 
-// Catégoriser une transaction (avec apprentissage IA)
 router.post('/:id/categorize', TransactionController.categorize);
 
-// Catégoriser plusieurs transactions en masse (avec apprentissage IA)
 router.post('/categorize-bulk', TransactionController.categorizeBulk);
 
 // 🤖 Routes IA

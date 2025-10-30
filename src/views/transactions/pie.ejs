@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camemberts - Finance App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #e0e7ff;
+            color: #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #c7d2fe;
+        }
+
+        /* Filters Section */
+        .filters-container {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .filters-row {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e0e7ff;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #667eea;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .filter-btn:hover {
+            border-color: #667eea;
+            background: #f5f7ff;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .stat-card.positive .value {
+            color: #10b981;
+        }
+
+        .stat-card.negative .value {
+            color: #ef4444;
+        }
+
+        .stat-card.neutral .value {
+            color: #667eea;
+        }
+
+        /* Charts Container */
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .chart-card h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            padding: 40px;
+        }
+
+        /* Legend */
+        .legend-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .legend-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+        }
+
+        .legend-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .legend-amount {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .legend-percent {
+            font-size: 12px;
+            color: #999;
+        }
+
+        @media (max-width: 1100px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🥧 Répartition des Finances</h1>
+            <div class="nav-buttons">
+                <a href="/transactions" class="btn btn-secondary">← Retour</a>
+                <form action="/auth/logout" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-primary">Déconnexion</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-container">
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label>Période</label>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-filter="period" data-value="daily">Journalier</button>
+                        <button class="filter-btn" data-filter="period" data-value="weekly">Hebdomadaire</button>
+                        <button class="filter-btn" data-filter="period" data-value="monthly">Mensuel</button>
+                        <button class="filter-btn" data-filter="period" data-value="yearly">Annuel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-container">
+            <div class="stat-card positive">
+                <h3>Total Revenus</h3>
+                <div class="value" id="total-revenus">0 €</div>
+            </div>
+            <div class="stat-card negative">
+                <h3>Total Dépenses</h3>
+                <div class="value" id="total-depenses">0 €</div>
+            </div>
+            <div class="stat-card neutral">
+                <h3>Solde</h3>
+                <div class="value" id="solde">0 €</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-container">
+            <!-- Revenus Pie Chart -->
+            <div class="chart-card">
+                <h2>💰 Revenus par Catégorie</h2>
+                <div class="chart-wrapper">
+                    <canvas id="revenusChart"></canvas>
+                </div>
+                <div class="legend-container" id="revenusLegend"></div>
+            </div>
+
+            <!-- Depenses Pie Chart -->
+            <div class="chart-card">
+                <h2>💸 Dépenses par Catégorie</h2>
+                <div class="chart-wrapper">
+                    <canvas id="depensesChart"></canvas>
+                </div>
+                <div class="legend-container" id="depensesLegend"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Current filter state
+        let currentPeriod = 'daily';
+
+        // Raw data
+        const transactions = <%- JSON.stringify(transactions) %>;
+        const categoriesRevenus = <%- JSON.stringify(categoriesRevenus) %>;
+        const categoriesDepenses = <%- JSON.stringify(categoriesDepenses) %>;
+
+        let revenusChart = null;
+        let depensesChart = null;
+
+        // Filter button handlers
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const filterType = this.dataset.filter;
+                const value = this.dataset.value;
+
+                // Update active state
+                document.querySelectorAll(`[data-filter="${filterType}"]`).forEach(b => {
+                    b.classList.remove('active');
+                });
+                this.classList.add('active');
+
+                // Update filter
+                currentPeriod = value;
+
+                // Refresh charts
+                updateCharts();
+            });
+        });
+
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('fr-FR', {
+                style: 'currency',
+                currency: 'EUR'
+            }).format(amount);
+        }
+
+        // Get date range based on period (last 12 points)
+        function getDateRange(period) {
+            const now = new Date();
+            const start = new Date(now);
+
+            switch(period) {
+                case 'daily':
+                    start.setDate(now.getDate() - 11);
+                    break;
+                case 'weekly':
+                    start.setDate(now.getDate() - (11 * 7));
+                    break;
+                case 'monthly':
+                    start.setMonth(now.getMonth() - 11);
+                    break;
+                case 'yearly':
+                    start.setFullYear(now.getFullYear() - 11);
+                    break;
+            }
+
+            start.setHours(0, 0, 0, 0);
+            now.setHours(23, 59, 59, 999);
+
+            return { start, end: now };
+        }
+
+        // Filter transactions by date range
+        function filterTransactionsByPeriod(transactions, period) {
+            const { start, end } = getDateRange(period);
+            return transactions.filter(t => {
+                const tDate = new Date(t.date);
+                return tDate >= start && tDate <= end;
+            });
+        }
+
+        // Process revenus data
+        function processRevenusData(period) {
+            const filteredTransactions = filterTransactionsByPeriod(transactions, period);
+
+            // Map category ID to data
+            const categoryData = {};
+            const categoryMap = {};
+
+            categoriesRevenus.forEach(cat => {
+                categoryData[cat.id] = 0;
+                categoryMap[cat.id] = cat.nom;
+            });
+
+            // Sum transactions by category
+            filteredTransactions.forEach(t => {
+                if (t.nature === 'revenu' && t.sous_categorie_revenu && t.sous_categorie_revenu.categorie_revenu_id) {
+                    const categorieId = t.sous_categorie_revenu.categorie_revenu_id;
+                    if (categoryData[categorieId] !== undefined) {
+                        categoryData[categorieId] += parseFloat(t.montant);
+                    }
+                }
+            });
+
+            // Filter out zero values
+            const labels = [];
+            const data = [];
+            const colors = [
+                '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', 
+                '#f59e0b', '#06b6d4', '#84cc16', '#f97316',
+                '#14b8a6', '#6366f1', '#a855f7', '#ef4444'
+            ];
+            const backgroundColors = [];
+
+            let colorIndex = 0;
+            Object.keys(categoryData).forEach(catId => {
+                if (categoryData[catId] > 0) {
+                    labels.push(categoryMap[catId]);
+                    data.push(categoryData[catId]);
+                    backgroundColors.push(colors[colorIndex % colors.length]);
+                    colorIndex++;
+                }
+            });
+
+            return { labels, data, backgroundColors };
+        }
+
+        // Process depenses data
+        function processDepensesData(period) {
+            const filteredTransactions = filterTransactionsByPeriod(transactions, period);
+
+            // Map category ID to data
+            const categoryData = {};
+            const categoryMap = {};
+
+            categoriesDepenses.forEach(cat => {
+                categoryData[cat.id] = 0;
+                categoryMap[cat.id] = cat.nom;
+            });
+
+            // Sum transactions by category
+            filteredTransactions.forEach(t => {
+                if (t.nature === 'depense' && t.sous_categorie_depense && t.sous_categorie_depense.categorie_depense_id) {
+                    const categorieId = t.sous_categorie_depense.categorie_depense_id;
+                    if (categoryData[categorieId] !== undefined) {
+                        categoryData[categorieId] += parseFloat(t.montant);
+                    }
+                }
+            });
+
+            // Filter out zero values
+            const labels = [];
+            const data = [];
+            const colors = [
+                '#ef4444', '#f97316', '#f59e0b', '#eab308',
+                '#84cc16', '#22c55e', '#10b981', '#14b8a6',
+                '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1',
+                '#8b5cf6'
+            ];
+            const backgroundColors = [];
+
+            let colorIndex = 0;
+            Object.keys(categoryData).forEach(catId => {
+                if (categoryData[catId] > 0) {
+                    labels.push(categoryMap[catId]);
+                    data.push(categoryData[catId]);
+                    backgroundColors.push(colors[colorIndex % colors.length]);
+                    colorIndex++;
+                }
+            });
+
+            return { labels, data, backgroundColors };
+        }
+
+        // Update stats
+        function updateStats() {
+            const { start, end } = getDateRange(currentPeriod);
+            
+            let totalRevenus = 0;
+            let totalDepenses = 0;
+
+            transactions.forEach(t => {
+                const tDate = new Date(t.date);
+                if (tDate >= start && tDate <= end) {
+                    if (t.nature === 'revenu') {
+                        totalRevenus += parseFloat(t.montant);
+                    } else {
+                        totalDepenses += parseFloat(t.montant);
+                    }
+                }
+            });
+
+            document.getElementById('total-revenus').textContent = formatCurrency(totalRevenus);
+            document.getElementById('total-depenses').textContent = formatCurrency(totalDepenses);
+            
+            const solde = totalRevenus - totalDepenses;
+            const soldeElement = document.getElementById('solde');
+            soldeElement.textContent = formatCurrency(solde);
+            
+            const soldeCard = soldeElement.closest('.stat-card');
+            soldeCard.classList.remove('positive', 'negative', 'neutral');
+            if (solde > 0) {
+                soldeCard.classList.add('positive');
+            } else if (solde < 0) {
+                soldeCard.classList.add('negative');
+            } else {
+                soldeCard.classList.add('neutral');
+            }
+        }
+
+        // Update legend
+        function updateLegend(containerId, labels, data, colors) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            const total = data.reduce((sum, val) => sum + val, 0);
+
+            labels.forEach((label, index) => {
+                const percentage = ((data[index] / total) * 100).toFixed(1);
+                
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+
+                const colorBox = document.createElement('div');
+                colorBox.className = 'legend-color';
+                colorBox.style.backgroundColor = colors[index];
+
+                const textContainer = document.createElement('div');
+                textContainer.className = 'legend-text';
+
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'legend-label';
+                labelSpan.textContent = label;
+
+                const amountSpan = document.createElement('span');
+                amountSpan.className = 'legend-amount';
+                amountSpan.textContent = formatCurrency(data[index]);
+
+                const percentSpan = document.createElement('span');
+                percentSpan.className = 'legend-percent';
+                percentSpan.textContent = `${percentage}%`;
+
+                textContainer.appendChild(labelSpan);
+                textContainer.appendChild(amountSpan);
+                textContainer.appendChild(percentSpan);
+
+                item.appendChild(colorBox);
+                item.appendChild(textContainer);
+                container.appendChild(item);
+            });
+        }
+
+        // Update charts
+        function updateCharts() {
+            const revenusData = processRevenusData(currentPeriod);
+            const depensesData = processDepensesData(currentPeriod);
+
+            // Update Revenus Chart
+            if (revenusChart) {
+                revenusChart.destroy();
+            }
+
+            const revenusCtx = document.getElementById('revenusChart').getContext('2d');
+            
+            if (revenusData.data.length === 0) {
+                revenusCtx.canvas.parentElement.innerHTML = '<div class="no-data">Aucune donnée de revenus pour cette période</div>';
+            } else {
+                revenusChart = new Chart(revenusCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: revenusData.labels,
+                        datasets: [{
+                            data: revenusData.data,
+                            backgroundColor: revenusData.backgroundColors,
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return `${label}: ${formatCurrency(value)} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                updateLegend('revenusLegend', revenusData.labels, revenusData.data, revenusData.backgroundColors);
+            }
+
+            // Update Depenses Chart
+            if (depensesChart) {
+                depensesChart.destroy();
+            }
+
+            const depensesCtx = document.getElementById('depensesChart').getContext('2d');
+
+            if (depensesData.data.length === 0) {
+                depensesCtx.canvas.parentElement.innerHTML = '<div class="no-data">Aucune donnée de dépenses pour cette période</div>';
+            } else {
+                depensesChart = new Chart(depensesCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: depensesData.labels,
+                        datasets: [{
+                            data: depensesData.data,
+                            backgroundColor: depensesData.backgroundColors,
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return `${label}: ${formatCurrency(value)} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                updateLegend('depensesLegend', depensesData.labels, depensesData.data, depensesData.backgroundColors);
+            }
+
+            // Update stats
+            updateStats();
+        }
+
+        // Initialize
+        updateCharts();
+    </script>
+</body>
+</html>
