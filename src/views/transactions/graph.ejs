@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Graphiques - Finance App</title>
+    <title>Progression - Évolution - Fidess</title>
+
     <style>
         * {
             margin: 0;
@@ -210,18 +211,19 @@
         }
     </style>
 </head>
+
+<body>
+    <%- include('../partials/navbar-simple', { currentPage: 'progression', user: user }) %>
+
+    <%- include('../partials/progression-header', { currentView: currentView, stats: stats }) %>
+
+    <div class="container">
+
+    <div class="container">
+
 <body>
     <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>📊 Graphiques Financiers</h1>
-            <div class="nav-buttons">
-                <a href="/transactions" class="btn btn-secondary">← Retour</a>
-                <form action="/auth/logout" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-primary">Déconnexion</button>
-                </form>
-            </div>
-        </div>
+
 
         <!-- Filters -->
         <div class="filters-container">
@@ -229,9 +231,8 @@
                 <div class="filter-group">
                     <label>Période</label>
                     <div class="filter-buttons">
-                        <button class="filter-btn active" data-filter="period" data-value="daily">Journalier</button>
                         <button class="filter-btn" data-filter="period" data-value="weekly">Hebdomadaire</button>
-                        <button class="filter-btn" data-filter="period" data-value="monthly">Mensuel</button>
+                        <button class="filter-btn active" data-filter="period" data-value="monthly">Mensuel</button>
                         <button class="filter-btn" data-filter="period" data-value="yearly">Annuel</button>
                     </div>
                 </div>
@@ -247,21 +248,7 @@
             </div>
         </div>
 
-        <!-- Stats Cards -->
-        <div class="stats-container">
-            <div class="stat-card positive">
-                <h3>Total Revenus</h3>
-                <div class="value" id="total-revenus">0 €</div>
-            </div>
-            <div class="stat-card negative">
-                <h3>Total Dépenses</h3>
-                <div class="value" id="total-depenses">0 €</div>
-            </div>
-            <div class="stat-card neutral">
-                <h3>Solde</h3>
-                <div class="value" id="solde">0 €</div>
-            </div>
-        </div>
+
 
         <!-- Chart -->
         <div class="chart-container">
@@ -276,7 +263,7 @@
     <script>
         // Current filters state
         let currentFilters = {
-            period: 'daily',
+            period: 'monthly',
             type: 'profit'
         };
 

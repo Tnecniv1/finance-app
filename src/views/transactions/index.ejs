@@ -3,51 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mes Transactions - Finance App</title>
+    <title>Progression - Fidess</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <div class="dashboard">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <h1>💰 Finance App</h1>
+    <%- include('../partials/navbar-simple', { currentPage: 'progression', user: user }) %>
 
-                <!-- Boutons de navigation -->
-                <div class="view-switcher">
-                    <a href="/transactions" class="view-btn active">📋 Vue Liste</a>
-                    <a href="/transactions/graph" class="view-btn">📈 Vue Graphique</a>
-                    <a href="/transactions/pie" class="view-btn">🥧 Vue Camembert</a>
-                </div>
+    <%- include('../partials/progression-header', { currentView: currentView, stats: stats }) %>
 
-                <div class="user-info">
-                    <span>Bonjour, <strong><%= pseudo %></strong></span>
-                    <a href="/transactions/import-csv" class="btn btn-small">📥 Importer CSV</a>
-                    <a href="/auth/logout" class="btn btn-small">Déconnexion</a>
-                </div>
-            </div>
-        </header>
-
+    <div class="main-content">
+        <!-- Votre contenu existant commence ici -->
+        <div class="dashboard">
         <div class="main-content">
-            <!-- Balance Card -->
-            <div class="balance-section">
-                <div class="balance-card">
-                    <h3>Solde Total</h3>
-                    <p class="balance-amount <%= balance.balance >= 0 ? 'positive' : 'negative' %>">
-                        <%= balance.balance.toFixed(2) %> €
-                    </p>
-                </div>
-                <div class="stats-cards">
-                    <div class="stat-card income">
-                        <span class="stat-label">Revenus</span>
-                        <span class="stat-amount">+ <%= balance.totalIncome.toFixed(2) %> €</span>
-                    </div>
-                    <div class="stat-card expense">
-                        <span class="stat-label">Dépenses</span>
-                        <span class="stat-amount">- <%= balance.totalExpenses.toFixed(2) %> €</span>
-                    </div>
-                </div>
-            </div>
+
 
 <!-- 🤖 SECTION IA COMPLÈTE - À placer après la section des filtres -->
             

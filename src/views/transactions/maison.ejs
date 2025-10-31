@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maison - Fidess</title>
+</head>
+<body>
+    <%- include('../partials/navbar-simple', { currentPage: 'maison', user: user }) %>
+
+    <div class="main-content">
+        <!-- 3 Blocs cliquables -->
+        <div class="action-blocks">
+            <a href="/optimiser" class="action-block">
+                <div class="block-icon">⚡</div>
+                <div class="block-title">Optimiser</div>
+            </a>
+
+            <a href="/progression" class="action-block">
+                <div class="block-icon">📊</div>
+                <div class="block-title">Progression</div>
+            </a>
+
+            <a href="/classement" class="action-block">
+                <div class="block-icon">🏆</div>
+                <div class="block-title">Classement</div>
+            </a>
+        </div>
+
+        <!-- Grand cadre blanc central (vide pour le moment) -->
+        <div class="center-frame">
+            <!-- Contenu à ajouter plus tard -->
+        </div>
+    </div>
+
+    <style>
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* 3 Blocs d'action */
+        .action-blocks {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .action-block {
+            background: white;
+            padding: 40px 20px;
+            border-radius: 15px;
+            text-align: center;
+            text-decoration: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .action-block:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .block-icon {
+            font-size: 64px;
+            margin-bottom: 15px;
+        }
+
+        .block-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Grand cadre blanc central */
+        .center-frame {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            min-height: 400px;
+            padding: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .action-blocks {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .action-block {
+                padding: 30px 20px;
+            }
+
+            .block-icon {
+                font-size: 48px;
+            }
+
+            .block-title {
+                font-size: 18px;
+            }
+
+            .center-frame {
+                min-height: 300px;
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</body>
+</html>

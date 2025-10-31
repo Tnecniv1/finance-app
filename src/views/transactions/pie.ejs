@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camemberts - Finance App</title>
+    <title>Progression - Analyse - Fidess</title>
     <style>
         * {
             margin: 0;
@@ -467,17 +467,16 @@
     </style>
 </head>
 <body>
+    <%- include('../partials/navbar-simple', { currentPage: 'progression', user: user }) %>
+
+    <%- include('../partials/progression-header', { currentView: currentView, stats: stats }) %>
+
     <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>🥧 Répartition des Finances</h1>
-            <div class="nav-buttons">
-                <a href="/transactions" class="btn btn-secondary">← Retour</a>
-                <form action="/auth/logout" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-primary">Déconnexion</button>
-                </form>
-            </div>
-        </div>
+
+    <div class="container">
+<body>
+    <div class="container">
+
 
         <!-- Filters -->
         <div class="filters-container">
@@ -501,21 +500,6 @@
             </div>
         </div>
 
-        <!-- Stats Cards -->
-        <div class="stats-container">
-            <div class="stat-card positive">
-                <h3>Total Revenus</h3>
-                <div class="value" id="total-revenus">0 €</div>
-            </div>
-            <div class="stat-card negative">
-                <h3>Total Dépenses</h3>
-                <div class="value" id="total-depenses">0 €</div>
-            </div>
-            <div class="stat-card neutral">
-                <h3>Solde</h3>
-                <div class="value" id="solde">0 €</div>
-            </div>
-        </div>
 
         <!-- Charts (Moyenne mode) -->
         <div class="charts-container" id="chartsContainer">
@@ -699,6 +683,96 @@
             return { start, end: now };
         }
 
+        // Calculate the actual number of periods available in the transaction history
+        function getAvailablePeriodsCount(period) {
+            if (transactions.length === 0) return 1; // Éviter division par 0
+            
+            // Trouver la transaction la plus ancienne
+            const oldestTransaction = transactions.reduce((oldest, t) => {
+                const tDate = new Date(t.date);
+                return tDate < new Date(oldest.date) ? t : oldest;
+            });
+            
+            const oldestDate = new Date(oldestTransaction.date);
+            const now = new Date();
+            
+            let periodsCount = 0;
+            
+            switch(period) {
+                case 'daily':
+                    // Nombre de jours entre la plus vieille transaction et aujourd'hui
+                    const daysDiff = Math.floor((now - oldestDate) / (1000 * 60 * 60 * 24));
+                    periodsCount = Math.min(daysDiff + 1, 12);
+                    break;
+                case 'weekly':
+                    // Nombre de semaines
+                    const weeksDiff = Math.floor((now - oldestDate) / (1000 * 60 * 60 * 24 * 7));
+                    periodsCount = Math.min(weeksDiff + 1, 12);
+                    break;
+                case 'monthly':
+                    // Nombre de mois
+                    const monthsDiff = (now.getFullYear() - oldestDate.getFullYear()) * 12 
+                                     + (now.getMonth() - oldestDate.getMonth());
+                    periodsCount = Math.min(monthsDiff + 1, 12);
+                    break;
+                case 'yearly':
+                    // Nombre d'années
+                    const yearsDiff = now.getFullYear() - oldestDate.getFullYear();
+                    periodsCount = Math.min(yearsDiff + 1, 12);
+                    break;
+            }
+            
+            return Math.max(periodsCount, 1); // Au minimum 1 période
+        }
+
+        // Get transactions for a specific period index (0 = current period, 1 = previous period, etc.)
+        function getTransactionsForPeriod(periodIndex, period) {
+            const now = new Date();
+            const start = new Date(now);
+            const end = new Date(now);
+
+            switch(period) {
+                case 'daily':
+                    start.setDate(now.getDate() - periodIndex);
+                    start.setHours(0, 0, 0, 0);
+                    end.setDate(now.getDate() - periodIndex);
+                    end.setHours(23, 59, 59, 999);
+                    break;
+                case 'weekly':
+                    // Calculer le début de la semaine pour la période spécifiée
+                    const weekStart = new Date(now);
+                    weekStart.setDate(now.getDate() - (periodIndex * 7));
+                    weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1); // Lundi
+                    weekStart.setHours(0, 0, 0, 0);
+                    start.setTime(weekStart.getTime());
+                    end.setTime(weekStart.getTime());
+                    end.setDate(weekStart.getDate() + 6); // Dimanche
+                    end.setHours(23, 59, 59, 999);
+                    break;
+                case 'monthly':
+                    start.setMonth(now.getMonth() - periodIndex);
+                    start.setDate(1);
+                    start.setHours(0, 0, 0, 0);
+                    end.setMonth(now.getMonth() - periodIndex + 1);
+                    end.setDate(0); // Dernier jour du mois
+                    end.setHours(23, 59, 59, 999);
+                    break;
+                case 'yearly':
+                    start.setFullYear(now.getFullYear() - periodIndex);
+                    start.setMonth(0, 1);
+                    start.setHours(0, 0, 0, 0);
+                    end.setFullYear(now.getFullYear() - periodIndex);
+                    end.setMonth(11, 31);
+                    end.setHours(23, 59, 59, 999);
+                    break;
+            }
+
+            return transactions.filter(t => {
+                const tDate = new Date(t.date);
+                return tDate >= start && tDate <= end;
+            });
+        }
+
         // Filter transactions by date range
         function filterTransactionsByPeriod(transactions, period) {
             const { start, end } = getDateRange(period);
@@ -708,33 +782,41 @@
             });
         }
 
-        // Process revenus data
+        // Process revenus data - Calcul des moyennes sur 12 périodes
         function processRevenusData(period) {
-            const filteredTransactions = filterTransactionsByPeriod(transactions, period);
-
-            // Map category ID to data
+            // Calculer le nombre réel de périodes disponibles
+            const availablePeriods = getAvailablePeriodsCount(period);
+            
+            // Étape 1 : Pour chaque catégorie, initialiser un tableau pour stocker les totaux
             const categoryData = {};
-            const categoryCount = {};
             const categoryMap = {};
-
+            
             categoriesRevenus.forEach(cat => {
-                categoryData[cat.id] = 0;
-                categoryCount[cat.id] = 0;
+                categoryData[cat.id] = [];  // Tableau pour stocker les totaux
                 categoryMap[cat.id] = cat.nom;
             });
-
-            // Sum transactions and count by category
-            filteredTransactions.forEach(t => {
-                if (t.nature === 'revenu' && t.sous_categorie_revenu && t.sous_categorie_revenu.categorie_revenu_id) {
-                    const categorieId = t.sous_categorie_revenu.categorie_revenu_id;
-                    if (categoryData[categorieId] !== undefined) {
-                        categoryData[categorieId] += parseFloat(t.montant);
-                        categoryCount[categorieId]++;
+            
+            // Étape 2 : Pour chacune des périodes disponibles (max 12)
+            for (let i = 0; i < availablePeriods; i++) {
+                const periodTransactions = getTransactionsForPeriod(i, period);
+                
+                // Initialiser à 0 pour cette période
+                Object.keys(categoryData).forEach(catId => {
+                    categoryData[catId][i] = 0;
+                });
+                
+                // Calculer le TOTAL par catégorie pour cette période
+                periodTransactions.forEach(t => {
+                    if (t.nature === 'revenu' && t.sous_categorie_revenu && t.sous_categorie_revenu.categorie_revenu_id) {
+                        const categorieId = t.sous_categorie_revenu.categorie_revenu_id;
+                        if (categoryData[categorieId] !== undefined) {
+                            categoryData[categorieId][i] += parseFloat(t.montant);
+                        }
                     }
-                }
-            });
-
-            // Calculate averages and filter out zero values
+                });
+            }
+            
+            // Étape 3 : Calculer la MOYENNE sur les périodes réellement disponibles
             const labels = [];
             const data = [];
             const colors = [
@@ -743,49 +825,59 @@
                 '#14b8a6', '#6366f1', '#a855f7', '#ef4444'
             ];
             const backgroundColors = [];
-
+            
             let colorIndex = 0;
             Object.keys(categoryData).forEach(catId => {
-                const count = categoryCount[catId];
-                if (count > 0) {
-                    const average = categoryData[catId] / count;
+                const totals = categoryData[catId];  // Les totaux des périodes
+                const sum = totals.reduce((a, b) => a + b, 0);
+                const average = sum / availablePeriods;  // Moyenne sur les périodes réelles
+                
+                if (average > 0) {
                     labels.push(categoryMap[catId]);
                     data.push(average);
                     backgroundColors.push(colors[colorIndex % colors.length]);
                     colorIndex++;
                 }
             });
-
+            
             return { labels, data, backgroundColors };
         }
 
-        // Process depenses data
+        // Process depenses data - Calcul des moyennes sur les périodes réellement disponibles
         function processDepensesData(period) {
-            const filteredTransactions = filterTransactionsByPeriod(transactions, period);
-
-            // Map category ID to data
+            // Calculer le nombre réel de périodes disponibles
+            const availablePeriods = getAvailablePeriodsCount(period);
+            
+            // Étape 1 : Pour chaque catégorie, initialiser un tableau pour stocker les totaux
             const categoryData = {};
-            const categoryCount = {};
             const categoryMap = {};
 
             categoriesDepenses.forEach(cat => {
-                categoryData[cat.id] = 0;
-                categoryCount[cat.id] = 0;
+                categoryData[cat.id] = [];  // Tableau pour stocker les totaux
                 categoryMap[cat.id] = cat.nom;
             });
 
-            // Sum transactions and count by category
-            filteredTransactions.forEach(t => {
-                if (t.nature === 'depense' && t.sous_categorie_depense && t.sous_categorie_depense.categorie_depense_id) {
-                    const categorieId = t.sous_categorie_depense.categorie_depense_id;
-                    if (categoryData[categorieId] !== undefined) {
-                        categoryData[categorieId] += parseFloat(t.montant);
-                        categoryCount[categorieId]++;
+            // Étape 2 : Pour chacune des périodes disponibles (max 12)
+            for (let i = 0; i < availablePeriods; i++) {
+                const periodTransactions = getTransactionsForPeriod(i, period);
+                
+                // Initialiser à 0 pour cette période
+                Object.keys(categoryData).forEach(catId => {
+                    categoryData[catId][i] = 0;
+                });
+                
+                // Calculer le TOTAL par catégorie pour cette période
+                periodTransactions.forEach(t => {
+                    if (t.nature === 'depense' && t.sous_categorie_depense && t.sous_categorie_depense.categorie_depense_id) {
+                        const categorieId = t.sous_categorie_depense.categorie_depense_id;
+                        if (categoryData[categorieId] !== undefined) {
+                            categoryData[categorieId][i] += parseFloat(t.montant);
+                        }
                     }
-                }
-            });
+                });
+            }
 
-            // Calculate averages and filter out zero values
+            // Étape 3 : Calculer la MOYENNE sur les périodes réellement disponibles
             const labels = [];
             const data = [];
             const colors = [
@@ -798,9 +890,11 @@
 
             let colorIndex = 0;
             Object.keys(categoryData).forEach(catId => {
-                const count = categoryCount[catId];
-                if (count > 0) {
-                    const average = categoryData[catId] / count;
+                const totals = categoryData[catId];  // Les totaux des périodes
+                const sum = totals.reduce((a, b) => a + b, 0);
+                const average = sum / availablePeriods;  // Moyenne sur les périodes réelles
+                
+                if (average > 0) {
                     labels.push(categoryMap[catId]);
                     data.push(average);
                     backgroundColors.push(colors[colorIndex % colors.length]);
@@ -1173,3 +1267,4 @@
     </script>
 </body>
 </html>
+

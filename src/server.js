@@ -5,12 +5,11 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const transactionRoutes = require('./routes/transactions');
-
 const csvRoutes = require('./routes/csv');
+const mainRoutes = require('./routes/main');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
 
 // Configuration EJS
 app.set('view engine', 'ejs');
@@ -33,17 +32,10 @@ app.use(session({
 }));
 
 // Routes
-app.get('/', (req, res) => {
-  if (req.session.userId) {
-    res.redirect('/transactions');
-  } else {
-    res.redirect('/auth/login');
-  }
-});
-
 app.use('/auth', authRoutes);
 app.use('/transactions', transactionRoutes);
 app.use('/transactions/import-csv', csvRoutes);
+app.use('/', mainRoutes);
 
 // Gestion des erreurs 404
 app.use((req, res) => {
@@ -53,7 +45,7 @@ app.use((req, res) => {
 // Démarrage du serveur
 app.listen(PORT, () => {
   console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
-  console.log(`📝 Connexion: http://localhost:${PORT}/auth/login`);
+  console.log(`🔐 Connexion: http://localhost:${PORT}/auth/login`);
   console.log(`✨ Inscription: http://localhost:${PORT}/auth/register`);
-  console.log(`🏦 Banques: http://localhost:${PORT}/bank/connect`);
+  console.log(`🏠 Maison: http://localhost:${PORT}/maison`);
 });

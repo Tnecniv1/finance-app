@@ -51,6 +51,13 @@ class TransactionController {
       const error = req.query.error || null;
       const success = req.query.success || null;
 
+      // ✅ AJOUT : Calculer les stats pour le header
+      const stats = {
+        profit: balance.balance || 0,
+        revenus: balance.totalIncome || 0,
+        charges: balance.totalExpenses || 0
+      };
+
       res.render('transactions/index', {
         transactions,
         categories,
@@ -58,6 +65,9 @@ class TransactionController {
         suggestions,
         aiStats,
         pseudo,
+        user: req.session.user || { prenom: req.session.pseudo },  // ✅ AJOUT
+        currentView: 'liste',  // ✅ AJOUT
+        stats: stats,  // ✅ AJOUT
         error,
         success,
         filters: {
@@ -323,14 +333,14 @@ class TransactionController {
   }
 
   /**
-   * ✨ NOUVELLE FONCTION : Afficher la vue graphique des transactions
+   * ✨ Afficher la vue graphique des transactions
    */
   static async graphView(req, res) {
     try {
       const userId = req.session.userId;
       const pseudo = req.session.pseudo;
 
-      // Récupérer les paramètres de filtrage (identiques à index)
+      // Récupérer les paramètres de filtrage
       const {
         type,
         categorie,
@@ -353,7 +363,6 @@ class TransactionController {
       // Récupérer les catégories pour les filtres
       const categoriesData = await Category.getAllWithSubcategories();
       
-      // ✅ FIX : Garder les catégories séparées pour les graphiques
       const categoriesRevenus = categoriesData.revenus || [];
       const categoriesDepenses = categoriesData.depenses || [];
 
@@ -372,14 +381,24 @@ class TransactionController {
 
       const solde = totalRevenus - totalDepenses;
 
+      // ✅ AJOUT : Créer les stats pour le header
+      const stats = {
+        profit: solde,
+        revenus: totalRevenus,
+        charges: totalDepenses
+      };
+
       res.render('transactions/graph', {
         transactions,
-        categoriesRevenus,    // ✅ Passer séparément
-        categoriesDepenses,   // ✅ Passer séparément
+        categoriesRevenus,
+        categoriesDepenses,
         totalRevenus,
         totalDepenses,
         solde,
         pseudo,
+        user: req.session.user || { prenom: req.session.pseudo },  // ✅ AJOUT
+        currentView: 'evolution',  // ✅ AJOUT
+        stats: stats,  // ✅ AJOUT
         filters: {
           type: type || '',
           categorie: categorie || '',
@@ -395,14 +414,14 @@ class TransactionController {
   }
 
   /**
-   * 🥧 NOUVELLE FONCTION : Afficher la vue camembert des transactions
+   * 🥧 Afficher la vue camembert des transactions
    */
   static async pieView(req, res) {
     try {
       const userId = req.session.userId;
       const pseudo = req.session.pseudo;
 
-      // Récupérer toutes les transactions (filtrage par période fait en JS côté client)
+      // Récupérer toutes les transactions
       const filters = {
         userId: userId,
         nature: null,
@@ -419,11 +438,36 @@ class TransactionController {
       const categoriesRevenus = categoriesData.revenus || [];
       const categoriesDepenses = categoriesData.depenses || [];
 
+      // ✅ AJOUT : Calculer les totaux pour les stats
+      let totalRevenus = 0;
+      let totalDepenses = 0;
+
+      transactions.forEach(t => {
+        const montant = parseFloat(t.montant);
+        if (t.nature === 'revenu') {
+          totalRevenus += montant;
+        } else {
+          totalDepenses += Math.abs(montant);
+        }
+      });
+
+      const solde = totalRevenus - totalDepenses;
+
+      // ✅ AJOUT : Créer les stats pour le header
+      const stats = {
+        profit: solde,
+        revenus: totalRevenus,
+        charges: totalDepenses
+      };
+
       res.render('transactions/pie', {
         transactions,
         categoriesRevenus,
         categoriesDepenses,
-        pseudo
+        pseudo,
+        user: req.session.user || { prenom: req.session.pseudo },  // ✅ AJOUT
+        currentView: 'analyse',  // ✅ AJOUT
+        stats: stats  // ✅ AJOUT
       });
     } catch (error) {
       console.error('Erreur chargement camemberts:', error);

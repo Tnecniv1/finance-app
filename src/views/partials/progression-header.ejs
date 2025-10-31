@@ -1,0 +1,183 @@
+<!-- Tabs de navigation -->
+<div class="progression-header">
+    <div class="progression-tabs">
+        <a href="/transactions" class="tab <%= currentView === 'liste' ? 'active' : '' %>">
+            📋 Liste
+        </a>
+        <a href="/transactions/graph" class="tab <%= currentView === 'evolution' ? 'active' : '' %>">
+            📈 Évolution
+        </a>
+        <a href="/transactions/pie" class="tab <%= currentView === 'analyse' ? 'active' : '' %>">
+            🥧 Analyse
+        </a>
+    </div>
+
+    <!-- Stats globales -->
+    <div class="stats-bar">
+        <div class="stat-item profit">
+            <div class="stat-icon">💰</div>
+            <div class="stat-content">
+                <div class="stat-label">Profit</div>
+                <div class="stat-value" id="stat-profit"><%= typeof stats !== 'undefined' ? stats.profit.toFixed(2) : '0.00' %> €</div>
+            </div>
+        </div>
+
+        <div class="stat-divider"></div>
+
+        <div class="stat-item revenus">
+            <div class="stat-icon">💚</div>
+            <div class="stat-content">
+                <div class="stat-label">Revenus</div>
+                <div class="stat-value positive" id="stat-revenus">+ <%= typeof stats !== 'undefined' ? stats.revenus.toFixed(2) : '0.00' %> €</div>
+            </div>
+        </div>
+
+        <div class="stat-divider"></div>
+
+        <div class="stat-item charges">
+            <div class="stat-icon">❤️</div>
+            <div class="stat-content">
+                <div class="stat-label">Charges</div>
+                <div class="stat-value negative" id="stat-charges">- <%= typeof stats !== 'undefined' ? stats.charges.toFixed(2) : '0.00' %> €</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Header container */
+    .progression-header {
+        max-width: 1400px;
+        margin: 0 auto 30px;
+        padding: 0 20px;
+    }
+
+    /* Tabs de navigation */
+    .progression-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        margin-top: 20px; 
+        justify-content: center;
+    }
+
+    .progression-tabs .tab {
+        padding: 12px 30px;
+        background: white;
+        border-radius: 10px;
+        text-decoration: none;
+        color: #666;
+        font-weight: 500;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.3s;
+        border: 2px solid transparent;
+    }
+
+    .progression-tabs .tab:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        color: #667eea;
+        border-color: #667eea;
+    }
+
+    .progression-tabs .tab.active {
+        background: #667eea;
+        color: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    /* Stats bar */
+    .stats-bar {
+        background: white;
+        border-radius: 15px;
+        padding: 25px 40px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .stat-icon {
+        font-size: 36px;
+        line-height: 1;
+    }
+
+    .stat-content {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: #999;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .stat-value.positive {
+        color: #10b981;
+    }
+
+    .stat-value.negative {
+        color: #ef4444;
+    }
+
+    .stat-divider {
+        width: 1px;
+        height: 50px;
+        background: #e5e7eb;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .progression-tabs {
+            flex-direction: column;
+        }
+
+        .progression-tabs .tab {
+            padding: 10px 20px;
+            text-align: center;
+        }
+
+        .stats-bar {
+            flex-direction: column;
+            padding: 20px;
+            gap: 15px;
+        }
+
+        .stat-item {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        .stat-divider {
+            width: 100%;
+            height: 1px;
+        }
+
+        .stat-icon {
+            font-size: 28px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+        }
+    }
+</style>

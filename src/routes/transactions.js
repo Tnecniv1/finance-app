@@ -16,7 +16,7 @@ router.post('/:id/categorize', TransactionController.categorize);
 
 router.post('/categorize-bulk', TransactionController.categorizeBulk);
 
-// 🤖 Routes IA
+// Routes IA
 router.post('/ai/generate-suggestions', TransactionController.generateSuggestions);
 router.post('/ai/suggestions/:id/accept', TransactionController.acceptSuggestion);
 router.post('/ai/suggestions/:id/reject', TransactionController.rejectSuggestion);
