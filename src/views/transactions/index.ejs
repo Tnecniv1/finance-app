@@ -263,15 +263,23 @@
             <% } %>
         </div>
 
+        <!-- Bouton Import CSV toujours visible -->
+        <div class="card" style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>📥 Importer vos transactions</h2>
+                <a href="/transactions/import-csv" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 12px 24px;">
+                    📥 Importer CSV
+                </a>
+            </div>
+            <p style="color: #666; margin-top: 10px;">Importez facilement vos relevés bancaires au format CSV</p>
+        </div>
+
         <!-- Transactions -->
         <% if (transactions.length > 0) { %>
         <div class="card">
             <div class="bulk-actions-header">
                 <h2>📋 Transactions (<%= transactions.length %>)</h2>
                 <div class="bulk-actions">
-                    <a href="/transactions/import-csv" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                    📥 Importer CSV
-                    </a>
                     <button type="button" class="btn btn-secondary" onclick="selectAll()">
                         ☑️ Tout sélectionner
                     </button>
