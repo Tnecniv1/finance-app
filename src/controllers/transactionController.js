@@ -1,6 +1,63 @@
 const Transaction = require('../models/Transaction');
 const Category = require('../models/Category');
 const CategorizationAI = require('../services/CategorizationAI');
+const RecurringTransaction = require('../models/RecurringTransaction');
+
+/**
+ * Calcule les moyennes mensuelles récurrent vs variable
+ */
+function calculateRecurrentVsVariable(recurringTxs, variableTxs) {
+  // Calculer le nombre de mois dans l'historique
+  const allDates = [...recurringTxs, ...variableTxs].map(tx => new Date(tx.date));
+  if (allDates.length === 0) {
+    return {
+      revenusRecurrents: 0,
+      revenusVariables: 0,
+      depensesRecurrentes: 0,
+      depensesVariables: 0
+    };
+  }
+
+  const oldestDate = new Date(Math.min(...allDates));
+  const newestDate = new Date(Math.max(...allDates));
+  
+  const monthsDiff = (newestDate.getFullYear() - oldestDate.getFullYear()) * 12 
+                   + (newestDate.getMonth() - oldestDate.getMonth()) + 1;
+  
+  const nbMonths = Math.max(monthsDiff, 1);
+
+  // Calculer les totaux
+  let revenusRecurrentsTotal = 0;
+  let revenusVariablesTotal = 0;
+  let depensesRecurrentesTotal = 0;
+  let depensesVariablesTotal = 0;
+
+  recurringTxs.forEach(tx => {
+    const montant = parseFloat(tx.montant);
+    if (tx.nature === 'revenu') {
+      revenusRecurrentsTotal += montant;
+    } else {
+      depensesRecurrentesTotal += montant;
+    }
+  });
+
+  variableTxs.forEach(tx => {
+    const montant = parseFloat(tx.montant);
+    if (tx.nature === 'revenu') {
+      revenusVariablesTotal += montant;
+    } else {
+      depensesVariablesTotal += montant;
+    }
+  });
+
+  // Retourner les moyennes mensuelles
+  return {
+    revenusRecurrents: Math.round(revenusRecurrentsTotal / nbMonths * 100) / 100,
+    revenusVariables: Math.round(revenusVariablesTotal / nbMonths * 100) / 100,
+    depensesRecurrentes: Math.round(depensesRecurrentesTotal / nbMonths * 100) / 100,
+    depensesVariables: Math.round(depensesVariablesTotal / nbMonths * 100) / 100
+  };
+}
 
 class TransactionController {
   /**
@@ -120,7 +177,7 @@ class TransactionController {
         return res.redirect('/transactions?error=Transaction introuvable');
       }
 
-      console.log('📝 Transaction récupérée:', {
+      console.log('🔍 Transaction récupérée:', {
         id: transaction.id,
         objet: transaction.objet,
         montant: transaction.montant
@@ -416,7 +473,7 @@ class TransactionController {
   }
 
   /**
-   * Afficher la vue camembert des transactions
+   * Afficher la vue camembert des transactions avec analyse récurrent/variable
    */
   static async pieView(req, res) {
     try {
@@ -440,7 +497,26 @@ class TransactionController {
       const categoriesRevenus = categoriesData.revenus || [];
       const categoriesDepenses = categoriesData.depenses || [];
 
-      // Calculer les totaux pour les stats
+      // ✅ Récupérer les récurrences validées
+      const recurrences = await RecurringTransaction.findByUserId(userId);
+
+      // ✅ Séparer récurrent vs variable
+      const recurringTxIds = [];
+      for (const rec of recurrences) {
+        const txIds = await RecurringTransaction.getTransactionsByRecurringId(rec.id);
+        recurringTxIds.push(...txIds);
+      }
+
+      // Séparer les transactions
+      const recurringTransactions = transactions.filter(tx => recurringTxIds.includes(tx.id));
+      const variableTransactions = transactions.filter(tx => !recurringTxIds.includes(tx.id));
+
+      console.log(`📊 Analyse récurrent/variable:`);
+      console.log(`  - Total transactions: ${transactions.length}`);
+      console.log(`  - Récurrentes: ${recurringTransactions.length}`);
+      console.log(`  - Variables: ${variableTransactions.length}`);
+
+      // Calculer les totaux globaux
       let totalRevenus = 0;
       let totalDepenses = 0;
 
@@ -453,6 +529,10 @@ class TransactionController {
         }
       });
 
+      // ✅ Calculer récurrent/variable par mois
+      const { revenusRecurrents, revenusVariables, depensesRecurrentes, depensesVariables } = 
+        calculateRecurrentVsVariable(recurringTransactions, variableTransactions);
+
       const solde = totalRevenus - totalDepenses;
 
       // Créer les stats pour le header
@@ -462,10 +542,33 @@ class TransactionController {
         charges: totalDepenses
       };
 
+      // ✅ Stats récurrent/variable
+      const recurringStats = {
+        revenusRecurrents,
+        revenusVariables,
+        depensesRecurrentes,
+        depensesVariables,
+        totalRevenus: revenusRecurrents + revenusVariables,
+        totalDepenses: depensesRecurrentes + depensesVariables,
+        tauxCouverture: depensesRecurrentes > 0 ? (revenusRecurrents / depensesRecurrentes * 100) : 0,
+        resteAVivre: revenusRecurrents - depensesRecurrentes,
+        soldeMensuel: (revenusRecurrents + revenusVariables) - (depensesRecurrentes + depensesVariables),
+        risqueDecouvert: revenusRecurrents - depensesRecurrentes
+      };
+
+      console.log(`💰 Stats mensuelles moyennes:`);
+      console.log(`  - Revenus récurrents: ${revenusRecurrents.toFixed(2)}€`);
+      console.log(`  - Revenus variables: ${revenusVariables.toFixed(2)}€`);
+      console.log(`  - Dépenses récurrentes: ${depensesRecurrentes.toFixed(2)}€`);
+      console.log(`  - Dépenses variables: ${depensesVariables.toFixed(2)}€`);
+      console.log(`  - Taux de couverture: ${recurringStats.tauxCouverture.toFixed(1)}%`);
+
       res.render('transactions/pie', {
         transactions,
         categoriesRevenus,
         categoriesDepenses,
+        recurringStats,
+        recurringTxIds,  // ✅ Ajouter les IDs des transactions récurrentes
         pseudo,
         user: req.session.user || { prenom: req.session.pseudo },
         currentView: 'analyse',

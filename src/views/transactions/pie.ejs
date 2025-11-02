@@ -5,6 +5,245 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Progression - Analyse - Fidess</title>
     <style>
+
+        /* ==========================================
+        ANALYSE RÉCURRENT VS VARIABLE
+        ========================================== */
+        .recurring-analysis-section {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* Graphiques en barres */
+        .bars-container {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            padding: 20px 0;
+        }
+
+        .bar-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+        }
+
+        .bar-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .bar-total {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .bar-chart {
+            display: flex;
+            width: 100%;
+            height: 60px;
+            background: #f3f4f6;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .bar-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .bar-segment:hover {
+            opacity: 0.85;
+            transform: scaleY(1.05);
+        }
+
+        .bar-value {
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            padding: 0 10px;
+            white-space: nowrap;
+        }
+
+        .recurring-revenue {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .variable-revenue {
+            background: linear-gradient(135deg, #86efac 0%, #4ade80 100%);
+        }
+
+        .recurring-expense {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .variable-expense {
+            background: linear-gradient(135deg, #fca5a5 0%, #f87171 100%);
+        }
+
+        .bar-legend {
+            display: flex;
+            gap: 20px;
+            padding: 0 10px;
+        }
+
+        .legend-item-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .recurring-revenue-dot {
+            background: #10b981;
+        }
+
+        .variable-revenue-dot {
+            background: #86efac;
+        }
+
+        .recurring-expense-dot {
+            background: #ef4444;
+        }
+
+        .variable-expense-dot {
+            background: #fca5a5;
+        }
+
+        /* Indicateurs clés */
+        .metrics-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            text-align: center;
+            transition: all 0.3s;
+            border-top: 4px solid #e5e7eb;
+            min-height: 150px;
+            justify-content: center;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+
+        .metric-card.metric-success {
+            border-top-color: #10b981;
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+        }
+
+        .metric-card.metric-warning {
+            border-top-color: #f59e0b;
+            background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
+        }
+
+        .metric-card.metric-danger {
+            border-top-color: #ef4444;
+            background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+        }
+
+        .metric-icon {
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+
+        .metric-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            width: 100%;
+        }
+
+        .metric-content h3 {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .metric-success .metric-value {
+            color: #10b981;
+        }
+
+        .metric-warning .metric-value {
+            color: #f59e0b;
+        }
+
+        .metric-danger .metric-value {
+            color: #ef4444;
+        }
+
+        .metric-description {
+            font-size: 11px;
+            color: #666;
+            line-height: 1.3;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .bar-value {
+                font-size: 11px;
+            }
+            
+            .bar-chart {
+                height: 50px;
+            }
+            
+            .recurring-analysis-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -469,7 +708,7 @@
 <body>
     <%- include('../partials/navbar-simple', { currentPage: 'progression', user: user }) %>
 
-    <%- include('../partials/progression-header', { currentView: currentView, stats: stats }) %>
+    <%- include('../partials/progression-header', { currentView: currentView, stats: stats, recurringStats: recurringStats }) %>
 
     <div class="container">
 
@@ -509,7 +748,6 @@
                 <div class="chart-wrapper">
                     <canvas id="revenusChart"></canvas>
                 </div>
-                <div class="legend-container" id="revenusLegend"></div>
             </div>
 
             <!-- Depenses Pie Chart -->
@@ -518,9 +756,146 @@
                 <div class="chart-wrapper">
                     <canvas id="depensesChart"></canvas>
                 </div>
-                <div class="legend-container" id="depensesLegend"></div>
             </div>
         </div>
+
+        <!-- Analyse Récurrent vs Variable -->
+        <div class="recurring-analysis-section" id="recurringAnalysisSection">
+            <!-- Graphique en barres -->
+            <div class="chart-card">
+                <h2>📊 Analyse Récurrent vs. Variable (Mensuel Moyen)</h2>
+                <div class="bars-container">
+                    <!-- Revenus -->
+                    <div class="bar-group">
+                        <div class="bar-label">
+                            <span class="bar-title">💰 REVENUS</span>
+                            <span class="bar-total"><%= recurringStats.totalRevenus.toFixed(2) %> €</span>
+                        </div>
+                        <div class="bar-chart">
+                            <div class="bar-segment recurring-revenue" 
+                                style="width: <%= recurringStats.totalRevenus > 0 ? (recurringStats.revenusRecurrents / recurringStats.totalRevenus * 100) : 0 %>%"
+                                title="Récurrent : <%= recurringStats.revenusRecurrents.toFixed(2) %> €">
+                                <span class="bar-value">
+                                    <%= recurringStats.revenusRecurrents.toFixed(0) %> €
+                                    (<%= recurringStats.totalRevenus > 0 ? Math.round(recurringStats.revenusRecurrents / recurringStats.totalRevenus * 100) : 0 %>%)
+                                </span>
+                            </div>
+                            <div class="bar-segment variable-revenue" 
+                                style="width: <%= recurringStats.totalRevenus > 0 ? (recurringStats.revenusVariables / recurringStats.totalRevenus * 100) : 0 %>%"
+                                title="Variable : <%= recurringStats.revenusVariables.toFixed(2) %> €">
+                                <span class="bar-value">
+                                    <%= recurringStats.revenusVariables.toFixed(0) %> €
+                                    (<%= recurringStats.totalRevenus > 0 ? Math.round(recurringStats.revenusVariables / recurringStats.totalRevenus * 100) : 0 %>%)
+                                </span>
+                            </div>
+                        </div>
+                        <div class="bar-legend">
+                            <div class="legend-item-bar">
+                                <span class="legend-dot recurring-revenue-dot"></span>
+                                <span>Récurrent</span>
+                            </div>
+                            <div class="legend-item-bar">
+                                <span class="legend-dot variable-revenue-dot"></span>
+                                <span>Variable</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dépenses -->
+                    <div class="bar-group">
+                        <div class="bar-label">
+                            <span class="bar-title">💸 DÉPENSES</span>
+                            <span class="bar-total"><%= recurringStats.totalDepenses.toFixed(2) %> €</span>
+                        </div>
+                        <div class="bar-chart">
+                            <div class="bar-segment recurring-expense" 
+                                style="width: <%= recurringStats.totalDepenses > 0 ? (recurringStats.depensesRecurrentes / recurringStats.totalDepenses * 100) : 0 %>%"
+                                title="Récurrent : <%= recurringStats.depensesRecurrentes.toFixed(2) %> €">
+                                <span class="bar-value">
+                                    <%= recurringStats.depensesRecurrentes.toFixed(0) %> €
+                                    (<%= recurringStats.totalDepenses > 0 ? Math.round(recurringStats.depensesRecurrentes / recurringStats.totalDepenses * 100) : 0 %>%)
+                                </span>
+                            </div>
+                            <div class="bar-segment variable-expense" 
+                                style="width: <%= recurringStats.totalDepenses > 0 ? (recurringStats.depensesVariables / recurringStats.totalDepenses * 100) : 0 %>%"
+                                title="Variable : <%= recurringStats.depensesVariables.toFixed(2) %> €">
+                                <span class="bar-value">
+                                    <%= recurringStats.depensesVariables.toFixed(0) %> €
+                                    (<%= recurringStats.totalDepenses > 0 ? Math.round(recurringStats.depensesVariables / recurringStats.totalDepenses * 100) : 0 %>%)
+                                </span>
+                            </div>
+                        </div>
+                        <div class="bar-legend">
+                            <div class="legend-item-bar">
+                                <span class="legend-dot recurring-expense-dot"></span>
+                                <span>Récurrent</span>
+                            </div>
+                            <div class="legend-item-bar">
+                                <span class="legend-dot variable-expense-dot"></span>
+                                <span>Variable</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Indicateurs clés -->
+            <div class="chart-card">
+                <h2>📈 Indicateurs Clés</h2>
+                <div class="metrics-container">
+                    <!-- Taux de couverture -->
+                    <div class="metric-card <%= recurringStats.tauxCouverture >= 100 ? 'metric-success' : 'metric-warning' %>">
+                        <div class="metric-icon">✅</div>
+                        <div class="metric-content">
+                            <h3>Taux de couverture</h3>
+                            <div class="metric-value"><%= recurringStats.tauxCouverture.toFixed(0) %>%</div>
+                            <div class="metric-description">
+                                Tes revenus fixes couvrent <%= (recurringStats.tauxCouverture / 100).toFixed(2) %>x tes charges fixes
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reste à vivre -->
+                    <div class="metric-card <%= recurringStats.resteAVivre >= 0 ? 'metric-success' : 'metric-danger' %>">
+                        <div class="metric-icon">💵</div>
+                        <div class="metric-content">
+                            <h3>Reste à vivre</h3>
+                            <div class="metric-value"><%= recurringStats.resteAVivre.toFixed(2) %> €</div>
+                            <div class="metric-description">
+                                Montant disponible après charges fixes
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Capacité d'épargne -->
+                    <div class="metric-card <%= recurringStats.soldeMensuel >= 0 ? 'metric-success' : 'metric-danger' %>">
+                        <div class="metric-icon">🎯</div>
+                        <div class="metric-content">
+                            <h3>Capacité d'épargne</h3>
+                            <div class="metric-value"><%= recurringStats.soldeMensuel.toFixed(2) %> €</div>
+                            <div class="metric-description">
+                                Solde mensuel moyen (revenus - dépenses)
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scénario pire cas -->
+                    <div class="metric-card <%= recurringStats.risqueDecouvert >= 0 ? 'metric-success' : 'metric-danger' %>">
+                        <div class="metric-icon">⚠️</div>
+                        <div class="metric-content">
+                            <h3>Scénario pire cas</h3>
+                            <div class="metric-value"><%= recurringStats.risqueDecouvert.toFixed(2) %> €</div>
+                            <div class="metric-description">
+                                Si revenus variables = 0€
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
 
         <!-- Volatility Gauge (Volatilité mode) -->
         <div class="volatility-container" id="volatilityContainer" style="display: none;">
@@ -596,6 +971,7 @@
         const transactions = <%- JSON.stringify(transactions) %>;
         const categoriesRevenus = <%- JSON.stringify(categoriesRevenus) %>;
         const categoriesDepenses = <%- JSON.stringify(categoriesDepenses) %>;
+        const recurringTxIds = <%- JSON.stringify(recurringTxIds) %>;  // IDs des transactions récurrentes
 
         let revenusChart = null;
         let depensesChart = null;
@@ -628,13 +1004,16 @@
         // Toggle between Moyenne and Volatilité views
         function toggleView() {
             const chartsContainer = document.getElementById('chartsContainer');
+            const recurringAnalysisSection = document.getElementById('recurringAnalysisSection');
             const volatilityContainer = document.getElementById('volatilityContainer');
 
             if (currentMode === 'moyenne') {
                 chartsContainer.style.display = 'grid';
+                recurringAnalysisSection.style.display = 'flex';
                 volatilityContainer.style.display = 'none';
             } else {
                 chartsContainer.style.display = 'none';
+                recurringAnalysisSection.style.display = 'none';
                 volatilityContainer.style.display = 'block';
             }
         }
@@ -942,46 +1321,6 @@
         }
 
         // Update legend
-        function updateLegend(containerId, labels, data, colors) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-
-            const total = data.reduce((sum, val) => sum + val, 0);
-
-            labels.forEach((label, index) => {
-                const percentage = ((data[index] / total) * 100).toFixed(1);
-                
-                const item = document.createElement('div');
-                item.className = 'legend-item';
-
-                const colorBox = document.createElement('div');
-                colorBox.className = 'legend-color';
-                colorBox.style.backgroundColor = colors[index];
-
-                const textContainer = document.createElement('div');
-                textContainer.className = 'legend-text';
-
-                const labelSpan = document.createElement('span');
-                labelSpan.className = 'legend-label';
-                labelSpan.textContent = label;
-
-                const amountSpan = document.createElement('span');
-                amountSpan.className = 'legend-amount';
-                amountSpan.textContent = formatCurrency(data[index]);
-
-                const percentSpan = document.createElement('span');
-                percentSpan.className = 'legend-percent';
-                percentSpan.textContent = `${percentage}%`;
-
-                textContainer.appendChild(labelSpan);
-                textContainer.appendChild(amountSpan);
-                textContainer.appendChild(percentSpan);
-
-                item.appendChild(colorBox);
-                item.appendChild(textContainer);
-                container.appendChild(item);
-            });
-        }
 
         // Update charts
         function updateCharts() {
@@ -1030,8 +1369,6 @@
                         }
                     }
                 });
-
-                updateLegend('revenusLegend', revenusData.labels, revenusData.data, revenusData.backgroundColors);
             }
 
             // Update Depenses Chart
@@ -1076,12 +1413,140 @@
                         }
                     }
                 });
-
-                updateLegend('depensesLegend', depensesData.labels, depensesData.data, depensesData.backgroundColors);
             }
 
             // Update stats
             updateStats();
+            updateRecurringAnalysis();  // Mettre à jour l'analyse récurrent/variable
+        }
+
+        // Calculer les stats récurrent/variable selon la période
+        function calculateRecurringStats(period) {
+            const filteredTransactions = filterTransactionsByPeriod(transactions, period);
+            
+            // Séparer récurrent vs variable
+            const recurringTransactions = filteredTransactions.filter(tx => recurringTxIds.includes(tx.id));
+            const variableTransactions = filteredTransactions.filter(tx => !recurringTxIds.includes(tx.id));
+            
+            // Calculer les totaux
+            let revenusRecurrents = 0;
+            let revenusVariables = 0;
+            let depensesRecurrentes = 0;
+            let depensesVariables = 0;
+            
+            recurringTransactions.forEach(tx => {
+                const montant = parseFloat(tx.montant);
+                if (tx.nature === 'revenu') {
+                    revenusRecurrents += montant;
+                } else {
+                    depensesRecurrentes += Math.abs(montant);
+                }
+            });
+            
+            variableTransactions.forEach(tx => {
+                const montant = parseFloat(tx.montant);
+                if (tx.nature === 'revenu') {
+                    revenusVariables += montant;
+                } else {
+                    depensesVariables += Math.abs(montant);
+                }
+            });
+            
+            const totalRevenus = revenusRecurrents + revenusVariables;
+            const totalDepenses = depensesRecurrentes + depensesVariables;
+            const tauxCouverture = depensesRecurrentes > 0 ? (revenusRecurrents / depensesRecurrentes * 100) : 0;
+            const resteAVivre = revenusRecurrents - depensesRecurrentes;
+            const soldeMensuel = totalRevenus - totalDepenses;
+            const risqueDecouvert = revenusRecurrents - depensesRecurrentes;
+            
+            return {
+                revenusRecurrents,
+                revenusVariables,
+                depensesRecurrentes,
+                depensesVariables,
+                totalRevenus,
+                totalDepenses,
+                tauxCouverture,
+                resteAVivre,
+                soldeMensuel,
+                risqueDecouvert
+            };
+        }
+        
+        // Mettre à jour l'affichage de l'analyse récurrent/variable
+        function updateRecurringAnalysis() {
+            const stats = calculateRecurringStats(currentPeriod);
+            
+            // Mettre à jour le titre selon la période
+            const titleElement = document.querySelector('.recurring-analysis-section h2');
+            const periodLabel = {
+                'weekly': 'Hebdomadaire',
+                'monthly': 'Mensuel',
+                'yearly': 'Annuel'
+            };
+            titleElement.textContent = `📊 Analyse Récurrent vs. Variable (${periodLabel[currentPeriod]})`;
+            
+            // Mettre à jour les barres de revenus
+            const revenueBar = document.querySelectorAll('.bar-group')[0];
+            const revenueTotal = revenueBar.querySelector('.bar-total');
+            revenueTotal.textContent = `${stats.totalRevenus.toFixed(2)} €`;
+            
+            const revenueRecurringSegment = revenueBar.querySelector('.recurring-revenue');
+            const revenueRecurringValue = revenueRecurringSegment.querySelector('.bar-value');
+            const revenueRecurringPct = stats.totalRevenus > 0 ? (stats.revenusRecurrents / stats.totalRevenus * 100) : 0;
+            revenueRecurringSegment.style.width = `${revenueRecurringPct}%`;
+            revenueRecurringSegment.title = `Récurrent : ${stats.revenusRecurrents.toFixed(2)} €`;
+            revenueRecurringValue.textContent = `${stats.revenusRecurrents.toFixed(0)} € (${Math.round(revenueRecurringPct)}%)`;
+            
+            const revenueVariableSegment = revenueBar.querySelector('.variable-revenue');
+            const revenueVariableValue = revenueVariableSegment.querySelector('.bar-value');
+            const revenueVariablePct = stats.totalRevenus > 0 ? (stats.revenusVariables / stats.totalRevenus * 100) : 0;
+            revenueVariableSegment.style.width = `${revenueVariablePct}%`;
+            revenueVariableSegment.title = `Variable : ${stats.revenusVariables.toFixed(2)} €`;
+            revenueVariableValue.textContent = `${stats.revenusVariables.toFixed(0)} € (${Math.round(revenueVariablePct)}%)`;
+            
+            // Mettre à jour les barres de dépenses
+            const expenseBar = document.querySelectorAll('.bar-group')[1];
+            const expenseTotal = expenseBar.querySelector('.bar-total');
+            expenseTotal.textContent = `${stats.totalDepenses.toFixed(2)} €`;
+            
+            const expenseRecurringSegment = expenseBar.querySelector('.recurring-expense');
+            const expenseRecurringValue = expenseRecurringSegment.querySelector('.bar-value');
+            const expenseRecurringPct = stats.totalDepenses > 0 ? (stats.depensesRecurrentes / stats.totalDepenses * 100) : 0;
+            expenseRecurringSegment.style.width = `${expenseRecurringPct}%`;
+            expenseRecurringSegment.title = `Récurrent : ${stats.depensesRecurrentes.toFixed(2)} €`;
+            expenseRecurringValue.textContent = `${stats.depensesRecurrentes.toFixed(0)} € (${Math.round(expenseRecurringPct)}%)`;
+            
+            const expenseVariableSegment = expenseBar.querySelector('.variable-expense');
+            const expenseVariableValue = expenseVariableSegment.querySelector('.bar-value');
+            const expenseVariablePct = stats.totalDepenses > 0 ? (stats.depensesVariables / stats.totalDepenses * 100) : 0;
+            expenseVariableSegment.style.width = `${expenseVariablePct}%`;
+            expenseVariableSegment.title = `Variable : ${stats.depensesVariables.toFixed(2)} €`;
+            expenseVariableValue.textContent = `${stats.depensesVariables.toFixed(0)} € (${Math.round(expenseVariablePct)}%)`;
+            
+            // Mettre à jour les métriques
+            const metricCards = document.querySelectorAll('.metric-card');
+            
+            // Taux de couverture
+            const tauxCard = metricCards[0];
+            tauxCard.querySelector('.metric-value').textContent = `${stats.tauxCouverture.toFixed(0)}%`;
+            tauxCard.querySelector('.metric-description').textContent = `Tes revenus fixes couvrent ${(stats.tauxCouverture / 100).toFixed(2)}x tes charges fixes`;
+            tauxCard.className = `metric-card ${stats.tauxCouverture >= 100 ? 'metric-success' : 'metric-warning'}`;
+            
+            // Reste à vivre
+            const resteCard = metricCards[1];
+            resteCard.querySelector('.metric-value').textContent = `${stats.resteAVivre.toFixed(2)} €`;
+            resteCard.className = `metric-card ${stats.resteAVivre >= 0 ? 'metric-success' : 'metric-danger'}`;
+            
+            // Capacité d'épargne
+            const capaciteCard = metricCards[2];
+            capaciteCard.querySelector('.metric-value').textContent = `${stats.soldeMensuel.toFixed(2)} €`;
+            capaciteCard.className = `metric-card ${stats.soldeMensuel >= 0 ? 'metric-success' : 'metric-danger'}`;
+            
+            // Scénario pire cas
+            const scenarioCard = metricCards[3];
+            scenarioCard.querySelector('.metric-value').textContent = `${stats.risqueDecouvert.toFixed(2)} €`;
+            scenarioCard.className = `metric-card ${stats.risqueDecouvert >= 0 ? 'metric-success' : 'metric-danger'}`;
         }
 
         // Calculate volatility (average growth rate over periods)
@@ -1267,4 +1732,3 @@
     </script>
 </body>
 </html>
-
