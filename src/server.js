@@ -11,6 +11,9 @@ const mainRoutes = require('./routes/main');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const monteCarloRoutes = require('./routes/monteCarlo');
+const recurrenceRoutes = require('./routes/recurrences');
+
 // Configuration EJS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -36,6 +39,8 @@ app.use('/auth', authRoutes);
 app.use('/transactions', transactionRoutes);
 app.use('/transactions/import-csv', csvRoutes);
 app.use('/', mainRoutes);
+app.use('/', monteCarloRoutes);
+app.use('/recurrences', recurrenceRoutes);
 
 // Gestion des erreurs 404
 app.use((req, res) => {

@@ -185,7 +185,15 @@ class CategorizationAI {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // Si erreur de doublon, ignorer silencieusement
+        if (error.code === '23505') {
+          console.log(`⚠️ Suggestion déjà existante pour transaction ${transactionId} - ignorée`);
+          return null;
+        }
+        throw error;
+      }
+      
       return data;
     } catch (error) {
       console.error('Erreur création suggestion:', error);
@@ -249,7 +257,26 @@ class CategorizationAI {
    */
   static async generateSuggestionsForUser(userId) {
     try {
-      // Récupérer les transactions non catégorisées
+      console.log('🚀 Début génération suggestions pour user:', userId);
+
+      // 🆕 ÉTAPE 1 : Supprimer TOUTES les suggestions existantes (pas seulement pending)
+      console.log('🧹 Suppression de TOUTES les anciennes suggestions...');
+      const { error: deleteError, count: deletedCount } = await supabase
+        .from('categorization_suggestions')
+        .delete()
+        .eq('user_id', userId);
+
+      if (deleteError) {
+        console.error('❌ Erreur suppression:', deleteError);
+      } else {
+        console.log(`✅ ${deletedCount || 0} suggestions supprimées`);
+      }
+
+      // Attendre un peu pour laisser la base se synchroniser
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // ÉTAPE 2 : Récupérer les transactions non catégorisées
+      console.log('📊 Récupération des transactions non catégorisées...');
       const { data: transactions, error: txError } = await supabase
         .from('transactions')
         .select('*')
@@ -259,33 +286,39 @@ class CategorizationAI {
         .order('date', { ascending: false })
         .limit(100);
 
-      if (txError) throw txError;
+      if (txError) {
+        console.error('❌ Erreur récupération transactions:', txError);
+        throw txError;
+      }
+
+      console.log(`📦 ${transactions.length} transactions non catégorisées trouvées`);
 
       let suggestionsCreated = 0;
+      let suggestionsSkipped = 0;
 
+      // ÉTAPE 3 : Générer les nouvelles suggestions
       for (const transaction of transactions) {
-        // Vérifier si une suggestion existe déjà
-        const { data: existingSuggestion } = await supabase
-          .from('categorization_suggestions')
-          .select('id')
-          .eq('transaction_id', transaction.id)
-          .eq('status', 'pending')
-          .single();
-
-        if (existingSuggestion) continue; // Suggestion déjà existante
-
-        // Générer une suggestion
-        const suggestion = await this.suggestCategory(userId, transaction);
-        
-        if (suggestion && suggestion.confidence_score >= 0.60) {
-          await this.createSuggestion(userId, transaction.id, suggestion);
-          suggestionsCreated++;
+        try {
+          const suggestion = await this.suggestCategory(userId, transaction);
+          
+          if (suggestion && suggestion.confidence_score >= 0.60) {
+            const created = await this.createSuggestion(userId, transaction.id, suggestion);
+            if (created) {
+              suggestionsCreated++;
+            } else {
+              suggestionsSkipped++;
+            }
+          }
+        } catch (error) {
+          console.error(`❌ Erreur suggestion pour transaction ${transaction.id}:`, error);
         }
       }
 
+      console.log(`✅ Génération terminée: ${suggestionsCreated} créées, ${suggestionsSkipped} ignorées`);
+
       return { suggestionsCreated };
     } catch (error) {
-      console.error('Erreur génération suggestions:', error);
+      console.error('❌ Erreur génération suggestions:', error);
       return { suggestionsCreated: 0 };
     }
   }

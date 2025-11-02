@@ -8,742 +8,352 @@
 </head>
 <body>
     <%- include('../partials/navbar-simple', { currentPage: 'progression', user: user }) %>
-
+    
     <%- include('../partials/progression-header', { currentView: currentView, stats: stats }) %>
 
     <div class="main-content">
-        <!-- Votre contenu existant commence ici -->
-        <div class="dashboard">
-        <div class="main-content">
+        <!-- Messages d'erreur/succès -->
+        <% if (error) { %>
+        <div class="alert alert-error">
+            <%= error %>
+        </div>
+        <% } %>
+        
+        <% if (success) { %>
+        <div class="alert alert-success">
+            <%= success %>
+        </div>
+        <% } %>
 
-
-<!-- 🤖 SECTION IA COMPLÈTE - À placer après la section des filtres -->
-            
-            <!-- Bouton IA (toujours visible) -->
-            <div class="card ai-control-card">
-                <div class="ai-control-header">
-                    <div class="ai-control-info">
-                        <h3>🤖 Intelligence Artificielle</h3>
-                        <p class="ai-control-status">
-                            <% if (aiStats && aiStats.patterns.total > 0) { %>
-                                <%= aiStats.patterns.total %> pattern(s) appris • 
-                                <%= aiStats.suggestions.pending %> suggestion(s) en attente •
-                                <%= aiStats.suggestions.acceptanceRate %>% de précision
-                            <% } else { %>
-                                Catégorisez vos transactions pour entraîner l'IA
-                            <% } %>
-                        </p>
-                    </div>
-                    <div class="ai-control-actions">
-                        <form action="/transactions/ai/generate-suggestions" method="POST" style="display: inline;">
-                            <button type="submit" class="btn btn-ai">
-                                🔄 Générer des suggestions
-                            </button>
-                        </form>
-                        <% if (aiStats && aiStats.patterns.total > 0) { %>
-                            <a href="/transactions/ai/stats" class="btn btn-ai">
-                                📊 Stats IA
-                            </a>
-                        <% } %>
-                    </div>
-                </div>
+        <!-- Suggestions IA (si présentes) -->
+        <% if (suggestions && suggestions.length > 0) { %>
+        <div class="card ai-suggestions-card">
+            <div class="ai-suggestions-header">
+                <h2>💡 Suggestions de catégorisation</h2>
+                <span class="ai-suggestions-count">
+                    <%= suggestions.length %> suggestion(s)
+                </span>
             </div>
-
-            <!-- Suggestions IA (si présentes) -->
-            <% if (suggestions && suggestions.length > 0) { %>
-            <div class="card ai-suggestions-card">
-                <div class="ai-suggestions-header">
-                    <h2>💡 Suggestions de catégorisation</h2>
-                    <span class="ai-suggestions-count">
-                        <%= suggestions.length %> suggestion(s)
-                    </span>
-                </div>
-                
-                <div class="ai-suggestions-list">
-                    <% suggestions.forEach(suggestion => { %>
-                        <div class="ai-suggestion-item">
-                            <div class="suggestion-content">
-                                <div class="suggestion-transaction">
-                                    <span class="suggestion-description">
-                                        <%= suggestion.transaction.objet %>
-                                    </span>
-                                    <span class="suggestion-date">
-                                        <%= new Date(suggestion.transaction.date).toLocaleDateString('fr-FR') %>
-                                    </span>
-                                </div>
+            
+            <div class="ai-suggestions-list">
+                <% suggestions.forEach(suggestion => { %>
+                    <div class="ai-suggestion-item">
+                        <div class="suggestion-content">
+                            <div class="suggestion-transaction">
+                                <span class="suggestion-description">
+                                    <%= suggestion.transaction.objet %>
+                                </span>
+                                <span class="suggestion-date">
+                                    <%= new Date(suggestion.transaction.date).toLocaleDateString('fr-FR') %>
+                                </span>
+                            </div>
+                            
+                            <div class="suggestion-details">
+                                <span class="suggestion-amount <%= suggestion.suggested_nature %>">
+                                    <%= suggestion.suggested_nature === 'revenu' ? '+' : '-' %> 
+                                    <%= parseFloat(suggestion.transaction.montant).toFixed(2) %> €
+                                </span>
                                 
-                                <div class="suggestion-details">
-                                    <span class="suggestion-amount <%= suggestion.suggested_nature %>">
-                                        <%= suggestion.suggested_nature === 'revenu' ? '+' : '-' %> 
-                                        <%= parseFloat(suggestion.transaction.montant).toFixed(2) %> €
-                                    </span>
-                                    
-                                    <div class="suggestion-arrow">→</div>
-                                    
-                                    <div class="suggestion-category-info">
-                                        <% if (suggestion.suggested_nature === 'revenu' && suggestion.suggested_sous_categorie_revenu) { %>
-                                            <span class="category-badge revenu">
-                                                <%= suggestion.suggested_sous_categorie_revenu.nom %>
-                                            </span>
-                                        <% } else if (suggestion.suggested_nature === 'depense' && suggestion.suggested_sous_categorie_depense) { %>
-                                            <span class="category-badge depense">
-                                                <%= suggestion.suggested_sous_categorie_depense.nom %>
-                                            </span>
-                                        <% } %>
-                                        
-                                        <span class="confidence-score confidence-<%= Math.round(suggestion.confidence_score * 100) %>">
-                                            <%= Math.round(suggestion.confidence_score * 100) %>%
+                                <div class="suggestion-arrow">→</div>
+                                
+                                <div class="suggestion-category-info">
+                                    <% if (suggestion.suggested_nature === 'revenu' && suggestion.suggested_sous_categorie_revenu) { %>
+                                        <span class="category-badge revenu">
+                                            <%= suggestion.suggested_sous_categorie_revenu.nom %>
                                         </span>
-                                    </div>
-                                </div>
-
-                                <% if (suggestion.matched_keyword) { %>
-                                    <div class="suggestion-keyword">
-                                        💡 Basé sur: "<%= suggestion.matched_keyword %>"
-                                    </div>
-                                <% } %>
-                            </div>
-
-                            <div class="suggestion-actions">
-                                <form action="/transactions/ai/suggestions/<%= suggestion.id %>/accept" method="POST">
-                                    <button type="submit" class="btn-icon btn-accept" title="Accepter">
-                                        ✅
-                                    </button>
-                                </form>
-                                <form action="/transactions/ai/suggestions/<%= suggestion.id %>/reject" method="POST">
-                                    <button type="submit" class="btn-icon btn-reject" title="Rejeter">
-                                        ❌
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    <% }); %>
-                </div>
-            </div>
-            <% } %>
-
-<!-- Styles CSS -->
-            <style>
-                /* ==========================================
-                   CARTE DE CONTRÔLE IA
-                ========================================== */
-                .ai-control-card {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    margin-bottom: 20px;
-                    border: none;
-                }
-
-                .ai-control-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    gap: 20px;
-                }
-
-                .ai-control-info h3 {
-                    margin: 0 0 8px 0;
-                    color: white;
-                    font-size: 1.2rem;
-                }
-
-                .ai-control-status {
-                    margin: 0;
-                    opacity: 0.9;
-                    font-size: 0.9rem;
-                }
-
-                .ai-control-actions {
-                    display: flex;
-                    gap: 10px;
-                }
-
-                .btn-ai {
-                    background: rgba(255, 255, 255, 0.2);
-                    color: white;
-                    border: 1px solid rgba(255, 255, 255, 0.3);
-                    padding: 10px 20px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 600;
-                    transition: all 0.2s;
-                }
-
-                .btn-ai:hover {
-                    background: rgba(255, 255, 255, 0.3);
-                    transform: translateY(-2px);
-                }
-
-                /* ==========================================
-                   CARTE DES SUGGESTIONS IA
-                ========================================== */
-                .ai-suggestions-card {
-                    background: #f8f9fa;
-                    border: 2px solid #667eea;
-                    margin-bottom: 20px;
-                }
-
-                .ai-suggestions-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 20px;
-                    padding-bottom: 15px;
-                    border-bottom: 2px solid #e5e7eb;
-                }
-
-                .ai-suggestions-header h2 {
-                    margin: 0;
-                    color: #667eea;
-                }
-
-                .ai-suggestions-count {
-                    background: #667eea;
-                    color: white;
-                    padding: 6px 15px;
-                    border-radius: 20px;
-                    font-weight: 600;
-                    font-size: 0.9rem;
-                }
-
-                .ai-suggestions-list {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 15px;
-                }
-
-                /* Item de suggestion */
-                .ai-suggestion-item {
-                    background: white;
-                    border: 2px solid #e5e7eb;
-                    border-radius: 12px;
-                    padding: 20px;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    gap: 20px;
-                    transition: all 0.2s;
-                }
-
-                .ai-suggestion-item:hover {
-                    border-color: #667eea;
-                    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-                    transform: translateX(5px);
-                }
-
-                .suggestion-content {
-                    flex: 1;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 12px;
-                }
-
-                .suggestion-transaction {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
-
-                .suggestion-description {
-                    font-weight: 600;
-                    color: #1f2937;
-                    font-size: 1rem;
-                }
-
-                .suggestion-date {
-                    color: #6b7280;
-                    font-size: 0.85rem;
-                }
-
-                .suggestion-details {
-                    display: flex;
-                    align-items: center;
-                    gap: 15px;
-                }
-
-                .suggestion-amount {
-                    font-weight: bold;
-                    font-size: 1.1rem;
-                    min-width: 100px;
-                }
-
-                .suggestion-amount.revenu {
-                    color: #10b981;
-                }
-
-                .suggestion-amount.depense {
-                    color: #ef4444;
-                }
-
-                .suggestion-arrow {
-                    color: #667eea;
-                    font-size: 1.5rem;
-                    font-weight: bold;
-                }
-
-                .suggestion-category-info {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                }
-
-                .category-badge {
-                    padding: 6px 14px;
-                    border-radius: 20px;
-                    font-weight: 600;
-                    font-size: 0.9rem;
-                }
-
-                .category-badge.revenu {
-                    background: #d1fae5;
-                    color: #065f46;
-                }
-
-                .category-badge.depense {
-                    background: #fee2e2;
-                    color: #991b1b;
-                }
-
-                .confidence-score {
-                    padding: 4px 12px;
-                    border-radius: 15px;
-                    font-weight: 700;
-                    font-size: 0.85rem;
-                }
-
-                .confidence-score.confidence-90,
-                .confidence-score.confidence-95,
-                .confidence-score.confidence-100 {
-                    background: #d1fae5;
-                    color: #065f46;
-                }
-
-                .confidence-score.confidence-75,
-                .confidence-score.confidence-80,
-                .confidence-score.confidence-85 {
-                    background: #fef3c7;
-                    color: #92400e;
-                }
-
-                .confidence-score.confidence-60,
-                .confidence-score.confidence-65,
-                .confidence-score.confidence-70,
-                .confidence-score.confidence-50,
-                .confidence-score.confidence-55 {
-                    background: #fee2e2;
-                    color: #991b1b;
-                }
-
-                .suggestion-keyword {
-                    color: #667eea;
-                    font-size: 0.85rem;
-                    font-style: italic;
-                }
-
-                .suggestion-actions {
-                    display: flex;
-                    gap: 10px;
-                }
-
-                .btn-icon {
-                    width: 45px;
-                    height: 45px;
-                    border: none;
-                    border-radius: 10px;
-                    cursor: pointer;
-                    font-size: 1.3rem;
-                    transition: all 0.2s;
-                }
-
-                .btn-accept {
-                    background: #d1fae5;
-                }
-
-                .btn-accept:hover {
-                    background: #10b981;
-                    transform: scale(1.1);
-                }
-
-                .btn-reject {
-                    background: #fee2e2;
-                }
-
-                .btn-reject:hover {
-                    background: #ef4444;
-                    transform: scale(1.1);
-                }
-
-                /* ==========================================
-                   FILTRES OPTIMISÉS (2 LIGNES)
-                ========================================== */
-                .filters-form {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 15px;
-                }
-
-                /* Ligne 1 : 4 champs */
-                .filters-row-main {
-                    display: grid;
-                    grid-template-columns: 2fr 1.2fr 1.5fr 1.5fr;
-                    gap: 12px;
-                    align-items: end;
-                }
-
-                /* Ligne 2 : 2 dates + boutons */
-                .filters-row-dates {
-                    display: grid;
-                    grid-template-columns: 1.5fr 1.5fr auto;
-                    gap: 12px;
-                    align-items: end;
-                }
-
-                .filter-group {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 5px;
-                }
-
-                .filter-group label {
-                    font-weight: 600;
-                    font-size: 0.9rem;
-                    color: #333;
-                }
-
-                .filter-group input,
-                .filter-group select {
-                    padding: 10px;
-                    border: 2px solid #e5e7eb;
-                    border-radius: 8px;
-                    font-size: 1rem;
-                    transition: border-color 0.2s;
-                }
-
-                .filter-group input:focus,
-                .filter-group select:focus {
-                    outline: none;
-                    border-color: #667eea;
-                }
-
-                /* Boutons compacts côte à côte */
-                .filter-actions {
-                    display: flex;
-                    gap: 8px;
-                    align-items: flex-end;
-                }
-
-                .btn-filter,
-                .btn-reset {
-                    padding: 10px 18px;
-                    border: none;
-                    border-radius: 8px;
-                    font-weight: 600;
-                    font-size: 0.95rem;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    text-decoration: none;
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                    white-space: nowrap;
-                }
-
-                .btn-filter {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    min-width: 110px;
-                }
-
-                .btn-filter:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-                }
-
-                .btn-reset {
-                    background: #f3f4f6;
-                    color: #374151;
-                    min-width: 130px;
-                }
-
-                .btn-reset:hover {
-                    background: #e5e7eb;
-                    transform: translateY(-2px);
-                }
-
-                /* ==========================================
-                   RESPONSIVE MOBILE
-                ========================================== */
-                @media (max-width: 768px) {
-                    /* IA */
-                    .ai-control-header {
-                        flex-direction: column;
-                        align-items: flex-start;
-                    }
-
-                    .ai-control-actions {
-                        flex-direction: column;
-                        width: 100%;
-                    }
-
-                    .ai-suggestion-item {
-                        flex-direction: column;
-                        align-items: stretch;
-                    }
-
-                    .suggestion-details {
-                        flex-wrap: wrap;
-                    }
-
-                    .suggestion-actions {
-                        width: 100%;
-                        justify-content: center;
-                    }
-
-                    /* Filtres */
-                    .filters-row-main {
-                        grid-template-columns: 1fr;
-                    }
-
-                    .filters-row-dates {
-                        grid-template-columns: 1fr;
-                    }
-
-                    .filter-actions {
-                        width: 100%;
-                    }
-
-                    .btn-filter,
-                    .btn-reset {
-                        flex: 1;
-                    }
-                }
-            </style>
-
-
-            <!-- Messages -->
-            <% if (error) { %>
-                <div class="alert alert-error">
-                    <%= error %>
-                </div>
-            <% } %>
-            
-            <% if (success) { %>
-                <div class="alert alert-success">
-                    <%= success %>
-                </div>
-            <% } %>
-
-            <!-- Filtres -->
-<div class="card">
-                <h2>🔍 Filtrer les transactions</h2>
-                <form action="/transactions" method="GET" class="filters-form">
-                    <!-- Ligne 1 : Recherche + Type + Catégorie + Sous-catégorie -->
-                    <div class="filters-row-main">
-                        <!-- Recherche -->
-                        <div class="filter-group">
-                            <label for="recherche">Recherche</label>
-                            <input 
-                                type="text" 
-                                id="recherche" 
-                                name="recherche" 
-                                placeholder="Rechercher..."
-                                value="<%= filters.recherche %>"
-                            >
-                        </div>
-
-                        <!-- Type -->
-                        <div class="filter-group">
-                            <label for="type">Type</label>
-                            <select id="type" name="type" onchange="updateCategoryFilter()">
-                                <option value="" <%= filters.type === '' ? 'selected' : '' %>>Tous</option>
-                                <option value="revenu" <%= filters.type === 'revenu' ? 'selected' : '' %>>Revenus</option>
-                                <option value="depense" <%= filters.type === 'depense' ? 'selected' : '' %>>Dépenses</option>
-                            </select>
-                        </div>
-
-                        <!-- Catégorie -->
-                        <div class="filter-group">
-                            <label for="categorie">Catégorie</label>
-                            <select id="categorie" name="categorie" onchange="updateSubcategoryFilter()">
-                                <option value="">Toutes</option>
-                                <optgroup label="💰 REVENUS" id="revenus-categories">
-                                    <% categories.revenus.forEach(cat => { %>
-                                        <option value="<%= cat.id %>" <%= filters.categorie == cat.id ? 'selected' : '' %>>
-                                            <%= cat.nom %>
-                                        </option>
-                                    <% }); %>
-                                </optgroup>
-                                <optgroup label="💸 DÉPENSES" id="depenses-categories">
-                                    <% categories.depenses.forEach(cat => { %>
-                                        <option value="<%= cat.id %>" <%= filters.categorie == cat.id ? 'selected' : '' %>>
-                                            <%= cat.nom %>
-                                        </option>
-                                    <% }); %>
-                                </optgroup>
-                            </select>
-                        </div>
-
-                        <!-- Sous-catégorie -->
-                        <div class="filter-group">
-                            <label for="sous_categorie">Sous-catégorie</label>
-                            <select id="sous_categorie" name="sous_categorie">
-                                <option value="">Toutes</option>
-                                <optgroup label="💰 REVENUS" id="revenus-subcategories">
-                                    <% categories.revenus.forEach(cat => { %>
-                                        <% cat.sous_categories.forEach(sc => { %>
-                                            <option value="<%= sc.id %>" data-parent="<%= cat.id %>" data-nature="revenu" <%= filters.sous_categorie == sc.id ? 'selected' : '' %>>
-                                                <%= cat.nom %> › <%= sc.nom %>
-                                            </option>
-                                        <% }); %>
-                                    <% }); %>
-                                </optgroup>
-                                <optgroup label="💸 DÉPENSES" id="depenses-subcategories">
-                                    <% categories.depenses.forEach(cat => { %>
-                                        <% cat.sous_categories.forEach(sc => { %>
-                                            <option value="<%= sc.id %>" data-parent="<%= cat.id %>" data-nature="depense" <%= filters.sous_categorie == sc.id ? 'selected' : '' %>>
-                                                <%= cat.nom %> › <%= sc.nom %>
-                                            </option>
-                                        <% }); %>
-                                    <% }); %>
-                                </optgroup>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Ligne 2 : Dates + Boutons compacts -->
-                    <div class="filters-row-dates">
-                        <!-- Date début -->
-                        <div class="filter-group">
-                            <label for="date_debut">Du</label>
-                            <input 
-                                type="date" 
-                                id="date_debut" 
-                                name="date_debut"
-                                value="<%= filters.date_debut %>"
-                            >
-                        </div>
-
-                        <!-- Date fin -->
-                        <div class="filter-group">
-                            <label for="date_fin">Au</label>
-                            <input 
-                                type="date" 
-                                id="date_fin" 
-                                name="date_fin"
-                                value="<%= filters.date_fin %>"
-                            >
-                        </div>
-
-                        <!-- Boutons compacts côte à côte -->
-                        <div class="filter-actions">
-                            <button type="submit" class="btn-filter">
-                                🔍 Filtrer
-                            </button>
-                            <a href="/transactions" class="btn-reset">
-                                ✖️ Réinitialiser
-                            </a>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-
-            <!-- Catégorisation en masse -->
-            <% if (transactions.length > 0) { %>
-            <div class="card">
-                <div class="bulk-actions-header">
-                    <h2>📋 Transactions (<%= transactions.length %>)</h2>
-                    <div class="bulk-actions">
-                        <button type="button" class="btn btn-secondary" onclick="selectAll()">
-                            ☑️ Tout sélectionner
-                        </button>
-                        <button type="button" class="btn btn-secondary" onclick="deselectAll()">
-                            ⬜ Tout désélectionner
-                        </button>
-                        <button type="button" class="btn btn-primary" onclick="openBulkCategorizeModal()">
-                            🏷️ Catégoriser la sélection
-                        </button>
-                    </div>
-                </div>
-
-                <form id="bulkCategorizeForm" action="/transactions/categorize-bulk" method="POST" style="display: none;">
-                    <!-- Les IDs sélectionnés seront ajoutés dynamiquement ici -->
-                </form>
-
-                <!-- Liste des transactions -->
-                <div class="transactions-list">
-                    <% transactions.forEach(transaction => { %>
-                        <div class="transaction-item <%= transaction.nature %>">
-                            <!-- Checkbox de sélection -->
-                            <input 
-                                type="checkbox" 
-                                class="transaction-checkbox" 
-                                data-id="<%= transaction.id %>"
-                                data-nature="<%= transaction.nature %>"
-                            >
-
-                            <div class="transaction-info">
-                                <div class="transaction-header">
-                                    <span class="transaction-description">
-                                        <%= transaction.objet %>
-                                    </span>
-                                    <span class="transaction-amount <%= transaction.nature %>">
-                                        <%= transaction.nature === 'revenu' ? '+' : '-' %> 
-                                        <%= parseFloat(transaction.montant).toFixed(2) %> €
-                                    </span>
-                                </div>
-                                <div class="transaction-meta">
-                                    <span class="transaction-date">
-                                        <%= new Date(transaction.date).toLocaleDateString('fr-FR', { 
-                                            weekday: 'short', 
-                                            year: 'numeric', 
-                                            month: 'short', 
-                                            day: 'numeric' 
-                                        }) %>
-                                    </span>
-                                    <% if (transaction.nature === 'revenu' && transaction.sous_categorie_revenu) { %>
-                                        <span class="transaction-category revenu">
-                                            <%= transaction.sous_categorie_revenu.nom %>
-                                        </span>
-                                    <% } else if (transaction.nature === 'depense' && transaction.sous_categorie_depense) { %>
-                                        <span class="transaction-category depense">
-                                            <%= transaction.sous_categorie_depense.nom %>
-                                        </span>
-                                    <% } else { %>
-                                        <span class="transaction-category uncategorized">
-                                            Non catégorisée
+                                    <% } else if (suggestion.suggested_nature === 'depense' && suggestion.suggested_sous_categorie_depense) { %>
+                                        <span class="category-badge depense">
+                                            <%= suggestion.suggested_sous_categorie_depense.nom %>
                                         </span>
                                     <% } %>
+                                    
+                                    <span class="confidence-score confidence-<%= Math.round(suggestion.confidence_score * 100) %>">
+                                        <%= Math.round(suggestion.confidence_score * 100) %>%
+                                    </span>
                                 </div>
                             </div>
 
-                            <div class="transaction-actions">
-                                <button 
-                                    type="button" 
-                                    class="btn-action btn-categorize" 
-                                    onclick="openCategorizeModal('<%= transaction.id %>', '<%= transaction.nature %>')"
-                                    title="Catégoriser"
-                                >
-                                    🏷️
-                                </button>
-                                <form action="/transactions/<%= transaction.id %>/delete" method="POST" 
-                                      style="display: inline;"
-                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette transaction ?');">
-                                    <button type="submit" class="btn-action btn-delete" title="Supprimer">
-                                        🗑️
-                                    </button>
-                                </form>
-                            </div>
+                            <% if (suggestion.matched_keyword) { %>
+                                <div class="suggestion-keyword">
+                                    💡 Basé sur: "<%= suggestion.matched_keyword %>"
+                                </div>
+                            <% } %>
                         </div>
-                    <% }); %>
-                </div>
+
+                        <div class="suggestion-actions">
+                            <form action="/transactions/ai/suggestions/<%= suggestion.id %>/accept" method="POST">
+                                <button type="submit" class="btn-icon btn-accept" title="Accepter">
+                                    ✅
+                                </button>
+                            </form>
+                            <form action="/transactions/ai/suggestions/<%= suggestion.id %>/reject" method="POST">
+                                <button type="submit" class="btn-icon btn-reject" title="Rejeter">
+                                    ❌
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                <% }); %>
             </div>
-            <% } else { %>
-                <div class="card">
-                    <p class="empty-state">Aucune transaction trouvée avec ces filtres.</p>
+        </div>
+        <% } %>
+
+        <!-- Filtres -->
+        <div class="card">
+            <h2>🔍 Filtrer les transactions</h2>
+            <form action="/transactions" method="GET" class="filters-form">
+                <!-- Ligne 1 : Recherche + Type + Catégorie + Sous-catégorie -->
+                <div class="filters-row-main">
+                    <!-- Recherche -->
+                    <div class="filter-group">
+                        <label for="recherche">Recherche</label>
+                        <input 
+                            type="text" 
+                            id="recherche" 
+                            name="recherche" 
+                            placeholder="Rechercher..."
+                            value="<%= filters.recherche %>"
+                        >
+                    </div>
+
+                    <!-- Type -->
+                    <div class="filter-group">
+                        <label for="type">Type</label>
+                        <select id="type" name="type" onchange="updateCategoryFilter()">
+                            <option value="" <%= filters.type === '' ? 'selected' : '' %>>Tous</option>
+                            <option value="revenu" <%= filters.type === 'revenu' ? 'selected' : '' %>>Revenus</option>
+                            <option value="depense" <%= filters.type === 'depense' ? 'selected' : '' %>>Dépenses</option>
+                        </select>
+                    </div>
+
+                    <!-- Catégorie -->
+                    <div class="filter-group">
+                        <label for="categorie">Catégorie</label>
+                        <select id="categorie" name="categorie" onchange="updateSubcategoryFilter()">
+                            <option value="">Toutes</option>
+                            <optgroup label="💰 REVENUS" id="revenus-categories">
+                                <% categories.revenus.forEach(cat => { %>
+                                    <option value="<%= cat.id %>" <%= filters.categorie == cat.id ? 'selected' : '' %>>
+                                        <%= cat.nom %>
+                                    </option>
+                                <% }); %>
+                            </optgroup>
+                            <optgroup label="💸 DÉPENSES" id="depenses-categories">
+                                <% categories.depenses.forEach(cat => { %>
+                                    <option value="<%= cat.id %>" <%= filters.categorie == cat.id ? 'selected' : '' %>>
+                                        <%= cat.nom %>
+                                    </option>
+                                <% }); %>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <!-- Sous-catégorie -->
+                    <div class="filter-group">
+                        <label for="sous_categorie">Sous-catégorie</label>
+                        <select id="sous_categorie" name="sous_categorie">
+                            <option value="">Toutes</option>
+                            <optgroup label="💰 REVENUS" id="revenus-subcategories">
+                                <% categories.revenus.forEach(cat => { %>
+                                    <% cat.sous_categories.forEach(sc => { %>
+                                        <option value="<%= sc.id %>" data-parent="<%= cat.id %>" data-nature="revenu" <%= filters.sous_categorie == sc.id ? 'selected' : '' %>>
+                                            <%= cat.nom %> › <%= sc.nom %>
+                                        </option>
+                                    <% }); %>
+                                <% }); %>
+                            </optgroup>
+                            <optgroup label="💸 DÉPENSES" id="depenses-subcategories">
+                                <% categories.depenses.forEach(cat => { %>
+                                    <% cat.sous_categories.forEach(sc => { %>
+                                        <option value="<%= sc.id %>" data-parent="<%= cat.id %>" data-nature="depense" <%= filters.sous_categorie == sc.id ? 'selected' : '' %>>
+                                            <%= cat.nom %> › <%= sc.nom %>
+                                        </option>
+                                    <% }); %>
+                                <% }); %>
+                            </optgroup>
+                        </select>
+                    </div>
                 </div>
+
+                <!-- Ligne 2 : Dates + Statut + IA + Boutons -->
+                <div class="filters-row-dates">
+                    <!-- Date début -->
+                    <div class="filter-group filter-date">
+                        <label for="date_debut">Du</label>
+                        <input 
+                            type="date" 
+                            id="date_debut" 
+                            name="date_debut"
+                            value="<%= filters.date_debut %>"
+                        >
+                    </div>
+
+                    <!-- Date fin -->
+                    <div class="filter-group filter-date">
+                        <label for="date_fin">Au</label>
+                        <input 
+                            type="date" 
+                            id="date_fin" 
+                            name="date_fin"
+                            value="<%= filters.date_fin %>"
+                        >
+                    </div>
+
+                    <!-- Statut catégorisation -->
+                    <div class="filter-group filter-status">
+                        <label>Statut</label>
+                        <div class="status-buttons">
+                            <button type="button" class="status-btn <%= !filters.categorized ? 'active' : '' %>" onclick="setCategorizationFilter('')">
+                                Tous
+                            </button>
+                            <button type="button" class="status-btn <%= filters.categorized === 'yes' ? 'active' : '' %>" onclick="setCategorizationFilter('yes')">
+                                Catégorisé
+                            </button>
+                            <button type="button" class="status-btn <%= filters.categorized === 'no' ? 'active' : '' %>" onclick="setCategorizationFilter('no')">
+                                Non catégorisé
+                            </button>
+                        </div>
+                        <input type="hidden" id="categorized" name="categorized" value="<%= filters.categorized || '' %>">
+                    </div>
+
+                    <!-- Bouton Récurrences -->
+                    <div class="filter-group filter-recurrence">
+                        <label>&nbsp;</label>
+                        <a href="/recurrences/validate" class="btn-recurrence-compact" title="Gérer les récurrences">
+                            🔁
+                        </a>
+                    </div>
+
+                    <!-- Bouton IA -->
+                    <div class="filter-group filter-ia">
+                        <label>&nbsp;</label>
+                        <button type="button" class="btn-ia-compact" onclick="generateAISuggestions()" title="Générer des suggestions IA">
+                            🤖
+                        </button>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="filter-actions">
+                        <button type="submit" class="btn-filter">
+                            🔍 
+                        </button>
+                        <a href="/transactions" class="btn-reset">
+                            ✖️ 
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Stats IA compactes -->
+            <% if (aiStats && aiStats.patterns.total > 0) { %>
+            <div class="ai-stats-compact">
+                <span class="ai-stat-item">
+                    <strong><%= aiStats.patterns.total %></strong> patterns appris
+                </span>
+                <span class="ai-stat-divider">•</span>
+                <span class="ai-stat-item">
+                    <strong><%= aiStats.suggestions.pending %></strong> suggestions
+                </span>
+                <span class="ai-stat-divider">•</span>
+                <span class="ai-stat-item">
+                    <strong><%= aiStats.suggestions.acceptanceRate %>%</strong> précision
+                </span>
+                <a href="/transactions/ai/stats" class="ai-stats-link">📊 Détails</a>
+            </div>
             <% } %>
         </div>
+
+        <!-- Transactions -->
+        <% if (transactions.length > 0) { %>
+        <div class="card">
+            <div class="bulk-actions-header">
+                <h2>📋 Transactions (<%= transactions.length %>)</h2>
+                <div class="bulk-actions">
+                    <button type="button" class="btn btn-secondary" onclick="selectAll()">
+                        ☑️ Tout sélectionner
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="deselectAll()">
+                        ⬜ Tout désélectionner
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="openBulkCategorizeModal()">
+                        🏷️ Catégoriser la sélection
+                    </button>
+                </div>
+            </div>
+
+            <!-- Liste des transactions -->
+            <div class="transactions-list">
+                <% transactions.forEach(transaction => { %>
+                    <div class="transaction-item <%= transaction.nature %>">
+                        <!-- Checkbox de sélection -->
+                        <input 
+                            type="checkbox" 
+                            class="transaction-checkbox" 
+                            data-id="<%= transaction.id %>"
+                            data-nature="<%= transaction.nature %>"
+                        >
+
+                        <div class="transaction-info">
+                            <div class="transaction-header">
+                                <span class="transaction-description">
+                                    <%= transaction.objet %>
+                                </span>
+                                <span class="transaction-amount <%= transaction.nature %>">
+                                    <%= transaction.nature === 'revenu' ? '+' : '-' %> 
+                                    <%= parseFloat(transaction.montant).toFixed(2) %> €
+                                </span>
+                            </div>
+                            <div class="transaction-meta">
+                                <span class="transaction-date">
+                                    <%= new Date(transaction.date).toLocaleDateString('fr-FR', { 
+                                        weekday: 'short', 
+                                        year: 'numeric', 
+                                        month: 'short', 
+                                        day: 'numeric' 
+                                    }) %>
+                                </span>
+                                <% if (transaction.nature === 'revenu' && transaction.sous_categorie_revenu) { %>
+                                    <span class="transaction-category revenu">
+                                        <%= transaction.sous_categorie_revenu.nom %>
+                                    </span>
+                                <% } else if (transaction.nature === 'depense' && transaction.sous_categorie_depense) { %>
+                                    <span class="transaction-category depense">
+                                        <%= transaction.sous_categorie_depense.nom %>
+                                    </span>
+                                <% } else { %>
+                                    <span class="transaction-category uncategorized">
+                                        Non catégorisée
+                                    </span>
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <div class="transaction-actions">
+                            <button 
+                                type="button" 
+                                class="btn-action btn-categorize" 
+                                onclick="openCategorizeModal('<%= transaction.id %>', '<%= transaction.nature %>')"
+                                title="Catégoriser"
+                            >
+                                🏷️
+                            </button>
+                            <form action="/transactions/<%= transaction.id %>/delete" method="POST" 
+                                  style="display: inline;"
+                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette transaction ?');">
+                                <button type="submit" class="btn-action btn-delete" title="Supprimer">
+                                    🗑️
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+        <% } else { %>
+            <div class="card">
+                <p class="empty-state">Aucune transaction trouvée avec ces filtres.</p>
+            </div>
+        <% } %>
     </div>
 
     <!-- Modal de catégorisation individuelle -->
@@ -846,7 +456,10 @@
     </div>
 
     <script>
-        // Gestion des filtres
+        // ========================================
+        // GESTION DES FILTRES
+        // ========================================
+        
         function updateCategoryFilter() {
             const type = document.getElementById('type').value;
             const revenusGroup = document.getElementById('revenus-categories');
@@ -877,7 +490,20 @@
             });
         }
 
-        // Sélection des transactions
+        function setCategorizationFilter(value) {
+            document.getElementById('categorized').value = value;
+            
+            // Update button states
+            document.querySelectorAll('.status-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // ========================================
+        // SÉLECTION DES TRANSACTIONS
+        // ========================================
+        
         function selectAll() {
             document.querySelectorAll('.transaction-checkbox').forEach(cb => cb.checked = true);
         }
@@ -894,12 +520,14 @@
             }));
         }
 
-        // Modal de catégorisation individuelle
+        // ========================================
+        // MODAL DE CATÉGORISATION INDIVIDUELLE
+        // ========================================
+        
         function openCategorizeModal(id, nature) {
             document.getElementById('categorizeForm').action = `/transactions/${id}/categorize`;
             document.getElementById('categorizeNature').value = nature;
             
-            // Filtrer les catégories selon la nature
             const revenusGroup = document.getElementById('modal-revenus');
             const depensesGroup = document.getElementById('modal-depenses');
             
@@ -911,14 +539,17 @@
                 depensesGroup.style.display = '';
             }
             
-            document.getElementById('categorizeModal').style.display = 'block';
+            document.getElementById('categorizeModal').style.display = 'flex';
         }
 
         function closeCategorizeModal() {
             document.getElementById('categorizeModal').style.display = 'none';
         }
 
-        // Modal de catégorisation en masse
+        // ========================================
+        // MODAL DE CATÉGORISATION EN MASSE
+        // ========================================
+        
         function openBulkCategorizeModal() {
             const selected = getSelectedTransactions();
             
@@ -927,7 +558,6 @@
                 return;
             }
 
-            // Vérifier que toutes les transactions ont la même nature
             const natures = [...new Set(selected.map(t => t.nature))];
             if (natures.length > 1) {
                 alert('Veuillez sélectionner uniquement des revenus OU des dépenses, pas les deux');
@@ -939,7 +569,6 @@
             document.getElementById('bulkSelectionCount').textContent = 
                 `${selected.length} transaction(s) sélectionnée(s)`;
 
-            // Filtrer les catégories
             const revenusGroup = document.getElementById('bulk-modal-revenus');
             const depensesGroup = document.getElementById('bulk-modal-depenses');
             
@@ -951,12 +580,9 @@
                 depensesGroup.style.display = '';
             }
 
-            // Ajouter les IDs au formulaire
             const form = document.getElementById('bulkCategorizeFormContent');
-            // Supprimer les anciens inputs
             form.querySelectorAll('input[name="transaction_ids[]"]').forEach(i => i.remove());
             
-            // Ajouter les nouveaux
             selected.forEach(t => {
                 const input = document.createElement('input');
                 input.type = 'hidden';
@@ -965,14 +591,31 @@
                 form.appendChild(input);
             });
 
-            document.getElementById('bulkCategorizeModal').style.display = 'block';
+            document.getElementById('bulkCategorizeModal').style.display = 'flex';
         }
 
         function closeBulkCategorizeModal() {
             document.getElementById('bulkCategorizeModal').style.display = 'none';
         }
 
-        // Fermer les modals en cliquant en dehors
+        // ========================================
+        // GÉNÉRATION SUGGESTIONS IA
+        // ========================================
+        
+        function generateAISuggestions() {
+            if (confirm('Voulez-vous générer des suggestions de catégorisation par IA ?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/transactions/ai/generate-suggestions';
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // ========================================
+        // FERMER LES MODALS
+        // ========================================
+        
         window.onclick = function(event) {
             const categorizeModal = document.getElementById('categorizeModal');
             const bulkModal = document.getElementById('bulkCategorizeModal');
@@ -994,87 +637,262 @@
 
     <style>
         /* ==========================================
-           BOUTONS DE NAVIGATION VUE LISTE/GRAPHIQUE
+           STRUCTURE GÉNÉRALE
         ========================================== */
-        .view-switcher {
-            display: flex;
-            gap: 10px;
+        .main-content {
+            max-width: 1400px;
             margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        .view-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        .view-btn.active {
+        /* ==========================================
+           ALERTS
+        ========================================== */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #dc2626;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        /* ==========================================
+           SUGGESTIONS IA
+        ========================================== */
+        .ai-suggestions-card {
+            background: #f8f9fa;
+            border: 2px solid #667eea;
+        }
+
+        .ai-suggestions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .ai-suggestions-header h2 {
+            margin: 0;
+            color: #667eea;
+        }
+
+        .ai-suggestions-count {
             background: #667eea;
             color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
         }
 
-        .view-btn:not(.active) {
-            background: #f0f0f0;
-            color: #666;
+        .ai-suggestions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
-        .view-btn:not(.active):hover {
-            background: #e0e0e0;
+        .ai-suggestion-item {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.2s;
         }
 
-        /* Adapter le header pour les boutons */
-        .header-content {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            gap: 20px !important;
-            flex-wrap: wrap !important;
+        .ai-suggestion-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            transform: translateX(5px);
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                align-items: stretch !important;
-            }
-
-            .view-switcher {
-                width: 100%;
-                order: 2;
-            }
-
-            .view-btn {
-                flex: 1;
-                text-align: center;
-            }
-
-            .user-info {
-                order: 3;
-                width: 100%;
-                justify-content: center !important;
-            }
+        .suggestion-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
-        /* Filtres */
+        .suggestion-transaction {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
+        .suggestion-description {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 1rem;
+        }
 
-        /* Filtres */
+        .suggestion-date {
+            color: #6b7280;
+            font-size: 0.85rem;
+        }
+
+        .suggestion-details {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .suggestion-amount {
+            font-weight: bold;
+            font-size: 1.1rem;
+            min-width: 100px;
+        }
+
+        .suggestion-amount.revenu {
+            color: #10b981;
+        }
+
+        .suggestion-amount.depense {
+            color: #ef4444;
+        }
+
+        .suggestion-arrow {
+            color: #667eea;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .suggestion-category-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .category-badge.revenu {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .category-badge.depense {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .confidence-score {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .confidence-score.confidence-90,
+        .confidence-score.confidence-95,
+        .confidence-score.confidence-100 {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .confidence-score.confidence-75,
+        .confidence-score.confidence-80,
+        .confidence-score.confidence-85 {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .confidence-score.confidence-60,
+        .confidence-score.confidence-65,
+        .confidence-score.confidence-70,
+        .confidence-score.confidence-50,
+        .confidence-score.confidence-55 {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .suggestion-keyword {
+            color: #667eea;
+            font-size: 0.85rem;
+            font-style: italic;
+        }
+
+        .suggestion-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            width: 45px;
+            height: 45px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            transition: all 0.2s;
+        }
+
+        .btn-accept {
+            background: #d1fae5;
+        }
+
+        .btn-accept:hover {
+            background: #10b981;
+            transform: scale(1.1);
+        }
+
+        .btn-reject {
+            background: #fee2e2;
+        }
+
+        .btn-reject:hover {
+            background: #ef4444;
+            transform: scale(1.1);
+        }
+
+        /* ==========================================
+           FILTRES
+        ========================================== */
         .filters-form {
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
 
-        .filters-row {
+        .filters-row-main {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            grid-template-columns: 2fr 1.2fr 1.5fr 1.5fr;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .filters-row-dates {
+            display: grid;
+            grid-template-columns: 1fr 1fr 2fr 60px auto;
+            gap: 12px;
             align-items: end;
         }
 
@@ -1096,14 +914,186 @@
             border: 2px solid #e5e7eb;
             border-radius: 8px;
             font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .filter-date {
+            max-width: 180px;
+        }
+
+        .filter-status {
+            min-width: 200px;
+        }
+
+        .status-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .status-btn {
+            flex: 1;
+            padding: 10px 8px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .status-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .status-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .filter-ia {
+            max-width: 60px;
+        }
+
+        .btn-ia-compact {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-ia-compact:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
         .filter-actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
+            align-items: flex-end;
         }
 
-        /* Actions en masse */
+        .btn-filter,
+        .btn-reset {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        .btn-filter {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-width: 110px;
+        }
+
+        .btn-filter:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-reset {
+            background: #f3f4f6;
+            color: #374151;
+            min-width: 130px;
+        }
+
+        .btn-reset:hover {
+            background: #e5e7eb;
+            transform: translateY(-2px);
+        }
+
+        /* Stats IA compactes */
+        .ai-stats-compact {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 13px;
+            border-left: 4px solid #667eea;
+        }
+
+        .ai-stat-item {
+            color: #666;
+        }
+
+        .ai-stat-item strong {
+            color: #667eea;
+            font-size: 16px;
+            margin-right: 4px;
+        }
+
+        .ai-stat-divider {
+            color: #d1d5db;
+        }
+
+        .ai-stats-link {
+            margin-left: auto;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .ai-stats-link:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .filter-recurrence {
+            max-width: 60px;
+        }
+
+        .btn-recurrence-compact {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-recurrence-compact:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+
+        /* ==========================================
+           TRANSACTIONS
+        ========================================== */
         .bulk-actions-header {
             display: flex;
             justify-content: space-between;
@@ -1119,17 +1109,104 @@
             flex-wrap: wrap;
         }
 
-        /* Transactions avec checkbox */
+        .transactions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
         .transaction-item {
             display: flex;
             gap: 15px;
             align-items: center;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+
+        .transaction-item:hover {
+            border-color: #d1d5db;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .transaction-item.revenu {
+            border-left: 4px solid #10b981;
+        }
+
+        .transaction-item.depense {
+            border-left: 4px solid #ef4444;
         }
 
         .transaction-checkbox {
             width: 20px;
             height: 20px;
             cursor: pointer;
+        }
+
+        .transaction-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .transaction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .transaction-description {
+            font-weight: 600;
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .transaction-amount {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .transaction-amount.revenu {
+            color: #10b981;
+        }
+
+        .transaction-amount.depense {
+            color: #ef4444;
+        }
+
+        .transaction-meta {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .transaction-date {
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        .transaction-category {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .transaction-category.revenu {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .transaction-category.depense {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .transaction-category.uncategorized {
+            background: #fef3c7;
+            color: #92400e;
         }
 
         .transaction-actions {
@@ -1148,7 +1225,6 @@
         }
 
         .btn-action:hover {
-            background: #e5e7eb;
             transform: scale(1.1);
         }
 
@@ -1160,12 +1236,16 @@
             background: #fee2e2;
         }
 
-        .transaction-category.uncategorized {
-            background: #fef3c7;
-            color: #92400e;
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+            font-size: 1.1rem;
         }
 
-        /* Modal */
+        /* ==========================================
+           MODALS
+        ========================================== */
         .modal {
             display: none;
             position: fixed;
@@ -1175,16 +1255,18 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
         }
 
         .modal-content {
             background-color: white;
-            margin: 10% auto;
             padding: 30px;
             border-radius: 12px;
             width: 90%;
             max-width: 500px;
             position: relative;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
 
         .modal-close {
@@ -1195,16 +1277,161 @@
             font-weight: bold;
             cursor: pointer;
             color: #999;
+            transition: color 0.2s;
         }
 
         .modal-close:hover {
             color: #333;
         }
 
+        .modal-content h2 {
+            margin: 0 0 20px 0;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
         .modal-actions {
             display: flex;
             gap: 10px;
             margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #666;
+            border: 2px solid #e5e7eb;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        /* ==========================================
+           RESPONSIVE
+        ========================================== */
+        @media (max-width: 1200px) {
+            .filters-row-main {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .filters-row-dates {
+                display: grid;
+                grid-template-columns: 1fr 1fr 2fr 60px 60px auto;  /* Ajout d'une colonne pour récurrences */
+                gap: 12px;
+                align-items: end;
+            }
+
+            .filter-date,
+            .filter-status,
+            .filter-ia {
+                max-width: 100%;
+            }
+
+            .filter-actions {
+                grid-column: 1 / -1;
+                justify-content: stretch;
+            }
+
+            .btn-filter,
+            .btn-reset {
+                flex: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 10px;
+            }
+
+            .card {
+                padding: 15px;
+            }
+
+            .filters-row-main,
+            .filters-row-dates {
+                grid-template-columns: 1fr;
+            }
+
+            .bulk-actions-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .bulk-actions {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .btn-secondary,
+            .btn-primary {
+                width: 100%;
+            }
+
+            .transaction-item {
+                flex-wrap: wrap;
+            }
+
+            .ai-stats-compact {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .ai-stats-link {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+
+            .ai-suggestion-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .suggestion-actions {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </body>

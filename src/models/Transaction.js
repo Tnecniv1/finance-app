@@ -29,7 +29,7 @@ class Transaction {
    * Récupérer les transactions avec filtres
    */
   static async findWithFilters(filters) {
-    const { userId, nature, categorieId, sousCategorieId, dateDebut, dateFin, recherche } = filters;
+    const { userId, nature, categorieId, sousCategorieId, dateDebut, dateFin, recherche, categorized } = filters;
 
     let query = supabase
       .from('transactions')
@@ -79,12 +79,27 @@ class Transaction {
 
     if (error) throw error;
 
-    // Filtrage post-requête pour la catégorie parente (car pas directement accessible)
+    // Filtrage post-requête
     let results = data;
 
+    // 🆕 FILTRE CATÉGORISATION (post-requête car Supabase OR est complexe)
+    if (categorized === 'yes') {
+      // Transactions catégorisées : ont au moins une sous-catégorie
+      results = results.filter(t => 
+        t.sous_categorie_revenu_id !== null || t.sous_categorie_depense_id !== null
+      );
+    }
+
+    if (categorized === 'no') {
+      // Transactions non catégorisées : n'ont aucune sous-catégorie
+      results = results.filter(t => 
+        t.sous_categorie_revenu_id === null && t.sous_categorie_depense_id === null
+      );
+    }
+
+    // Filtrage par catégorie parente
     if (categorieId && !sousCategorieId) {
-      // Filtrer par catégorie parente
-      results = data.filter(t => {
+      results = results.filter(t => {
         if (t.nature === 'revenu' && t.sous_categorie_revenu) {
           return t.sous_categorie_revenu.categorie_revenu_id === parseInt(categorieId);
         }
@@ -98,24 +113,46 @@ class Transaction {
     return results;
   }
 
-  /**
-   * Récupérer toutes les transactions d'un utilisateur
-   */
-  static async findByUserId(userId, limit = 50) {
-    const { data, error } = await supabase
-      .from('transactions')
-      .select(`
-        *,
-        sous_categorie_revenu:sous_categories_revenus(id, nom, categorie_revenu_id),
-        sous_categorie_depense:sous_categories_depenses(id, nom, categorie_depense_id)
-      `)
-      .eq('user_id', userId)
-      .order('date', { ascending: false })
-      .order('created_at', { ascending: false })
-      .limit(limit);
+  static async findByUserId(userId) {
+    let allTransactions = [];
+    let from = 0;
+    const batchSize = 1000;
+    let hasMore = true;
 
-    if (error) throw error;
-    return data;
+    while (hasMore) {
+      const { data, error } = await supabase
+        .from('transactions')
+        .select(`
+          *,
+          sous_categorie_revenu:sous_categories_revenus (
+            id,
+            nom,
+            categorie_revenu_id,
+            categorie_revenu:categories_revenus (id, nom)
+          ),
+          sous_categorie_depense:sous_categories_depenses (
+            id,
+            nom,
+            categorie_depense_id,
+            categorie_depense:categories_depenses (id, nom)
+          )
+        `)
+        .eq('user_id', userId)
+        .order('date', { ascending: false })
+        .range(from, from + batchSize - 1);
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        allTransactions = allTransactions.concat(data);
+        from += batchSize;
+        hasMore = data.length === batchSize;
+      } else {
+        hasMore = false;
+      }
+    }
+
+    return allTransactions;
   }
 
   /**
@@ -222,6 +259,81 @@ class Transaction {
     if (error) throw error;
     return data;
   }
+
+  /**
+   * 🆕 Récupérer les transactions non catégorisées pour l'IA
+   */
+  static async getUncategorized(userId, limit = 100) {
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .is('sous_categorie_revenu_id', null)
+      .is('sous_categorie_depense_id', null)
+      .order('date', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    return data;
+  }
+
+  /**
+   * 🆕 Compter les transactions catégorisées et non catégorisées
+   */
+  static async getCategorizedStats(userId) {
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('sous_categorie_revenu_id, sous_categorie_depense_id')
+      .eq('user_id', userId);
+
+    if (error) throw error;
+
+    const categorized = data.filter(t => 
+      t.sous_categorie_revenu_id !== null || t.sous_categorie_depense_id !== null
+    ).length;
+
+    const uncategorized = data.filter(t => 
+      t.sous_categorie_revenu_id === null && t.sous_categorie_depense_id === null
+    ).length;
+
+    return {
+      total: data.length,
+      categorized,
+      uncategorized,
+      percentage: data.length > 0 ? Math.round((categorized / data.length) * 100) : 0
+    };
+  }
+
+  /**
+   * Récupère plusieurs transactions par leurs IDs (UUIDs)
+   * @param {Array<string>} ids - Array d'UUIDs
+   */
+  static async findByIds(ids) {
+    if (!ids || ids.length === 0) return [];
+    
+    const { data, error } = await supabase
+      .from('transactions')
+      .select(`
+        *,
+        sous_categorie_revenu:sous_categories_revenus (
+          id,
+          nom,
+          categorie_revenu:categories_revenus (id, nom)
+        ),
+        sous_categorie_depense:sous_categories_depenses (
+          id,
+          nom,
+          categorie_depense:categories_depenses (id, nom)
+        )
+      `)
+      .in('id', ids)
+      .order('date', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  }
+
+
 }
 
 module.exports = Transaction;

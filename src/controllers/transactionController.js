@@ -18,7 +18,8 @@ class TransactionController {
         sous_categorie,
         date_debut,
         date_fin,
-        recherche
+        recherche,
+        categorized
       } = req.query;
 
       // Construire les filtres
@@ -29,7 +30,8 @@ class TransactionController {
         sousCategorieId: sous_categorie || null,
         dateDebut: date_debut || null,
         dateFin: date_fin || null,
-        recherche: recherche || null
+        recherche: recherche || null,
+        categorized: categorized || null
       };
 
       // Récupérer les transactions filtrées
@@ -51,7 +53,7 @@ class TransactionController {
       const error = req.query.error || null;
       const success = req.query.success || null;
 
-      // ✅ AJOUT : Calculer les stats pour le header
+      // Calculer les stats pour le header
       const stats = {
         profit: balance.balance || 0,
         revenus: balance.totalIncome || 0,
@@ -65,9 +67,9 @@ class TransactionController {
         suggestions,
         aiStats,
         pseudo,
-        user: req.session.user || { prenom: req.session.pseudo },  // ✅ AJOUT
-        currentView: 'liste',  // ✅ AJOUT
-        stats: stats,  // ✅ AJOUT
+        user: req.session.user || { prenom: req.session.pseudo },
+        currentView: 'liste',
+        stats: stats,
         error,
         success,
         filters: {
@@ -76,7 +78,8 @@ class TransactionController {
           sous_categorie: sous_categorie || '',
           date_debut: date_debut || '',
           date_fin: date_fin || '',
-          recherche: recherche || ''
+          recherche: recherche || '',
+          categorized: categorized || ''
         }
       });
     } catch (error) {
@@ -111,14 +114,13 @@ class TransactionController {
       const transactionId = req.params.id;
       const { sous_categorie_id, nature } = req.body;
 
-      // ✅ FIX 1 : Récupérer la transaction AVANT mise à jour
+      // Récupérer la transaction AVANT mise à jour
       const transaction = await Transaction.findById(transactionId, userId);
       if (!transaction) {
         return res.redirect('/transactions?error=Transaction introuvable');
       }
 
-      // ✅ FIX 2 : Log pour debug
-      console.log('🔍 Transaction récupérée:', {
+      console.log('📝 Transaction récupérée:', {
         id: transaction.id,
         objet: transaction.objet,
         montant: transaction.montant
@@ -132,7 +134,7 @@ class TransactionController {
         sous_categorie_id
       );
 
-      // ✅ FIX 3 : Créer un objet transaction enrichi AVEC la nouvelle catégorie
+      // Créer un objet transaction enrichi AVEC la nouvelle catégorie
       const enrichedTransaction = {
         ...transaction,
         nature: nature,
@@ -146,7 +148,7 @@ class TransactionController {
         sous_categorie_id: sous_categorie_id
       });
 
-      // 🤖 APPRENTISSAGE IA : Apprendre de cette catégorisation
+      // APPRENTISSAGE IA : Apprendre de cette catégorisation
       await CategorizationAI.learnFromTransaction(
         userId,
         enrichedTransaction,
@@ -156,7 +158,7 @@ class TransactionController {
 
       res.redirect('/transactions?success=Transaction catégorisée');
     } catch (error) {
-      console.error('❌ Erreur catégorisation:', error);
+      console.error('Erreur catégorisation:', error);
       res.redirect('/transactions?error=Erreur lors de la catégorisation');
     }
   }
@@ -181,7 +183,7 @@ class TransactionController {
       let success = 0;
       for (const transactionId of transaction_ids) {
         try {
-          // ✅ FIX : Récupérer la transaction AVANT mise à jour
+          // Récupérer la transaction AVANT mise à jour
           const transaction = await Transaction.findById(transactionId, userId);
           if (!transaction) continue;
 
@@ -193,7 +195,7 @@ class TransactionController {
             sous_categorie_id
           );
 
-          // ✅ FIX : Créer un objet enrichi avec la nouvelle catégorie
+          // Créer un objet enrichi avec la nouvelle catégorie
           const enrichedTransaction = {
             ...transaction,
             nature: nature,
@@ -201,7 +203,7 @@ class TransactionController {
             sous_categorie_depense_id: nature === 'depense' ? sous_categorie_id : null
           };
 
-          // 🤖 APPRENTISSAGE IA
+          // APPRENTISSAGE IA
           await CategorizationAI.learnFromTransaction(
             userId,
             enrichedTransaction,
@@ -263,10 +265,10 @@ class TransactionController {
           : suggestion.suggested_sous_categorie_depense_id
       );
 
-      // ✅ FIX : Récupérer la transaction AVANT d'enrichir
+      // Récupérer la transaction AVANT d'enrichir
       const transaction = await Transaction.findById(suggestion.transaction_id, userId);
       
-      // ✅ FIX : Créer un objet enrichi
+      // Créer un objet enrichi
       const enrichedTransaction = {
         ...transaction,
         nature: suggestion.suggested_nature,
@@ -333,7 +335,7 @@ class TransactionController {
   }
 
   /**
-   * ✨ Afficher la vue graphique des transactions
+   * Afficher la vue graphique des transactions
    */
   static async graphView(req, res) {
     try {
@@ -381,7 +383,7 @@ class TransactionController {
 
       const solde = totalRevenus - totalDepenses;
 
-      // ✅ AJOUT : Créer les stats pour le header
+      // Créer les stats pour le header
       const stats = {
         profit: solde,
         revenus: totalRevenus,
@@ -396,9 +398,9 @@ class TransactionController {
         totalDepenses,
         solde,
         pseudo,
-        user: req.session.user || { prenom: req.session.pseudo },  // ✅ AJOUT
-        currentView: 'evolution',  // ✅ AJOUT
-        stats: stats,  // ✅ AJOUT
+        user: req.session.user || { prenom: req.session.pseudo },
+        currentView: 'evolution',
+        stats: stats,
         filters: {
           type: type || '',
           categorie: categorie || '',
@@ -414,7 +416,7 @@ class TransactionController {
   }
 
   /**
-   * 🥧 Afficher la vue camembert des transactions
+   * Afficher la vue camembert des transactions
    */
   static async pieView(req, res) {
     try {
@@ -438,7 +440,7 @@ class TransactionController {
       const categoriesRevenus = categoriesData.revenus || [];
       const categoriesDepenses = categoriesData.depenses || [];
 
-      // ✅ AJOUT : Calculer les totaux pour les stats
+      // Calculer les totaux pour les stats
       let totalRevenus = 0;
       let totalDepenses = 0;
 
@@ -453,7 +455,7 @@ class TransactionController {
 
       const solde = totalRevenus - totalDepenses;
 
-      // ✅ AJOUT : Créer les stats pour le header
+      // Créer les stats pour le header
       const stats = {
         profit: solde,
         revenus: totalRevenus,
@@ -465,9 +467,9 @@ class TransactionController {
         categoriesRevenus,
         categoriesDepenses,
         pseudo,
-        user: req.session.user || { prenom: req.session.pseudo },  // ✅ AJOUT
-        currentView: 'analyse',  // ✅ AJOUT
-        stats: stats  // ✅ AJOUT
+        user: req.session.user || { prenom: req.session.pseudo },
+        currentView: 'analyse',
+        stats: stats
       });
     } catch (error) {
       console.error('Erreur chargement camemberts:', error);

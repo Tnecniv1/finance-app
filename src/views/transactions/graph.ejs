@@ -219,15 +219,20 @@
 
     <div class="container">
 
-    <div class="container">
 
-<body>
-    <div class="container">
-
-
-        <!-- Filters -->
+        <!-- Filters unifiés -->
         <div class="filters-container">
             <div class="filters-row">
+                <!-- Mode d'affichage -->
+                <div class="filter-group">
+                    <label>Mode d'affichage</label>
+                    <div class="filter-buttons">
+                        <button id="btnVueNormale" class="filter-btn active">📊 Vue Normale</button>
+                        <button id="btnProjection" class="filter-btn">🔮 Projection Monte Carlo</button>
+                    </div>
+                </div>
+
+                <!-- Période -->
                 <div class="filter-group">
                     <label>Période</label>
                     <div class="filter-buttons">
@@ -237,9 +242,10 @@
                     </div>
                 </div>
 
+                <!-- Type -->
                 <div class="filter-group">
                     <label>Type</label>
-                    <div class="filter-buttons">
+                    <div id="type-buttons" class="filter-buttons">
                         <button class="filter-btn active" data-filter="type" data-value="profit">Profit</button>
                         <button class="filter-btn" data-filter="type" data-value="revenus">Revenus</button>
                         <button class="filter-btn" data-filter="type" data-value="depenses">Dépenses</button>
@@ -260,458 +266,534 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
     <script>
-        // Current filters state
-        let currentFilters = {
-            period: 'monthly',
-            type: 'profit'
-        };
 
-        // Raw transactions data
-        const transactions = <%- JSON.stringify(transactions) %>;
-        const categoriesRevenus = <%- JSON.stringify(categoriesRevenus) %>;
-        const categoriesDepenses = <%- JSON.stringify(categoriesDepenses) %>;
+console.log('Script chargé - Recherche des boutons...');
+console.log('btnProjection:', document.getElementById('btnProjection'));
+console.log('btnVueNormale:', document.getElementById('btnVueNormale'));
 
-        let chart = null;
+ // Current filters state
+let currentFilters = {
+    period: 'monthly',
+    type: 'profit'
+};
 
-        // Filter button handlers
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const filterType = this.dataset.filter;
-                const value = this.dataset.value;
+const transactions = <%- JSON.stringify(transactions) %>;
+const categoriesRevenus = <%- JSON.stringify(categoriesRevenus) %>;
+const categoriesDepenses = <%- JSON.stringify(categoriesDepenses) %>;
 
-                // Update active state
-                document.querySelectorAll(`[data-filter="${filterType}"]`).forEach(b => {
-                    b.classList.remove('active');
-                });
-                this.classList.add('active');
 
-                // Update filters
-                currentFilters[filterType] = value;
+// ✅ Variable globale unique pour le graphique
+let chart = null;
+let isProjectionMode = false;
 
-                // Refresh chart
-                updateChart();
-            });
+// Filter button handlers
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const filterType = this.dataset.filter;
+        const value = this.dataset.value;
+
+        // Update active state
+        document.querySelectorAll(`[data-filter="${filterType}"]`).forEach(b => {
+            b.classList.remove('active');
+        });
+        this.classList.add('active');
+
+        // Update filters
+        currentFilters[filterType] = value;
+
+        // Refresh chart
+        updateChart();
+    });
+});
+
+// Format currency
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: 'EUR'
+    }).format(amount);
+}
+
+// Get date labels based on period
+function getDateLabels(period) {
+    const labels = [];
+    const now = new Date();
+
+    for (let i = 11; i >= 0; i--) {
+        const date = new Date(now);
+        
+        switch(period) {
+            case 'daily':
+                date.setDate(date.getDate() - i);
+                labels.push(date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }));
+                break;
+            case 'weekly':
+                date.setDate(date.getDate() - (i * 7));
+                const weekStart = new Date(date);
+                weekStart.setDate(date.getDate() - date.getDay() + 1);
+                labels.push(`S${getWeekNumber(weekStart)}`);
+                break;
+            case 'monthly':
+                date.setMonth(date.getMonth() - i);
+                labels.push(date.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }));
+                break;
+            case 'yearly':
+                date.setFullYear(date.getFullYear() - i);
+                labels.push(date.getFullYear().toString());
+                break;
+        }
+    }
+
+    return labels;
+}
+
+// Get week number
+function getWeekNumber(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+// Get date range for a period point
+function getDateRangeForPoint(index, period) {
+    const now = new Date();
+    const pointIndex = 11 - index;
+    let start, end;
+
+    switch(period) {
+        case 'daily':
+            start = new Date(now);
+            start.setDate(now.getDate() - pointIndex);
+            start.setHours(0, 0, 0, 0);
+            end = new Date(start);
+            end.setHours(23, 59, 59, 999);
+            break;
+        case 'weekly':
+            start = new Date(now);
+            start.setDate(now.getDate() - (pointIndex * 7));
+            start.setDate(start.getDate() - start.getDay() + 1);
+            start.setHours(0, 0, 0, 0);
+            end = new Date(start);
+            end.setDate(start.getDate() + 6);
+            end.setHours(23, 59, 59, 999);
+            break;
+        case 'monthly':
+            start = new Date(now);
+            start.setMonth(now.getMonth() - pointIndex);
+            start.setDate(1);
+            start.setHours(0, 0, 0, 0);
+            end = new Date(start);
+            end.setMonth(start.getMonth() + 1);
+            end.setDate(0);
+            end.setHours(23, 59, 59, 999);
+            break;
+        case 'yearly':
+            start = new Date(now);
+            start.setFullYear(now.getFullYear() - pointIndex);
+            start.setMonth(0, 1);
+            start.setHours(0, 0, 0, 0);
+            end = new Date(start);
+            end.setFullYear(start.getFullYear() + 1);
+            end.setMonth(0, 0);
+            end.setHours(23, 59, 59, 999);
+            break;
+    }
+
+    return { start, end };
+}
+
+// Process transactions data
+function processTransactions() {
+    const period = currentFilters.period;
+    const type = currentFilters.type;
+    const labels = getDateLabels(period);
+
+    if (type === 'profit') {
+        return processProfitData(labels, period);
+    } else if (type === 'revenus') {
+        return processRevenusData(labels, period);
+    } else {
+        return processDepensesData(labels, period);
+    }
+}
+
+// Process profit data (3 simple lines)
+function processProfitData(labels, period) {
+    const revenus = new Array(12).fill(0);
+    const depenses = new Array(12).fill(0);
+
+    transactions.forEach(t => {
+        const tDate = new Date(t.date);
+        
+        for (let i = 0; i < 12; i++) {
+            const { start, end } = getDateRangeForPoint(i, period);
+            
+            if (tDate >= start && tDate <= end) {
+                if (t.nature === 'revenu') {
+                    revenus[i] += parseFloat(t.montant);
+                } else {
+                    depenses[i] += parseFloat(t.montant);
+                }
+            }
+        }
+    });
+
+    const profit = revenus.map((r, i) => r - depenses[i]);
+
+    return {
+        labels,
+        datasets: [
+            {
+                label: 'Revenus',
+                data: revenus,
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.4
+            },
+            {
+                label: 'Dépenses',
+                data: depenses,
+                borderColor: '#ef4444',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.4
+            },
+            {
+                label: 'Profit',
+                data: profit,
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.4
+            }
+        ]
+    };
+}
+
+// Process revenus data with categories (stacked)
+function processRevenusData(labels, period) {
+    const categoryMap = {};
+    categoriesRevenus.forEach(cat => {
+        categoryMap[cat.id] = cat.nom;
+    });
+
+    const categoryData = {};
+    categoriesRevenus.forEach(cat => {
+        categoryData[cat.id] = new Array(12).fill(0);
+    });
+
+    transactions.forEach(t => {
+        if (t.nature === 'revenu' && t.sous_categorie_revenu && t.sous_categorie_revenu.categorie_revenu_id) {
+            const tDate = new Date(t.date);
+            const categorieId = t.sous_categorie_revenu.categorie_revenu_id;
+            
+            for (let i = 0; i < 12; i++) {
+                const { start, end } = getDateRangeForPoint(i, period);
+                
+                if (tDate >= start && tDate <= end) {
+                    if (categoryData[categorieId]) {
+                        categoryData[categorieId][i] += parseFloat(t.montant);
+                    }
+                }
+            }
+        }
+    });
+
+    const colors = [
+        { border: '#10b981', bg: 'rgba(16, 185, 129, 0.5)' },
+        { border: '#3b82f6', bg: 'rgba(59, 130, 246, 0.5)' },
+        { border: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.5)' },
+        { border: '#ec4899', bg: 'rgba(236, 72, 153, 0.5)' },
+        { border: '#f59e0b', bg: 'rgba(245, 158, 11, 0.5)' },
+        { border: '#06b6d4', bg: 'rgba(6, 182, 212, 0.5)' },
+        { border: '#84cc16', bg: 'rgba(132, 204, 22, 0.5)' }
+    ];
+
+    const datasets = [];
+    let colorIndex = 0;
+
+    Object.keys(categoryData).forEach(catId => {
+        const color = colors[colorIndex % colors.length];
+        datasets.push({
+            label: categoryMap[catId],
+            data: categoryData[catId],
+            borderColor: color.border,
+            backgroundColor: color.bg,
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            stack: 'revenus'
+        });
+        colorIndex++;
+    });
+
+    return { labels, datasets };
+}
+
+// Process depenses data with categories (stacked)
+function processDepensesData(labels, period) {
+    const categoryMap = {};
+    categoriesDepenses.forEach(cat => {
+        categoryMap[cat.id] = cat.nom;
+    });
+
+    const categoryData = {};
+    categoriesDepenses.forEach(cat => {
+        categoryData[cat.id] = new Array(12).fill(0);
+    });
+
+    transactions.forEach(t => {
+        if (t.nature === 'depense' && t.sous_categorie_depense && t.sous_categorie_depense.categorie_depense_id) {
+            const tDate = new Date(t.date);
+            const categorieId = t.sous_categorie_depense.categorie_depense_id;
+            
+            for (let i = 0; i < 12; i++) {
+                const { start, end } = getDateRangeForPoint(i, period);
+                
+                if (tDate >= start && tDate <= end) {
+                    if (categoryData[categorieId]) {
+                        categoryData[categorieId][i] += parseFloat(t.montant);
+                    }
+                }
+            }
+        }
+    });
+
+    const colors = [
+        { border: '#ef4444', bg: 'rgba(239, 68, 68, 0.5)' },
+        { border: '#f97316', bg: 'rgba(249, 115, 22, 0.5)' },
+        { border: '#eab308', bg: 'rgba(234, 179, 8, 0.5)' },
+        { border: '#84cc16', bg: 'rgba(132, 204, 22, 0.5)' },
+        { border: '#06b6d4', bg: 'rgba(6, 182, 212, 0.5)' },
+        { border: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.5)' },
+        { border: '#ec4899', bg: 'rgba(236, 72, 153, 0.5)' }
+    ];
+
+    const datasets = [];
+    let colorIndex = 0;
+
+    Object.keys(categoryData).forEach(catId => {
+        const color = colors[colorIndex % colors.length];
+        datasets.push({
+            label: categoryMap[catId],
+            data: categoryData[catId],
+            borderColor: color.border,
+            backgroundColor: color.bg,
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            stack: 'depenses'
+        });
+        colorIndex++;
+    });
+
+    return { labels, datasets };
+}
+
+// ✅ FONCTION PRINCIPALE : Update chart (vue normale)
+function updateChart() {
+    // Si on est en mode projection, ne rien faire
+    if (isProjectionMode) return;
+
+    const chartData = processTransactions();
+
+    // ✅ Détruire l'ancien graphique avant d'en créer un nouveau
+    if (chart) {
+        chart.destroy();
+        chart = null;
+    }
+
+    const ctx = document.getElementById('financeChart').getContext('2d');
+    
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
+                        }
+                    }
+                },
+                filler: {
+                    propagate: true
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    stacked: currentFilters.type !== 'profit',
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return formatCurrency(value);
+                        }
+                    }
+                }
+            },
+            elements: {
+                line: {
+                    tension: 0.4
+                }
+            }
+        }
+    });
+
+    updateLegend(chartData.datasets);
+}
+
+// Update custom legend
+function updateLegend(datasets) {
+    const legendContainer = document.getElementById('customLegend');
+    legendContainer.innerHTML = '';
+
+    datasets.forEach(dataset => {
+        const item = document.createElement('div');
+        item.className = 'legend-item';
+
+        const color = document.createElement('div');
+        color.className = 'legend-color';
+        color.style.backgroundColor = dataset.borderColor;
+
+        const label = document.createElement('span');
+        label.className = 'legend-label';
+        label.textContent = dataset.label;
+
+        item.appendChild(color);
+        item.appendChild(label);
+        legendContainer.appendChild(item);
+    });
+}
+
+// ✅ FONCTION MONTE CARLO : Projection
+async function drawProjectionChart() {
+    try {
+        // ✅ Détruire le graphique normal existant
+        if (chart) {
+            chart.destroy();
+            chart = null;
+        }
+
+        // Marquer qu'on est en mode projection
+        isProjectionMode = true;
+
+        // Appel API backend
+        const res = await fetch('/api/projection');
+        if (!res.ok) throw new Error('Erreur serveur projection');
+        const data = await res.json();
+
+        if (!data.success) {
+            alert(data.error || 'Erreur de projection');
+            return;
+        }
+
+        const chartData = data.projection;
+        const ctx = document.getElementById('financeChart').getContext('2d');
+
+        // ✅ Créer le graphique Monte Carlo
+        chart = new Chart(ctx, {
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Projection Monte Carlo — Solde futur (12 semaines)',
+                        font: { size: 18 }
+                    },
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Solde (€)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return formatCurrency(value);
+                            }
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Semaine'
+                        }
+                    }
+                }
+            }
         });
 
-        // Format currency
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('fr-FR', {
-                style: 'currency',
-                currency: 'EUR'
-            }).format(amount);
+        // Affichage des métriques (facultatif)
+        if (data.metrics) {
+            console.log('--- Résumé projection ---');
+            console.log('Solde actuel :', data.metrics.soldeActuel);
+            console.log('Solde médian final :', data.metrics.soldeMedianFinal);
+            console.log('Risque négatif (%) :', data.metrics.risqueNegatif);
         }
 
-        // Get date labels based on period
-        function getDateLabels(period) {
-            const labels = [];
-            const now = new Date();
+    } catch (err) {
+        console.error('Erreur drawProjectionChart:', err);
+        alert('Impossible de charger la projection Monte Carlo.');
+    }
+}
 
-            for (let i = 11; i >= 0; i--) {
-                const date = new Date(now);
-                
-                switch(period) {
-                    case 'daily':
-                        date.setDate(date.getDate() - i);
-                        labels.push(date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }));
-                        break;
-                    case 'weekly':
-                        date.setDate(date.getDate() - (i * 7));
-                        const weekStart = new Date(date);
-                        weekStart.setDate(date.getDate() - date.getDay() + 1);
-                        labels.push(`S${getWeekNumber(weekStart)}`);
-                        break;
-                    case 'monthly':
-                        date.setMonth(date.getMonth() - i);
-                        labels.push(date.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }));
-                        break;
-                    case 'yearly':
-                        date.setFullYear(date.getFullYear() - i);
-                        labels.push(date.getFullYear().toString());
-                        break;
-                }
-            }
+// ✅ FONCTION : Retour à la vue normale
+function destroyProjection() {
+    isProjectionMode = false;
+    updateChart(); // Redessine le graphique normal
+}
 
-            return labels;
-        }
+// ✅ ÉVÉNEMENTS : Boutons de bascule
+document.getElementById('btnProjection')?.addEventListener('click', () => {
+    drawProjectionChart();
+});
 
-        // Get week number
-        function getWeekNumber(date) {
-            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-            const dayNum = d.getUTCDay() || 7;
-            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-        }
+document.getElementById('btnVueNormale')?.addEventListener('click', () => {
+    destroyProjection();
+});
 
-        // Get date range for a period point
-        function getDateRangeForPoint(index, period) {
-            const now = new Date();
-            const pointIndex = 11 - index;
-            let start, end;
-
-            switch(period) {
-                case 'daily':
-                    start = new Date(now);
-                    start.setDate(now.getDate() - pointIndex);
-                    start.setHours(0, 0, 0, 0);
-                    end = new Date(start);
-                    end.setHours(23, 59, 59, 999);
-                    break;
-                case 'weekly':
-                    start = new Date(now);
-                    start.setDate(now.getDate() - (pointIndex * 7));
-                    start.setDate(start.getDate() - start.getDay() + 1);
-                    start.setHours(0, 0, 0, 0);
-                    end = new Date(start);
-                    end.setDate(start.getDate() + 6);
-                    end.setHours(23, 59, 59, 999);
-                    break;
-                case 'monthly':
-                    start = new Date(now);
-                    start.setMonth(now.getMonth() - pointIndex);
-                    start.setDate(1);
-                    start.setHours(0, 0, 0, 0);
-                    end = new Date(start);
-                    end.setMonth(start.getMonth() + 1);
-                    end.setDate(0);
-                    end.setHours(23, 59, 59, 999);
-                    break;
-                case 'yearly':
-                    start = new Date(now);
-                    start.setFullYear(now.getFullYear() - pointIndex);
-                    start.setMonth(0, 1);
-                    start.setHours(0, 0, 0, 0);
-                    end = new Date(start);
-                    end.setFullYear(start.getFullYear() + 1);
-                    end.setMonth(0, 0);
-                    end.setHours(23, 59, 59, 999);
-                    break;
-            }
-
-            return { start, end };
-        }
-
-        // Process transactions data
-        function processTransactions() {
-            const period = currentFilters.period;
-            const type = currentFilters.type;
-            const labels = getDateLabels(period);
-
-            if (type === 'profit') {
-                return processProfitData(labels, period);
-            } else if (type === 'revenus') {
-                return processRevenusData(labels, period);
-            } else {
-                return processDepensesData(labels, period);
-            }
-        }
-
-        // Process profit data (3 simple lines)
-        function processProfitData(labels, period) {
-            const revenus = new Array(12).fill(0);
-            const depenses = new Array(12).fill(0);
-
-            transactions.forEach(t => {
-                const tDate = new Date(t.date);
-                
-                for (let i = 0; i < 12; i++) {
-                    const { start, end } = getDateRangeForPoint(i, period);
-                    
-                    if (tDate >= start && tDate <= end) {
-                        if (t.nature === 'revenu') {
-                            revenus[i] += parseFloat(t.montant);
-                        } else {
-                            depenses[i] += parseFloat(t.montant);
-                        }
-                    }
-                }
-            });
-
-            const profit = revenus.map((r, i) => r - depenses[i]);
-
-            return {
-                labels,
-                datasets: [
-                    {
-                        label: 'Revenus',
-                        data: revenus,
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        borderWidth: 2,
-                        fill: false,
-                        tension: 0.4
-                    },
-                    {
-                        label: 'Dépenses',
-                        data: depenses,
-                        borderColor: '#ef4444',
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                        borderWidth: 2,
-                        fill: false,
-                        tension: 0.4
-                    },
-                    {
-                        label: 'Profit',
-                        data: profit,
-                        borderColor: '#667eea',
-                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                        borderWidth: 2,
-                        fill: false,
-                        tension: 0.4
-                    }
-                ]
-            };
-        }
-
-        // Process revenus data with categories (stacked)
-        function processRevenusData(labels, period) {
-            // Map category ID to name
-            const categoryMap = {};
-            categoriesRevenus.forEach(cat => {
-                categoryMap[cat.id] = cat.nom;
-            });
-
-            // Initialize data structure for each category
-            const categoryData = {};
-            categoriesRevenus.forEach(cat => {
-                categoryData[cat.id] = new Array(12).fill(0);
-            });
-
-            // Process transactions
-            transactions.forEach(t => {
-                if (t.nature === 'revenu' && t.sous_categorie_revenu && t.sous_categorie_revenu.categorie_revenu_id) {
-                    const tDate = new Date(t.date);
-                    const categorieId = t.sous_categorie_revenu.categorie_revenu_id;
-                    
-                    for (let i = 0; i < 12; i++) {
-                        const { start, end } = getDateRangeForPoint(i, period);
-                        
-                        if (tDate >= start && tDate <= end) {
-                            if (categoryData[categorieId]) {
-                                categoryData[categorieId][i] += parseFloat(t.montant);
-                            }
-                        }
-                    }
-                }
-            });
-
-            // Create datasets (stacked area chart)
-            const colors = [
-                { border: '#10b981', bg: 'rgba(16, 185, 129, 0.5)' },
-                { border: '#3b82f6', bg: 'rgba(59, 130, 246, 0.5)' },
-                { border: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.5)' },
-                { border: '#ec4899', bg: 'rgba(236, 72, 153, 0.5)' },
-                { border: '#f59e0b', bg: 'rgba(245, 158, 11, 0.5)' },
-                { border: '#06b6d4', bg: 'rgba(6, 182, 212, 0.5)' },
-                { border: '#84cc16', bg: 'rgba(132, 204, 22, 0.5)' }
-            ];
-
-            const datasets = [];
-            let colorIndex = 0;
-
-            Object.keys(categoryData).forEach(catId => {
-                const color = colors[colorIndex % colors.length];
-                datasets.push({
-                    label: categoryMap[catId],
-                    data: categoryData[catId],
-                    borderColor: color.border,
-                    backgroundColor: color.bg,
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4,
-                    stack: 'revenus'
-                });
-                colorIndex++;
-            });
-
-            return { labels, datasets };
-        }
-
-        // Process depenses data with categories (stacked)
-        function processDepensesData(labels, period) {
-            // Map category ID to name
-            const categoryMap = {};
-            categoriesDepenses.forEach(cat => {
-                categoryMap[cat.id] = cat.nom;
-            });
-
-            // Initialize data structure for each category
-            const categoryData = {};
-            categoriesDepenses.forEach(cat => {
-                categoryData[cat.id] = new Array(12).fill(0);
-            });
-
-            // Process transactions
-            transactions.forEach(t => {
-                if (t.nature === 'depense' && t.sous_categorie_depense && t.sous_categorie_depense.categorie_depense_id) {
-                    const tDate = new Date(t.date);
-                    const categorieId = t.sous_categorie_depense.categorie_depense_id;
-                    
-                    for (let i = 0; i < 12; i++) {
-                        const { start, end } = getDateRangeForPoint(i, period);
-                        
-                        if (tDate >= start && tDate <= end) {
-                            if (categoryData[categorieId]) {
-                                categoryData[categorieId][i] += parseFloat(t.montant);
-                            }
-                        }
-                    }
-                }
-            });
-
-            // Create datasets (stacked area chart)
-            const colors = [
-                { border: '#ef4444', bg: 'rgba(239, 68, 68, 0.5)' },
-                { border: '#f97316', bg: 'rgba(249, 115, 22, 0.5)' },
-                { border: '#eab308', bg: 'rgba(234, 179, 8, 0.5)' },
-                { border: '#84cc16', bg: 'rgba(132, 204, 22, 0.5)' },
-                { border: '#06b6d4', bg: 'rgba(6, 182, 212, 0.5)' },
-                { border: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.5)' },
-                { border: '#ec4899', bg: 'rgba(236, 72, 153, 0.5)' }
-            ];
-
-            const datasets = [];
-            let colorIndex = 0;
-
-            Object.keys(categoryData).forEach(catId => {
-                const color = colors[colorIndex % colors.length];
-                datasets.push({
-                    label: categoryMap[catId],
-                    data: categoryData[catId],
-                    borderColor: color.border,
-                    backgroundColor: color.bg,
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4,
-                    stack: 'depenses'
-                });
-                colorIndex++;
-            });
-
-            return { labels, datasets };
-        }
-
-        // Update stats
-        function updateStats() {
-            let totalRevenus = 0;
-            let totalDepenses = 0;
-
-            transactions.forEach(t => {
-                if (t.nature === 'revenu') {
-                    totalRevenus += parseFloat(t.montant);
-                } else {
-                    totalDepenses += parseFloat(t.montant);
-                }
-            });
-
-            document.getElementById('total-revenus').textContent = formatCurrency(totalRevenus);
-            document.getElementById('total-depenses').textContent = formatCurrency(totalDepenses);
-            
-            const solde = totalRevenus - totalDepenses;
-            const soldeElement = document.getElementById('solde');
-            soldeElement.textContent = formatCurrency(solde);
-            
-            const soldeCard = soldeElement.closest('.stat-card');
-            soldeCard.classList.remove('positive', 'negative', 'neutral');
-            if (solde > 0) {
-                soldeCard.classList.add('positive');
-            } else if (solde < 0) {
-                soldeCard.classList.add('negative');
-            } else {
-                soldeCard.classList.add('neutral');
-            }
-        }
-
-        // Update chart
-        function updateChart() {
-            const chartData = processTransactions();
-
-            if (chart) {
-                chart.destroy();
-            }
-
-            const ctx = document.getElementById('financeChart').getContext('2d');
-            
-            chart = new Chart(ctx, {
-                type: 'line',
-                data: chartData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false,
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
-                                }
-                            }
-                        },
-                        filler: {
-                            propagate: true
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        },
-                        y: {
-                            stacked: currentFilters.type !== 'profit',
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return formatCurrency(value);
-                                }
-                            }
-                        }
-                    },
-                    elements: {
-                        line: {
-                            tension: 0.4
-                        }
-                    }
-                }
-            });
-
-            // Update custom legend
-            updateLegend(chartData.datasets);
-        }
-
-        // Update custom legend
-        function updateLegend(datasets) {
-            const legendContainer = document.getElementById('customLegend');
-            legendContainer.innerHTML = '';
-
-            datasets.forEach(dataset => {
-                const item = document.createElement('div');
-                item.className = 'legend-item';
-
-                const color = document.createElement('div');
-                color.className = 'legend-color';
-                color.style.backgroundColor = dataset.borderColor;
-
-                const label = document.createElement('span');
-                label.className = 'legend-label';
-                label.textContent = dataset.label;
-
-                item.appendChild(color);
-                item.appendChild(label);
-                legendContainer.appendChild(item);
-            });
-        }
-
-        // Initialize
-        updateStats();
-        updateChart();
+// Initialize
+updateChart();
     </script>
 </body>
 </html>
