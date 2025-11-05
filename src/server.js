@@ -16,7 +16,7 @@ const optimisationRoutes = require('./routes/optimisation');
 const classementRoutes = require('./routes/classement.routes');
 
 // ✅ Routeur Powens (fichier dédié)
-const powensWebhookRouter = require('./src/routes/powensWebhook');
+const powensWebhookRouter = require('./routes/powensWebhook');
 
 const PORT = process.env.PORT || 3000;
 const app = express();
