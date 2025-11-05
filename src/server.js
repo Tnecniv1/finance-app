@@ -54,6 +54,11 @@ app.use('/recurrences', recurrenceRoutes);
 app.use('/optimisation', optimisationRoutes);
 app.use('/classement', classementRoutes);
 
+
+app.get('/powens/callback-debug', (req, res) => {
+  res.status(200).send(`code=${req.query.code || 'absent'}`);
+});
+
 // ---------- 404 en dernier ----------
 app.use((req, res) => {
   res.status(404).send('Page non trouvée');
