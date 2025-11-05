@@ -38,10 +38,7 @@ exports.getPendingDetections = async (req, res) => {
     // Pour chaque détection, récupérer le détail des transactions
     const detectionsWithTransactions = await Promise.all(
       detections.map(async (detection) => {
-        // transaction_ids est un array JSONB d'UUIDs
         const transactionIds = detection.transaction_ids;
-        
-        // Récupérer les transactions correspondantes
         const transactions = await Transaction.findByIds(transactionIds);
         
         return {
@@ -72,7 +69,7 @@ exports.getPendingDetections = async (req, res) => {
 exports.validateDetection = async (req, res) => {
   try {
     const { detectionId } = req.params;
-    const userModifications = req.body; // Nom, montant, fréquence modifiés par l'user
+    const userModifications = req.body;
     
     const recurring = await RecurringTransaction.validateDetection(
       parseInt(detectionId),
@@ -128,9 +125,22 @@ exports.getRecurrences = async (req, res) => {
     
     const recurrences = await RecurringTransaction.findByUserId(userId);
     
+    // Pour chaque récurrence, récupérer les transactions associées
+    const recurrencesWithTransactions = await Promise.all(
+      recurrences.map(async (recurrence) => {
+        const transactionIds = recurrence.transaction_ids || [];
+        const transactions = await Transaction.findByIds(transactionIds);
+        
+        return {
+          ...recurrence,
+          transactions: transactions || []
+        };
+      })
+    );
+    
     res.json({
       success: true,
-      recurrences
+      recurrences: recurrencesWithTransactions
     });
     
   } catch (error) {
@@ -168,6 +178,39 @@ exports.createRecurrence = async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Erreur lors de la création'
+    });
+  }
+};
+
+
+/**
+ * NOUVEAU : Crée une récurrence à partir d'une sélection de transactions
+ */
+exports.createRecurrenceFromTransactions = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const { transaction_ids, custom_data } = req.body;
+    
+    if (!transaction_ids || transaction_ids.length < 2) {
+      return res.status(400).json({
+        success: false,
+        error: 'Au moins 2 transactions sont requises'
+      });
+    }
+    
+    const result = await RecurrenceDetector.createManualRecurrence(
+      userId,
+      transaction_ids,
+      custom_data || {}
+    );
+    
+    res.json(result);
+    
+  } catch (error) {
+    console.error('Erreur création récurrence depuis transactions:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Erreur lors de la création'
     });
   }
 };
@@ -224,6 +267,127 @@ exports.deleteRecurrence = async (req, res) => {
 
 
 /**
+ * NOUVEAU : Ajoute une transaction à une récurrence existante
+ */
+exports.addTransactionToRecurrence = async (req, res) => {
+  try {
+    const { recurringId } = req.params;
+    const { transaction_id } = req.body;
+    
+    if (!transaction_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'ID de transaction requis'
+      });
+    }
+    
+    const result = await RecurrenceDetector.addTransactionToRecurrence(
+      parseInt(recurringId),
+      transaction_id
+    );
+    
+    res.json(result);
+    
+  } catch (error) {
+    console.error('Erreur ajout transaction:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Erreur lors de l\'ajout'
+    });
+  }
+};
+
+
+/**
+ * NOUVEAU : Retire une transaction d'une récurrence
+ */
+exports.removeTransactionFromRecurrence = async (req, res) => {
+  try {
+    const { recurringId, transactionId } = req.params;
+    
+    const result = await RecurrenceDetector.removeTransactionFromRecurrence(
+      parseInt(recurringId),
+      transactionId
+    );
+    
+    res.json(result);
+    
+  } catch (error) {
+    console.error('Erreur retrait transaction:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Erreur lors du retrait'
+    });
+  }
+};
+
+
+/**
+ * NOUVEAU : Récupère les transactions candidates pour une récurrence
+ * (transactions similaires non encore associées)
+ */
+exports.getSuggestedTransactions = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const { recurringId } = req.params;
+    
+    // Récupérer la récurrence
+    const recurring = await RecurringTransaction.findById(parseInt(recurringId));
+    
+    if (!recurring || recurring.user_id !== userId) {
+      return res.status(404).json({
+        success: false,
+        error: 'Récurrence non trouvée'
+      });
+    }
+    
+    // Récupérer toutes les transactions de l'utilisateur
+    const allTransactions = await Transaction.findByUserId(userId);
+    
+    // Filtrer pour trouver les transactions similaires non encore associées
+    const existingIds = recurring.transaction_ids || [];
+    const isRevenue = recurring.is_revenue;
+    const targetAmount = parseFloat(recurring.amount);
+    
+    const suggestions = allTransactions.filter(t => {
+      // Ne pas inclure les transactions déjà associées
+      if (existingIds.includes(t.id)) {
+        return false;
+      }
+      
+      // Vérifier le type (revenu/dépense)
+      const tIsRevenue = parseFloat(t.montant) > 0;
+      if (tIsRevenue !== isRevenue) {
+        return false;
+      }
+      
+      // Vérifier le montant (tolérance de ±10%)
+      const tAmount = Math.abs(parseFloat(t.montant));
+      const diff = Math.abs(tAmount - targetAmount);
+      const tolerance = targetAmount * 0.1;
+      
+      return diff <= tolerance;
+    });
+    
+    // Trier par date décroissante
+    suggestions.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    res.json({
+      success: true,
+      suggestions: suggestions.slice(0, 20) // Limiter à 20 suggestions
+    });
+    
+  } catch (error) {
+    console.error('Erreur récupération suggestions:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erreur lors de la récupération des suggestions'
+    });
+  }
+};
+
+
+/**
  * Page de validation des récurrences (rendu HTML)
  */
 exports.showValidationPage = async (req, res) => {
@@ -249,15 +413,68 @@ exports.showValidationPage = async (req, res) => {
       })
     );
     
+    // Pour chaque récurrence validée, récupérer les transactions
+    const validatedWithTransactions = await Promise.all(
+      validated.map(async (recurrence) => {
+        const transactionIds = recurrence.transaction_ids || [];
+        const transactions = await Transaction.findByIds(transactionIds);
+        
+        return {
+          ...recurrence,
+          transactions: transactions || []
+        };
+      })
+    );
+    
     res.render('recurrences/validate', {
       user: req.session.user,
       detections: detectionsWithTransactions,
-      validated,
+      validated: validatedWithTransactions,
       currentPage: 'recurrences'
     });
     
   } catch (error) {
     console.error('Erreur affichage page validation:', error);
+    res.status(500).send('Erreur lors du chargement de la page');
+  }
+};
+
+
+/**
+ * NOUVEAU : Page de gestion manuelle des récurrences
+ */
+exports.showManagePage = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    
+    // Récupérer toutes les récurrences
+    const recurrences = await RecurringTransaction.findByUserId(userId);
+    
+    // Récupérer toutes les transactions
+    const allTransactions = await Transaction.findByUserId(userId);
+    
+    // Pour chaque récurrence, récupérer les transactions associées
+    const recurrencesWithTransactions = await Promise.all(
+      recurrences.map(async (recurrence) => {
+        const transactionIds = recurrence.transaction_ids || [];
+        const transactions = await Transaction.findByIds(transactionIds);
+        
+        return {
+          ...recurrence,
+          transactions: transactions || []
+        };
+      })
+    );
+    
+    res.render('recurrences/manage', {
+      user: req.session.user,
+      recurrences: recurrencesWithTransactions,
+      allTransactions,
+      currentPage: 'recurrences'
+    });
+    
+  } catch (error) {
+    console.error('Erreur affichage page gestion:', error);
     res.status(500).send('Erreur lors du chargement de la page');
   }
 };

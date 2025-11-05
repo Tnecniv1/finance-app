@@ -13,6 +13,8 @@ const PORT = process.env.PORT || 3000;
 
 const monteCarloRoutes = require('./routes/monteCarlo');
 const recurrenceRoutes = require('./routes/recurrences');
+const optimisationRoutes = require('./routes/optimisation');
+const classementRoutes = require('./routes/classement.routes');
 
 // Configuration EJS
 app.set('view engine', 'ejs');
@@ -41,6 +43,8 @@ app.use('/transactions/import-csv', csvRoutes);
 app.use('/', mainRoutes);
 app.use('/', monteCarloRoutes);
 app.use('/recurrences', recurrenceRoutes);
+app.use('/optimisation', optimisationRoutes);
+app.use('/classement', classementRoutes);
 
 // Gestion des erreurs 404
 app.use((req, res) => {

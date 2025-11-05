@@ -30,7 +30,7 @@ class RecurringTransaction {
       .from('recurring_transactions')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle(); // CORRECTION: maybeSingle au lieu de single
     
     if (error) throw error;
     return data;
@@ -113,7 +113,7 @@ class RecurringTransaction {
       .from('detected_recurrences')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle(); // CORRECTION: maybeSingle au lieu de single
     
     if (error) throw error;
     return data;
@@ -322,6 +322,97 @@ class RecurringTransaction {
     
     return occurrences;
   }
+
+  // Trouve une récurrence par ID
+  static async findById(id) {
+    const { data, error } = await supabase
+      .from('recurring_transactions')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+
+  // Cherche un doublon
+  static async findDuplicate(userId, description, amount) {
+    const { data } = await supabase
+      .from('recurring_transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('pattern_description', description)
+      .gte('amount', amount * 0.95)
+      .lte('amount', amount * 1.05)
+      .eq('status', 'validated')
+      .single();
+    
+    return data;
+  }
+
+  // Crée une détection (status = 'pending')
+  static async createDetection(data) {
+    const { data: detection, error } = await supabase
+      .from('recurring_transactions')
+      .insert({
+        ...data,
+        status: 'pending',
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return detection;
+  }
+
+  // Valide une détection
+  static async validateDetection(detectionId, modifications = {}) {
+    const { data, error } = await supabase
+      .from('recurring_transactions')
+      .update({
+        ...modifications,
+        status: 'validated',
+        active: true,
+        validated_at: new Date().toISOString()
+      })
+      .eq('id', detectionId)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+
+  // Rejette une détection
+  static async rejectDetection(detectionId) {
+    const { error } = await supabase
+      .from('recurring_transactions')
+      .update({
+        status: 'rejected',
+        active: false
+      })
+      .eq('id', detectionId);
+    
+    if (error) throw error;
+  }
+
+  // Trouve les détections pending
+  static async findDetectionsPending(userId) {
+    const { data, error } = await supabase
+      .from('recurring_transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'pending')
+      .order('confidence_score', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  }
+
+
+
+
 }
 
 module.exports = RecurringTransaction;

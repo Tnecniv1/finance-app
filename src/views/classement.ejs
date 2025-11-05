@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏆 Classement | Fidess</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    
+    .container-classement {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+    }
+    
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    
+    /* Podium simple */
+    .podium {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 40px;
+    }
+    
+    .podium-item {
+      background: white;
+      border-radius: 15px;
+      padding: 25px 20px;
+      text-align: center;
+      flex: 1;
+      max-width: 200px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    }
+    
+    .podium-item.first {
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      color: white;
+    }
+    
+    .podium-item.second {
+      background: linear-gradient(135deg, #C0C0C0, #A9A9A9);
+      color: white;
+    }
+    
+    .podium-item.third {
+      background: linear-gradient(135deg, #CD7F32, #8B4513);
+      color: white;
+    }
+    
+    .podium-medal {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+    
+    .podium-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .podium-solde {
+      font-size: 1.5rem;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+    }
+    
+    /* Liste */
+    .classement-list {
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    }
+    
+    .classement-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: #2d3748;
+    }
+    
+    .classement-row {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      background: #f8f9fa;
+      transition: all 0.2s;
+    }
+    
+    .classement-row:hover {
+      background: #e9ecef;
+      transform: translateX(5px);
+    }
+    
+    .classement-row.current {
+      background: linear-gradient(135deg, #667eea20, #764ba220);
+      border: 2px solid #667eea;
+    }
+    
+    .row-rang {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #6c757d;
+      width: 50px;
+      text-align: center;
+    }
+    
+    .row-avatar {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      margin-right: 15px;
+    }
+    
+    .row-name {
+      flex: 1;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #2d3748;
+    }
+    
+    .row-solde {
+      font-size: 1.2rem;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+      color: #28a745;
+    }
+    
+    .row-solde.negative {
+      color: #dc3545;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #6c757d;
+    }
+  </style>
+</head>
+<body>
+  <%- include('./partials/navbar-simple') %>
+  
+  <div class="container-classement">
+    
+    <!-- En-tête -->
+    <div class="header">
+      <h1>🏆 Classement</h1>
+      <p>Les meilleurs gestionnaires</p>
+    </div>
+    
+    <!-- Podium (Top 3) -->
+    <% if (podium.length > 0) { %>
+      <div class="podium">
+        <% podium.forEach(user => { %>
+          <div class="podium-item <%= user.rang === 1 ? 'first' : user.rang === 2 ? 'second' : 'third' %>">
+            <div class="podium-medal">
+              <%= user.rang === 1 ? '🥇' : user.rang === 2 ? '🥈' : '🥉' %>
+            </div>
+            <div class="podium-name">
+              <%= user.prenom %> <%= user.nom[0] %>.
+              <% if (user.isCurrentUser) { %><br><small>(Vous)</small><% } %>
+            </div>
+            <div class="podium-solde">
+              <%= user.solde.toFixed(0) %>€
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+    
+    <!-- Liste complète -->
+    <div class="classement-list">
+      <div class="classement-title">
+        📊 Classement complet
+      </div>
+      
+      <% if (podium.length === 0 && autres.length === 0) { %>
+        <div class="empty-state">
+          <i class="fas fa-users" style="font-size: 3rem; opacity: 0.3; margin-bottom: 15px;"></i>
+          <p>Aucun participant pour le moment</p>
+        </div>
+      <% } else { %>
+        <!-- Afficher tout le monde (podium + autres) -->
+        <% [...podium, ...autres].forEach(user => { %>
+          <div class="classement-row <%= user.isCurrentUser ? 'current' : '' %>">
+            <div class="row-rang">#<%= user.rang %></div>
+            <div class="row-avatar"><%= user.initiales %></div>
+            <div class="row-name">
+              <%= user.prenom %> <%= user.nom %>
+              <% if (user.isCurrentUser) { %>
+                <span style="color: #667eea;"> (Vous)</span>
+              <% } %>
+            </div>
+            <div class="row-solde <%= user.solde < 0 ? 'negative' : '' %>">
+              <%= user.solde >= 0 ? '+' : '' %><%= user.solde.toFixed(2) %>€
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+    
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

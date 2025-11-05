@@ -27,12 +27,7 @@ router.get('/progression', requireAuth, (req, res) => {
     res.redirect('/transactions');
 });
 
-// Page Classement (vide pour le moment)
-router.get('/classement', requireAuth, (req, res) => {
-    res.render('transactions/classement', {
-        user: req.session.user
-    });
-});
+
 
 // Page Infos (vide pour le moment)
 router.get('/infos', requireAuth, (req, res) => {

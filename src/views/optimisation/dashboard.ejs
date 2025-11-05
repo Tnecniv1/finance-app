@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tableau de bord budgétaire | Fidess</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    
+    .container-dashboard {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    
+    .header h1 {
+      color: #667eea;
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    
+    .mois-actuel {
+      color: #6c757d;
+      font-size: 1.1rem;
+      margin-top: 5px;
+    }
+    
+    .bloc {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    
+    .bloc-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .treemap-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    @media (max-width: 968px) {
+      .treemap-container {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .treemap-section {
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      background: white;
+    }
+    
+    .treemap-header {
+      padding: 15px 20px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .treemap-header.revenus {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    }
+    
+    .treemap-header.depenses {
+      background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+    }
+    
+    .treemap-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 15px;
+      min-height: 150px;
+      background: #f8f9fa;
+    }
+    
+    .treemap-cell {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+      border: 2px solid white;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .treemap-cell:hover {
+      transform: scale(1.02);
+      z-index: 10;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    }
+    
+    .treemap-cell.ok {
+      background: #e2e8f0;
+      color: #2d3748;
+    }
+    
+    .treemap-cell.alerte {
+      background: #667eea;
+      color: white;
+    }
+    
+    .treemap-cell-nom {
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-align: center;
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+    
+    .treemap-cell-montant {
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .treemap-cell-budget {
+      font-size: 0.85rem;
+      opacity: 0.8;
+      margin-top: 3px;
+    }
+    
+    .treemap-cell-indicateur {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    
+    .treemap-cell-indicateur.ok {
+      background: #28a745;
+    }
+    
+    .treemap-cell-indicateur.alerte {
+      background: #ffc107;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .solde-box {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 15px;
+      padding: 25px;
+      text-align: center;
+      margin-top: 20px;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+    
+    .solde-box h3 {
+      margin: 0 0 10px 0;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+    
+    .solde-montant {
+      font-size: 2.5rem;
+      font-weight: 900;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .solde-detail {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      font-size: 0.95rem;
+      opacity: 0.9;
+    }
+    
+    /* Équilibre compact */
+    .equilibre-compact {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 20px;
+      border: 2px solid #e9ecef;
+    }
+    
+    .equilibre-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 15px;
+    }
+    
+    .equilibre-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+    
+    .equilibre-item {
+      background: #f8f9fa;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    
+    .equilibre-item.situation {
+      background: linear-gradient(135deg, #667eea15, #764ba215);
+    }
+    
+    .equilibre-label {
+      font-size: 0.8rem;
+      color: #6c757d;
+      margin-bottom: 6px;
+    }
+    
+    .equilibre-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .equilibre-value.positive {
+      color: #28a745;
+    }
+    
+    .equilibre-value.negative {
+      color: #dc3545;
+    }
+    
+    .equilibre-situation {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    
+    .treemap-cell {
+      position: relative;
+      padding: 12px 15px;
+      background: white;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+    }
+    
+    .treemap-cell:hover {
+      border-color: #667eea;
+      transform: translateX(3px);
+    }
+    
+    .treemap-cell-indicateur {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    
+    .treemap-cell-indicateur.ok {
+      background: #28a745;
+    }
+    
+    .treemap-cell-indicateur.alerte {
+      background: #ffc107;
+    }
+    
+    .treemap-cell-nom {
+      flex: 1;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #2d3748;
+    }
+    
+    .treemap-cell-montant {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #2d3748;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .treemap-cell-budget {
+      font-size: 0.85rem;
+      color: #6c757d;
+      font-family: 'Courier New', monospace;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .equilibre-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .btn-faire-budget {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      color: white;
+      padding: 20px 40px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      border-radius: 15px;
+      width: 100%;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-faire-budget:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
+    
+    .alert-info-custom {
+      background: #e7f3ff;
+      border: 2px solid #667eea;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .alert-info-custom i {
+      color: #667eea;
+      font-size: 1.5rem;
+    }
+    
+    .legende {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 15px;
+      font-size: 0.9rem;
+    }
+    
+    .legende-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .legende-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 5px;
+    }
+    
+    .text-center {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <%- include('../partials/navbar-simple') %>
+  
+  <div class="container-dashboard">
+    
+    <!-- En-tête -->
+    <div class="header">
+      <h1><i class="fas fa-chart-line"></i> Tableau de bord budgétaire</h1>
+      <p class="mois-actuel"><i class="far fa-calendar"></i> <%= moisActuel %></p>
+    </div>
+    
+    <!-- BLOC 1 : Visualisation Treemap -->
+    <div class="bloc">
+      <h2 class="bloc-title">
+        <i class="fas fa-th"></i> Où j'en suis ce mois-ci ?
+      </h2>
+      
+      <% if (!dernierPlan) { %>
+        <div class="alert-info-custom">
+          <i class="fas fa-info-circle"></i>
+          <strong>Aucun budget défini</strong><br>
+          Vous n'avez pas encore créé de budget. Les montants ci-dessous représentent vos dépenses actuelles du mois.
+        </div>
+      <% } %>
+      
+      <div class="treemap-container">
+        
+        <!-- REVENUS -->
+        <div class="treemap-section">
+          <div class="treemap-header revenus">
+            <span><i class="fas fa-arrow-up"></i> Revenus</span>
+            <span><%= totaux.revenus.actuel.toFixed(0) %>€ / <%= totaux.revenus.budget.toFixed(0) %>€</span>
+          </div>
+          <div class="treemap-grid">
+            <% 
+            const totalRevenus = totaux.revenus.budget || totaux.revenus.actuel || 1;
+            tableauComparatif.revenus.forEach(revenu => { 
+              if (revenu.montantActuel === 0 && revenu.budgetFixe === 0) return;
+              
+              const montantPourTaille = Math.max(revenu.budgetFixe, revenu.montantActuel);
+              const pourcentageTaille = (montantPourTaille / totalRevenus * 100).toFixed(1);
+              const estAlerte = revenu.budgetFixe > 0 && revenu.montantActuel < revenu.budgetFixe * 0.75;
+              const classe = estAlerte ? 'alerte' : 'ok';
+            %>
+              <div class="treemap-cell <%= classe %>" 
+                   title="<%= revenu.nom %>: <%= revenu.montantActuel.toFixed(2) %>€ / <%= revenu.budgetFixe.toFixed(2) %>€">
+                <div class="treemap-cell-indicateur <%= classe %>"></div>
+                <div class="treemap-cell-nom"><%= revenu.nom %></div>
+                <div class="treemap-cell-montant"><%= revenu.montantActuel.toFixed(0) %>€</div>
+                <% if (revenu.budgetFixe > 0) { %>
+                  <div class="treemap-cell-budget">/ <%= revenu.budgetFixe.toFixed(0) %>€</div>
+                <% } %>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+        
+        <!-- DÉPENSES -->
+        <div class="treemap-section">
+          <div class="treemap-header depenses">
+            <span><i class="fas fa-arrow-down"></i> Dépenses</span>
+            <span><%= totaux.depenses.actuel.toFixed(0) %>€ / <%= totaux.depenses.budget.toFixed(0) %>€</span>
+          </div>
+          <div class="treemap-grid">
+            <% 
+            const totalDepenses = totaux.depenses.budget || totaux.depenses.actuel || 1;
+            tableauComparatif.depenses.forEach(depense => { 
+              if (depense.montantActuel === 0 && depense.budgetFixe === 0) return;
+              
+              const montantPourTaille = Math.max(depense.budgetFixe, depense.montantActuel);
+              const pourcentageTaille = (montantPourTaille / totalDepenses * 100).toFixed(1);
+              const estAlerte = depense.budgetFixe > 0 && depense.montantActuel > depense.budgetFixe * 0.9;
+              const classe = estAlerte ? 'alerte' : 'ok';
+            %>
+              <div class="treemap-cell <%= classe %>" 
+                   title="<%= depense.nom %>: <%= depense.montantActuel.toFixed(2) %>€ / <%= depense.budgetFixe.toFixed(2) %>€">
+                <div class="treemap-cell-indicateur <%= classe %>"></div>
+                <div class="treemap-cell-nom"><%= depense.nom %></div>
+                <div class="treemap-cell-montant"><%= depense.montantActuel.toFixed(0) %>€</div>
+                <% if (depense.budgetFixe > 0) { %>
+                  <div class="treemap-cell-budget">/ <%= depense.budgetFixe.toFixed(0) %>€</div>
+                <% } %>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+        
+      </div>
+      
+      <!-- Légende -->
+      <div class="legende">
+        <div class="legende-item">
+          <div class="legende-color" style="background: #e2e8f0;"></div>
+          <span>Respect probable</span>
+        </div>
+        <div class="legende-item">
+          <div class="legende-color" style="background: #8298fa;"></div>
+          <span>Non respect probable (> 90%)</span>
+        </div>
+      </div>
+      
+      <!-- Équilibre du budget - VERSION COMPACTE -->
+      <div class="equilibre-compact">
+        <div class="equilibre-title">⚖️ Équilibre du budget</div>
+        <% 
+          const ecartRevenus = totaux.revenus.actuel - totaux.revenus.budget;
+          const ecartDepenses = totaux.depenses.budget - totaux.depenses.actuel;
+          
+          let situation = '';
+          let situationColor = '';
+          let situationIcon = '';
+          
+          if (ecartRevenus >= 0 && ecartDepenses >= 0) {
+            situation = 'Excellent';
+            situationColor = '#28a745';
+            situationIcon = '🟢';
+          } else if (ecartRevenus >= 0 && ecartDepenses < 0) {
+            situation = 'Attention';
+            situationColor = '#ffc107';
+            situationIcon = '🟡';
+          } else if (ecartRevenus < 0 && ecartDepenses >= 0) {
+            situation = 'Vigilance';
+            situationColor = '#ffc107';
+            situationIcon = '🟡';
+          } else {
+            situation = 'Critique';
+            situationColor = '#dc3545';
+            situationIcon = '🔴';
+          }
+        %>
+        
+        <div class="equilibre-grid">
+          <div class="equilibre-item">
+            <div class="equilibre-label">
+              <i class="fas fa-arrow-up" style="color: #28a745;"></i> Écart revenus
+            </div>
+            <div class="equilibre-value <%= ecartRevenus >= 0 ? 'positive' : 'negative' %>">
+              <%= ecartRevenus >= 0 ? '+' : '' %><%= ecartRevenus.toFixed(0) %>€
+              <%= ecartRevenus >= 0 ? '✅' : '❌' %>
+            </div>
+          </div>
+          
+          <div class="equilibre-item">
+            <div class="equilibre-label">
+              <i class="fas fa-arrow-down" style="color: #dc3545;"></i> Écart dépenses
+            </div>
+            <div class="equilibre-value <%= ecartDepenses >= 0 ? 'positive' : 'negative' %>">
+              <%= ecartDepenses >= 0 ? '+' : '' %><%= ecartDepenses.toFixed(0) %>€
+              <%= ecartDepenses >= 0 ? '✅' : '❌' %>
+            </div>
+          </div>
+          
+          <div class="equilibre-item situation">
+            <div class="equilibre-label">Situation</div>
+            <div class="equilibre-situation" style="color: <%= situationColor %>;">
+              <%= situationIcon %> <%= situation %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- BLOC 2 : Faire ses budgets -->
+    <div class="bloc">
+      <h2 class="bloc-title">
+        <i class="fas fa-bullseye"></i> Planifier mon budget
+      </h2>
+      
+      <p style="color: #6c757d; margin-bottom: 25px;">
+        <% if (dernierPlan) { %>
+          Créez un nouveau budget ou ajustez votre budget existant pour le mois prochain.
+        <% } else { %>
+          Créez votre premier budget personnalisé en 3 étapes simples.
+        <% } %>
+      </p>
+      
+      <a href="/optimisation/nouveau" class="btn btn-faire-budget">
+        <i class="fas fa-rocket"></i> <%= dernierPlan ? 'Créer un nouveau budget' : 'Démarrer mon premier budget' %>
+      </a>
+      
+      <div class="text-center mt-3">
+        <a href="/transactions" style="color: #667eea; text-decoration: none;">
+          <i class="fas fa-arrow-left"></i> Retour aux transactions
+        </a>
+      </div>
+    </div>
+    
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

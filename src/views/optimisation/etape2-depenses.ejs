@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Étape 2 : Dépenses | Optimisation</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      padding: 20px 0;
+    }
+    .progress-container {
+      max-width: 800px;
+      margin: 0 auto 30px;
+      padding: 0 15px;
+    }
+    .progress {
+      height: 8px;
+      border-radius: 10px;
+      background-color: #e9ecef;
+    }
+    .progress-bar {
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      border-radius: 10px;
+      transition: width 0.6s ease;
+    }
+    .step-label {
+      text-align: center;
+      margin-top: 10px;
+      color: #6c757d;
+      font-weight: 500;
+    }
+    .container {
+      max-width: 1000px;
+    }
+    .card {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+      margin-bottom: 30px;
+    }
+    .card-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 25px 30px;
+      border: none;
+      border-radius: 15px 15px 0 0 !important;
+    }
+    .card-header h2 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+    .card-header .category-name {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      margin-top: 5px;
+    }
+    .card-body {
+      padding: 30px;
+    }
+    .total-box {
+      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .total-box h4 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+    .total-box p {
+      margin: 0;
+      opacity: 0.9;
+    }
+    .info-alert {
+      background-color: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+    }
+    .info-alert i {
+      color: #ffc107;
+      margin-right: 10px;
+    }
+    .depense-item {
+      background-color: white;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      transition: all 0.3s ease;
+    }
+    .depense-item:hover {
+      border-color: #667eea;
+      box-shadow: 0 3px 10px rgba(102, 126, 234, 0.1);
+    }
+    .depense-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .depense-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #333;
+    }
+    .depense-frequence {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      background-color: #e7f3ff;
+      color: #004085;
+    }
+    .depense-details {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+    .depense-montant-actuel {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+    }
+    .depense-montant-actuel label {
+      font-size: 0.85rem;
+      color: #6c757d;
+      display: block;
+      margin-bottom: 5px;
+    }
+    .depense-montant-actuel .montant {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #dc3545;
+    }
+    .depense-montant-optimal {
+      flex: 1;
+    }
+    .depense-montant-optimal label {
+      font-size: 0.85rem;
+      color: #495057;
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .form-control-montant {
+      text-align: center;
+      font-weight: 600;
+      font-size: 1.2rem;
+      border: 2px solid #28a745;
+      border-radius: 8px;
+      padding: 10px;
+      color: #28a745;
+    }
+    .form-control-montant:focus {
+      border-color: #20c997;
+      box-shadow: 0 0 0 0.2rem rgba(32, 201, 151, 0.25);
+    }
+    .depense-actions {
+      flex: 0 0 auto;
+    }
+    .btn-add-action {
+      background-color: #667eea;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .btn-add-action:hover {
+      background-color: #764ba2;
+      transform: translateY(-2px);
+    }
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6c757d;
+    }
+    .empty-state i {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      opacity: 0.3;
+    }
+    .total-optimal-box {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      margin-top: 30px;
+    }
+    .total-optimal-box h4 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+    .economie-badge {
+      display: inline-block;
+      background-color: rgba(255,255,255,0.2);
+      padding: 8px 15px;
+      border-radius: 20px;
+      margin-top: 10px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      padding: 12px 30px;
+      font-weight: 600;
+      border-radius: 50px;
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+    .btn-secondary {
+      border-radius: 50px;
+      padding: 12px 30px;
+      font-weight: 600;
+    }
+    .navigation-buttons {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 2px solid #e9ecef;
+    }
+  </style>
+</head>
+<body>
+  <%- include('../partials/navbar-simple') %>
+  <!-- Barre de progression -->
+  <div class="progress-container">
+    <div class="progress">
+      <div class="progress-bar" role="progressbar" style="width: <%= progress %>%" aria-valuenow="<%= progress %>" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+    <div class="step-label">Étape 2 sur 3 : Optimisation des dépenses (<%= currentCategory.nom %>)</div>
+  </div>
+  
+  <div class="container">
+    <!-- Carte principale -->
+    <div class="card">
+      <div class="card-header">
+        <h2><i class="fas fa-shopping-cart"></i> <%= currentCategory.nom %></h2>
+        <div class="category-name">Catégorie <%= categories.findIndex(c => c.id === currentCategory.id) + 1 %> sur <%= categories.length %></div>
+      </div>
+      
+      <div class="card-body">
+        <!-- Information -->
+        <div class="info-alert">
+          <i class="fas fa-lightbulb"></i>
+          <strong>Optimisez vos dépenses :</strong> Pour chaque dépense récurrente, définissez un montant optimal que vous souhaitez ne pas dépasser ce mois.
+        </div>
+        
+        <!-- Total actuel -->
+        <div class="total-box">
+          <p>Total actuel de la catégorie</p>
+          <h4><%= totalActuel.toFixed(2) %>€/mois</h4>
+        </div>
+        
+        <form action="/optimisation/etape2/<%= currentCategory.id %>" method="POST" id="formDepenses">
+          <% if (depenses.length === 0) { %>
+            <!-- État vide avec possibilité de définir un budget -->
+            <div class="empty-state">
+              <i class="fas fa-inbox"></i>
+              <h5>Aucune dépense dans cette catégorie</h5>
+              <p>Aucune transaction récurrente n'a été trouvée pour "<%= currentCategory.nom %>".</p>
+              
+              <!-- Formulaire pour définir un budget global -->
+              <div class="mt-4" style="max-width: 400px; margin-left: auto; margin-right: auto;">
+                <div class="card" style="background-color: #e7f3ff; border: 2px solid #667eea;">
+                  <div class="card-body">
+                    <h6 class="mb-3" style="color: #667eea;">
+                      <i class="fas fa-wallet"></i> Définir un budget pour cette catégorie
+                    </h6>
+                    <label for="budget_global" class="form-label" style="font-weight: 600;">
+                      Montant mensuel souhaité (€)
+                    </label>
+                    <input 
+                      type="number" 
+                      class="form-control form-control-montant" 
+                      name="budget_global" 
+                      id="budget_global"
+                      value="0"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      style="text-align: center; font-size: 1.5rem;"
+                    >
+                    <small class="text-muted d-block mt-2">
+                      Vous pourrez ajuster ce montant plus tard
+                    </small>
+                  </div>
+                </div>
+                
+                <!-- Total optimisé (affiché même si vide) -->
+                <div class="total-optimal-box">
+                  <p>Budget défini pour cette catégorie</p>
+                  <h4 id="totalOptimal">0.00€/mois</h4>
+                  <div class="economie-badge" style="opacity: 0.7;">
+                    Pas de comparaison possible (aucune dépense actuelle)
+                  </div>
+                </div>
+                
+                <!-- Bouton pour ajouter une action (TOUJOURS visible) -->
+                <div class="mt-3">
+                  <button 
+                    type="button" 
+                    class="btn btn-outline-primary w-100"
+                    onclick="ajouterActionCategorie('<%= currentCategory.nom %>')"
+                  >
+                    <i class="fas fa-plus"></i> Ajouter une action pour cette catégorie
+                  </button>
+                </div>
+              </div>
+            </div>
+          <% } else { %>
+            <!-- Liste des dépenses -->
+            <div id="depenses-list">
+              <% depenses.forEach(depense => { %>
+                <div class="depense-item">
+                  <div class="depense-header">
+                    <div>
+                      <div class="depense-name"><%= depense.nom %></div>
+                      <% if (depense.description) { %>
+                        <small class="text-muted"><%= depense.description %></small>
+                      <% } %>
+                    </div>
+                    <span class="depense-frequence">
+                      <%= depense.frequence === 'monthly' ? 'Mensuel' : depense.frequence === 'weekly' ? 'Hebdomadaire' : depense.frequence === 'yearly' ? 'Annuel' : depense.frequence %>
+                    </span>
+                  </div>
+                  
+                  <div class="depense-details">
+                    <!-- Montant actuel -->
+                    <div class="depense-montant-actuel">
+                      <label>Montant actuel</label>
+                      <div class="montant"><%= depense.montant_mensuel.toFixed(2) %>€</div>
+                    </div>
+                    
+                    <!-- Montant optimal -->
+                    <div class="depense-montant-optimal">
+                      <label for="budget_<%= depense.id %>">Montant optimal</label>
+                      <input 
+                        type="number" 
+                        class="form-control form-control-montant montant-optimal-input" 
+                        name="budgets[<%= depense.id %>]" 
+                        id="budget_<%= depense.id %>"
+                        value="<%= depense.montant_moyen %>"
+                        step="0.01"
+                        min="0"
+                        data-mensuel="<%= depense.montant_mensuel %>"
+                        required
+                      >
+                    </div>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+            
+            <!-- Total optimisé -->
+            <div class="total-optimal-box">
+              <p>Total optimisé pour cette catégorie</p>
+              <h4 id="totalOptimal"><%= totalActuel.toFixed(2) %>€/mois</h4>
+              <div class="economie-badge">
+                Économie : <span id="economieTotal">0.00</span>€
+              </div>
+            </div>
+            
+            <!-- Bouton pour ajouter une action (TOUJOURS visible) -->
+            <div class="mt-3">
+              <button 
+                type="button" 
+                class="btn btn-outline-primary w-100"
+                onclick="ajouterActionCategorie('<%= currentCategory.nom %>')"
+              >
+                <i class="fas fa-plus"></i> Ajouter une action pour cette catégorie
+              </button>
+            </div>
+          <% } %>
+          
+          <!-- Navigation -->
+          <div class="navigation-buttons">
+            <% if (categories.findIndex(c => c.id === currentCategory.id) === 0) { %>
+              <a href="/optimisation/etape1" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Retour
+              </a>
+            <% } else { %>
+              <a href="/optimisation/etape2/<%= categories[categories.findIndex(c => c.id === currentCategory.id) - 1].id %>" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Catégorie précédente
+              </a>
+            <% } %>
+            
+            <button type="submit" class="btn btn-primary">
+              <% if (nextCategory) { %>
+                Catégorie suivante : <%= nextCategory.nom %> <i class="fas fa-arrow-right"></i>
+              <% } else { %>
+                Voir le récapitulatif <i class="fas fa-arrow-right"></i>
+              <% } %>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Calculer le total optimal dynamiquement
+    const inputs = document.querySelectorAll('.montant-optimal-input');
+    const budgetGlobal = document.getElementById('budget_global');
+    
+    function updateTotals() {
+      let total = 0;
+      let totalActuel = <%= totalActuel %>;
+      
+      // Si on a des dépenses individuelles
+      if (inputs.length > 0) {
+        inputs.forEach(input => {
+          const valeur = parseFloat(input.value) || 0;
+          total += valeur;
+        });
+      } 
+      // Sinon, utiliser le budget global
+      else if (budgetGlobal) {
+        total = parseFloat(budgetGlobal.value) || 0;
+      }
+      
+      const economie = totalActuel - total;
+      
+      document.getElementById('totalOptimal').textContent = total.toFixed(2) + '€/mois';
+      
+      const economieElement = document.getElementById('economieTotal');
+      if (economieElement) {
+        economieElement.textContent = economie.toFixed(2);
+      }
+    }
+    
+    inputs.forEach(input => {
+      input.addEventListener('input', updateTotals);
+    });
+    
+    if (budgetGlobal) {
+      budgetGlobal.addEventListener('input', updateTotals);
+    }
+    
+    // Fonction pour ajouter une action
+    function ajouterAction(depenseId, depenseNom) {
+      // Redirection vers le formulaire d'ajout d'action avec budget
+      const url = `/optimisation/action/add?budgetId=${depenseId}&nom=${encodeURIComponent(depenseNom)}`;
+      window.open(url, '_blank', 'width=600,height=500');
+    }
+    
+    // Fonction pour ajouter une action au niveau de la catégorie (sans budget spécifique)
+    function ajouterActionCategorie(categorieName) {
+      const url = `/optimisation/action/add?categorie=${encodeURIComponent(categorieName)}`;
+      window.open(url, '_blank', 'width=600,height=500');
+    }
+    
+    // Initialiser les totaux
+    updateTotals();
+  </script>
+</body>
+</html>
+

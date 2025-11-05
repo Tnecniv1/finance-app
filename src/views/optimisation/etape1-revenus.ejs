@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Étape 1 : Mes revenus | Fidess</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    
+    .container-optimisation {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    
+    .card-etape {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    
+    .etape-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    .etape-numero {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      color: white;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+    
+    .etape-titre {
+      color: #2d3748;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    
+    .etape-description {
+      color: #6c757d;
+      font-size: 1.1rem;
+    }
+    
+    .category-card {
+      background: #f8f9fa;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 15px;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+    
+    .category-card:hover {
+      border-color: #28a745;
+      box-shadow: 0 5px 15px rgba(40, 167, 69, 0.1);
+    }
+    
+    .category-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .category-nom {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #2d3748;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .category-actuel {
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+    
+    .input-budget {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .input-budget label {
+      font-weight: 600;
+      color: #495057;
+      min-width: 150px;
+    }
+    
+    .input-budget input {
+      flex: 1;
+      text-align: right;
+      font-size: 1.3rem;
+      font-weight: 700;
+      padding: 12px 20px;
+      border: 2px solid #e9ecef;
+      border-radius: 10px;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .input-budget input:focus {
+      border-color: #28a745;
+      box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+      outline: none;
+    }
+    
+    .total-box {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      color: white;
+      border-radius: 15px;
+      padding: 25px;
+      text-align: center;
+      margin-top: 30px;
+      box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
+    }
+    
+    .total-box h4 {
+      margin: 0 0 10px 0;
+      font-size: 1.2rem;
+      opacity: 0.9;
+    }
+    
+    .total-montant {
+      font-size: 2.5rem;
+      font-weight: 900;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .btn-continuer {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      color: white;
+      padding: 15px 40px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      border-radius: 12px;
+      width: 100%;
+      margin-top: 30px;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-continuer:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+    
+    .info-box {
+      background: #e7f3ff;
+      border-left: 4px solid #667eea;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+    }
+    
+    .info-box i {
+      color: #667eea;
+      margin-right: 10px;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6c757d;
+    }
+    
+    .empty-state i {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      opacity: 0.3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container-optimisation">
+    
+    <!-- En-tête étape -->
+    <div class="card-etape">
+      <div class="etape-header">
+        <div class="etape-numero">1</div>
+        <h1 class="etape-titre">💰 Mes revenus mensuels</h1>
+        <p class="etape-description">
+          Définissez vos revenus prévus pour <strong><%= moisCible %></strong>
+        </p>
+      </div>
+      
+      <div class="info-box">
+        <i class="fas fa-lightbulb"></i>
+        <strong>Comment ça marche ?</strong><br>
+        Estimez vos revenus par catégorie pour le mois prochain. Si vous avez des revenus réguliers, le montant actuel est pré-rempli.
+      </div>
+      
+      <!-- Formulaire -->
+      <form action="/optimisation/etape1" method="POST">
+        
+        <% 
+        // Vérification de sécurité
+        if (typeof categories === 'undefined') {
+          categories = [];
+        }
+        %>
+        
+        <% if (categories.length === 0) { %>
+          <!-- État vide -->
+          <div class="empty-state">
+            <i class="fas fa-wallet"></i>
+            <h5>Aucune catégorie de revenus disponible</h5>
+            <p>Veuillez configurer vos catégories de revenus pour continuer.</p>
+          </div>
+        <% } else { %>
+          
+          <!-- Catégories de revenus -->
+          <% 
+          let totalBudget = 0;
+          categories.forEach(cat => { 
+          %>
+            <div class="category-card">
+              <div class="category-header">
+                <div class="category-nom">
+                  <i class="fas fa-tag" style="color: #28a745;"></i>
+                  <%= cat.nom %>
+                </div>
+                <% if (cat.montant_actuel > 0) { %>
+                  <div class="category-actuel">
+                    Actuellement : <%= cat.montant_actuel.toFixed(2) %>€/mois
+                  </div>
+                <% } %>
+              </div>
+              
+              <div class="input-budget">
+                <label for="budget_<%= cat.id %>">
+                  Budget prévu
+                </label>
+                <input 
+                  type="number" 
+                  class="form-control budget-input" 
+                  id="budget_<%= cat.id %>"
+                  name="budgets_revenus[<%= cat.id %>]" 
+                  value="<%= cat.montant_actuel.toFixed(0) %>"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  data-montant="<%= cat.montant_actuel %>"
+                >
+              </div>
+            </div>
+          <% 
+          totalBudget += cat.montant_actuel;
+          }) 
+          %>
+          
+          <!-- Total -->
+          <div class="total-box">
+            <h4>Total des revenus prévus</h4>
+            <div class="total-montant" id="totalRevenus">
+              <%= totalBudget.toFixed(2) %>€
+            </div>
+          </div>
+          
+          <!-- Champ caché pour le total -->
+          <input type="hidden" name="revenus_optimises" id="revenus_optimises" value="<%= totalBudget %>">
+          
+        <% } %>
+        
+        <!-- Bouton continuer -->
+        <button type="submit" class="btn btn-continuer">
+          <i class="fas fa-arrow-right"></i> Continuer vers les dépenses
+        </button>
+        
+        <!-- Lien retour -->
+        <div class="text-center mt-3">
+          <a href="/optimisation/start" style="color: #667eea; text-decoration: none;">
+            <i class="fas fa-arrow-left"></i> Retour au tableau de bord
+          </a>
+        </div>
+        
+      </form>
+    </div>
+    
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Calculer le total en temps réel
+    const budgetInputs = document.querySelectorAll('.budget-input');
+    const totalRevenusElement = document.getElementById('totalRevenus');
+    const revenusOptimisesInput = document.getElementById('revenus_optimises');
+    
+    function updateTotal() {
+      let total = 0;
+      budgetInputs.forEach(input => {
+        const value = parseFloat(input.value) || 0;
+        total += value;
+      });
+      
+      totalRevenusElement.textContent = total.toFixed(2) + '€';
+      revenusOptimisesInput.value = total.toFixed(2);
+    }
+    
+    budgetInputs.forEach(input => {
+      input.addEventListener('input', updateTotal);
+    });
+    
+    // Initialiser le total
+    updateTotal();
+  </script>
+</body>
+</html>
+
+

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ajouter une action</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .modal-container {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 600px;
+      width: 100%;
+      overflow: hidden;
+    }
+    .modal-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 25px 30px;
+      border: none;
+    }
+    .modal-header h3 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    .modal-body {
+      padding: 30px;
+    }
+    .form-label {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+    }
+    .form-control, .form-select {
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      padding: 12px 15px;
+      transition: all 0.3s ease;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    .budget-info {
+      background: #f8f9fa;
+      border-left: 4px solid #667eea;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+    }
+    .budget-info h6 {
+      color: #667eea;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .budget-info p {
+      margin: 0;
+      color: #6c757d;
+    }
+    .priorite-selector {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .priorite-btn {
+      padding: 15px;
+      border: 2px solid #e9ecef;
+      border-radius: 10px;
+      background: white;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    .priorite-btn input[type="radio"] {
+      display: none;
+    }
+    .priorite-btn:hover {
+      border-color: #667eea;
+      transform: translateY(-2px);
+    }
+    .priorite-btn input[type="radio"]:checked + label {
+      border-color: #667eea;
+      background: #e7f3ff;
+    }
+    .priorite-label {
+      display: block;
+      cursor: pointer;
+      margin: 0;
+    }
+    .priorite-icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+    .priorite-name {
+      font-weight: 600;
+      color: #333;
+    }
+    .btn-submit {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      color: white;
+      padding: 12px;
+      font-weight: 600;
+      border-radius: 50px;
+      width: 100%;
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
+    }
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+    .btn-cancel {
+      background: #6c757d;
+      border: none;
+      color: white;
+      padding: 12px;
+      font-weight: 600;
+      border-radius: 50px;
+      width: 100%;
+      margin-top: 10px;
+    }
+    .examples {
+      background: #e7f3ff;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 15px;
+    }
+    .examples h6 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #667eea;
+      margin-bottom: 10px;
+    }
+    .examples ul {
+      margin: 0;
+      padding-left: 20px;
+      font-size: 0.9rem;
+      color: #495057;
+    }
+    .examples li {
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3><i class="fas fa-plus-circle"></i> Ajouter une action</h3>
+    </div>
+    
+    <div class="modal-body">
+      <% if (budget) { %>
+        <div class="budget-info">
+          <h6>📌 Dépense concernée</h6>
+          <p><strong><%= budget.recurring_transactions.nom %></strong></p>
+          <p>Montant actuel : <%= budget.montant_actuel.toFixed(2) %>€ → Optimal : <%= budget.montant_optimal.toFixed(2) %>€</p>
+        </div>
+      <% } else if (nomSuggestion) { %>
+        <div class="budget-info">
+          <h6>📌 Catégorie concernée</h6>
+          <p><strong><%= nomSuggestion %></strong></p>
+          <p class="text-muted"><small>Action générale pour cette catégorie</small></p>
+        </div>
+      <% } %>
+      
+      <form action="/optimisation/action/add" method="POST">
+        <% if (budget) { %>
+          <input type="hidden" name="budget_optimise_id" value="<%= budget.id %>">
+        <% } %>
+        
+        <!-- Description -->
+        <div class="mb-4">
+          <label for="description" class="form-label">
+            <i class="fas fa-align-left"></i> Description de l'action *
+          </label>
+          <textarea 
+            class="form-control" 
+            id="description" 
+            name="description" 
+            rows="3" 
+            placeholder="<%= nomSuggestion ? 'Ex: Réduire les dépenses en ' + nomSuggestion : 'Ex: Résilier l\'abonnement Netflix' %>"
+            required
+          ></textarea>
+        </div>
+        
+        <!-- Économie mensuelle -->
+        <div class="mb-4">
+          <label for="economie_mensuelle" class="form-label">
+            <i class="fas fa-piggy-bank"></i> Économie mensuelle prévue (€)
+          </label>
+          <input 
+            type="number" 
+            class="form-control" 
+            id="economie_mensuelle" 
+            name="economie_mensuelle" 
+            step="0.01"
+            min="0"
+            placeholder="15.00"
+            <% if (budget) { %>
+              value="<%= (budget.montant_actuel - budget.montant_optimal).toFixed(2) %>"
+            <% } %>
+          >
+          <small class="text-muted">Montant que vous économiserez en réalisant cette action</small>
+        </div>
+        
+        <!-- Priorité -->
+        <div class="mb-4">
+          <label class="form-label">
+            <i class="fas fa-flag"></i> Priorité *
+          </label>
+          <div class="priorite-selector">
+            <div class="priorite-btn">
+              <input type="radio" name="priorite" id="priorite1" value="1" required>
+              <label for="priorite1" class="priorite-label">
+                <div class="priorite-icon">🔴</div>
+                <div class="priorite-name">Haute</div>
+              </label>
+            </div>
+            <div class="priorite-btn">
+              <input type="radio" name="priorite" id="priorite2" value="2" checked>
+              <label for="priorite2" class="priorite-label">
+                <div class="priorite-icon">🟡</div>
+                <div class="priorite-name">Moyenne</div>
+              </label>
+            </div>
+            <div class="priorite-btn">
+              <input type="radio" name="priorite" id="priorite3" value="3">
+              <label for="priorite3" class="priorite-label">
+                <div class="priorite-icon">🟢</div>
+                <div class="priorite-name">Basse</div>
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Date limite -->
+        <div class="mb-4">
+          <label for="date_limite" class="form-label">
+            <i class="fas fa-calendar-alt"></i> Date limite (optionnel)
+          </label>
+          <input 
+            type="date" 
+            class="form-control" 
+            id="date_limite" 
+            name="date_limite"
+            min="<%= new Date().toISOString().split('T')[0] %>"
+          >
+        </div>
+        
+        <!-- Exemples d'actions -->
+        <div class="examples">
+          <h6><i class="fas fa-lightbulb"></i> Exemples d'actions courantes :</h6>
+          <ul>
+            <li>Résilier un abonnement non utilisé</li>
+            <li>Renégocier son forfait mobile/internet</li>
+            <li>Changer de fournisseur d'énergie</li>
+            <li>Comparer les assurances</li>
+            <li>Réduire les sorties au restaurant</li>
+          </ul>
+        </div>
+        
+        <!-- Boutons -->
+        <button type="submit" class="btn-submit">
+          <i class="fas fa-check"></i> Ajouter l'action
+        </button>
+        <button type="button" class="btn-cancel" onclick="window.close()">
+          Annuler
+        </button>
+      </form>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Style pour les boutons de priorité
+    document.querySelectorAll('.priorite-btn').forEach(btn => {
+      const radio = btn.querySelector('input[type="radio"]');
+      
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.priorite-btn').forEach(b => {
+          b.style.borderColor = '#e9ecef';
+          b.style.background = 'white';
+        });
+        
+        btn.style.borderColor = '#667eea';
+        btn.style.background = '#e7f3ff';
+        radio.checked = true;
+      });
+      
+      // Initialiser le style du bouton coché
+      if (radio.checked) {
+        btn.style.borderColor = '#667eea';
+        btn.style.background = '#e7f3ff';
+      }
+    });
+    
+    // Fermer la fenêtre après soumission réussie
+    document.querySelector('form').addEventListener('submit', (e) => {
+      // Le formulaire va se soumettre normalement
+      setTimeout(() => {
+        if (window.opener) {
+          window.opener.location.reload();
+        }
+        window.close();
+      }, 100);
+    });
+  </script>
+</body>
+</html>

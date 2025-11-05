@@ -175,30 +175,8 @@
                     </div>
                 </div>
 
-                <!-- Ligne 2 : Dates + Statut + IA + Boutons -->
+                <!-- Ligne 2 : Statut + Boutons -->
                 <div class="filters-row-dates">
-                    <!-- Date début -->
-                    <div class="filter-group filter-date">
-                        <label for="date_debut">Du</label>
-                        <input 
-                            type="date" 
-                            id="date_debut" 
-                            name="date_debut"
-                            value="<%= filters.date_debut %>"
-                        >
-                    </div>
-
-                    <!-- Date fin -->
-                    <div class="filter-group filter-date">
-                        <label for="date_fin">Au</label>
-                        <input 
-                            type="date" 
-                            id="date_fin" 
-                            name="date_fin"
-                            value="<%= filters.date_fin %>"
-                        >
-                    </div>
-
                     <!-- Statut catégorisation -->
                     <div class="filter-group filter-status">
                         <label>Statut</label>
@@ -233,45 +211,35 @@
                     </div>
 
                     <!-- Boutons d'action -->
-                    <div class="filter-actions">
-                        <button type="submit" class="btn-filter">
+                    <div class="filter-group filter-actions">
+                        <label>&nbsp;</label>
+                        <div class="action-buttons-inline">
+                            <button type="submit" class="btn-filter">
                             🔍 
                         </button>
                         <a href="/transactions" class="btn-reset">
                             ✖️ 
                         </a>
+                        </div>
                     </div>
                 </div>
             </form>
 
-            <!-- Stats IA compactes -->
-            <% if (aiStats && aiStats.patterns.total > 0) { %>
-            <div class="ai-stats-compact">
-                <span class="ai-stat-item">
-                    <strong><%= aiStats.patterns.total %></strong> patterns appris
-                </span>
-                <span class="ai-stat-divider">•</span>
-                <span class="ai-stat-item">
-                    <strong><%= aiStats.suggestions.pending %></strong> suggestions
-                </span>
-                <span class="ai-stat-divider">•</span>
-                <span class="ai-stat-item">
-                    <strong><%= aiStats.suggestions.acceptanceRate %>%</strong> précision
-                </span>
-                <a href="/transactions/ai/stats" class="ai-stats-link">📊 Détails</a>
-            </div>
-            <% } %>
-        </div>
 
-        <!-- Bouton Import CSV toujours visible -->
-        <div class="card" style="margin-bottom: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h2>📥 Importer vos transactions</h2>
-                <a href="/transactions/import-csv" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 12px 24px;">
-                    📥 Importer CSV
-                </a>
+            <!-- Import CSV Section -->
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e5e7eb;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3 style="margin: 0 0 5px 0;">📥 Importer vos transactions</h3>
+                        <p style="color: #666; margin: 0; font-size: 0.9rem;">Importez facilement vos relevés bancaires au format CSV</p>
+                    </div>
+                    <a href="/transactions/import-csv" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 12px 24px;">
+                        📥 Importer CSV
+                    </a>
+                </div>
             </div>
-            <p style="color: #666; margin-top: 10px;">Importez facilement vos relevés bancaires au format CSV</p>
+
+            <!-- Barre d'info IA supprimée -->
         </div>
 
         <!-- Transactions -->
@@ -902,7 +870,7 @@
 
         .filters-row-dates {
             display: grid;
-            grid-template-columns: 1fr 1fr 2fr 60px auto;
+            grid-template-columns: 2fr 60px 60px auto;
             gap: 12px;
             align-items: end;
         }
@@ -995,6 +963,12 @@
             display: flex;
             gap: 8px;
             align-items: flex-end;
+        }
+
+        .action-buttons-inline {
+            display: flex;
+            gap: 8px;
+            align-items: center;
         }
 
         .btn-filter,
@@ -1369,7 +1343,7 @@
             
             .filters-row-dates {
                 display: grid;
-                grid-template-columns: 1fr 1fr 2fr 60px 60px auto;  /* Ajout d'une colonne pour récurrences */
+                grid-template-columns: 1fr 60px 60px auto;  /* Ajout d'une colonne pour récurrences */
                 gap: 12px;
                 align-items: end;
             }

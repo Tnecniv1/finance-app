@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏆 Classement | Fidess</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    
+    .container-classement {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    .header-classement {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+    }
+    
+    .header-classement h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    
+    .header-classement p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+    }
+    
+    /* Podium */
+    .podium-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 20px;
+      margin-bottom: 50px;
+      perspective: 1000px;
+    }
+    
+    .podium-place {
+      background: white;
+      border-radius: 20px;
+      padding: 30px 20px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      transition: transform 0.3s ease;
+      position: relative;
+    }
+    
+    .podium-place:hover {
+      transform: translateY(-10px) scale(1.05);
+    }
+    
+    .podium-place.first {
+      order: 2;
+      width: 280px;
+      background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+      color: white;
+    }
+    
+    .podium-place.second {
+      order: 1;
+      width: 240px;
+      background: linear-gradient(135deg, #C0C0C0 0%, #A9A9A9 100%);
+      color: white;
+    }
+    
+    .podium-place.third {
+      order: 3;
+      width: 240px;
+      background: linear-gradient(135deg, #CD7F32 0%, #8B4513 100%);
+      color: white;
+    }
+    
+    .podium-medal {
+      font-size: 4rem;
+      margin-bottom: 15px;
+      animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .podium-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 15px;
+      font-size: 2rem;
+      font-weight: 700;
+      border: 4px solid rgba(255,255,255,0.5);
+    }
+    
+    .podium-name {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    
+    .podium-solde {
+      font-size: 2rem;
+      font-weight: 900;
+      font-family: 'Courier New', monospace;
+    }
+    
+    /* Liste classement */
+    .classement-box {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    
+    .classement-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .classement-item {
+      display: flex;
+      align-items: center;
+      padding: 15px 20px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      background: #f8f9fa;
+      transition: all 0.3s ease;
+    }
+    
+    .classement-item:hover {
+      background: #e9ecef;
+      transform: translateX(5px);
+    }
+    
+    .classement-item.current-user {
+      background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+      border: 2px solid #667eea;
+    }
+    
+    .classement-rang {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #6c757d;
+      min-width: 50px;
+      text-align: center;
+    }
+    
+    .classement-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      margin-right: 15px;
+    }
+    
+    .classement-info {
+      flex: 1;
+    }
+    
+    .classement-nom {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #2d3748;
+    }
+    
+    .classement-anciennete {
+      font-size: 0.85rem;
+      color: #6c757d;
+    }
+    
+    .classement-solde {
+      font-size: 1.3rem;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+      color: #28a745;
+    }
+    
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    
+    .stat-card {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    
+    .stat-label {
+      color: #6c757d;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+    
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #667eea;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+  <%- include('../partials/navbar-simple') %>
+  
+  <div class="container-classement">
+    
+    <!-- En-tête -->
+    <div class="header-classement">
+      <h1>🏆 Classement</h1>
+      <p>Les meilleurs gestionnaires de budget</p>
+    </div>
+    
+    <!-- Statistiques -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Participants</div>
+        <div class="stat-value"><%= stats.totalUtilisateurs %></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Solde moyen</div>
+        <div class="stat-value"><%= stats.soldeMoyen.toFixed(0) %>€</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Solde médian</div>
+        <div class="stat-value"><%= stats.soldeMedian.toFixed(0) %>€</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Record</div>
+        <div class="stat-value"><%= stats.soldeMax.toFixed(0) %>€</div>
+      </div>
+    </div>
+    
+    <!-- Podium (Top 3) -->
+    <% if (podium.length > 0) { %>
+      <div class="podium-container">
+        <% podium.forEach(user => { %>
+          <div class="podium-place <%= user.rang === 1 ? 'first' : user.rang === 2 ? 'second' : 'third' %>">
+            <div class="podium-medal">
+              <%= user.rang === 1 ? '🥇' : user.rang === 2 ? '🥈' : '🥉' %>
+            </div>
+            <div class="podium-avatar">
+              <%= user.initiales %>
+            </div>
+            <div class="podium-name">
+              <%= user.prenom %> <%= user.nom %>
+              <% if (user.isCurrentUser) { %>
+                <br><small>(Vous)</small>
+              <% } %>
+            </div>
+            <div class="podium-solde">
+              <%= user.solde.toFixed(2) %>€
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+    
+    <!-- Classement complet -->
+    <div class="classement-box">
+      <div class="classement-title">
+        <i class="fas fa-list-ol"></i>
+        Classement complet
+      </div>
+      
+      <% if (autres.length > 0) { %>
+        <% autres.forEach(user => { %>
+          <div class="classement-item <%= user.isCurrentUser ? 'current-user' : '' %>">
+            <div class="classement-rang">#<%= user.rang %></div>
+            <div class="classement-avatar"><%= user.initiales %></div>
+            <div class="classement-info">
+              <div class="classement-nom">
+                <%= user.prenom %> <%= user.nom %>
+                <% if (user.isCurrentUser) { %>
+                  <span style="color: #667eea; font-weight: 700;">(Vous)</span>
+                <% } %>
+              </div>
+              <div class="classement-anciennete">
+                <i class="fas fa-clock"></i> Membre depuis <%= user.anciennete %>
+              </div>
+            </div>
+            <div class="classement-solde">
+              <%= user.solde.toFixed(2) %>€
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <p class="text-center text-muted">Aucun autre participant pour le moment</p>
+      <% } %>
+    </div>
+    
+    <!-- Votre position -->
+    <% if (positionUtilisateur) { %>
+      <div class="classement-box" style="background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%); border: 2px solid #667eea;">
+        <div class="classement-title">
+          <i class="fas fa-user"></i>
+          Votre position
+        </div>
+        <div style="text-align: center; padding: 20px;">
+          <div style="font-size: 3rem; font-weight: 900; color: #667eea; margin-bottom: 10px;">
+            #<%= positionUtilisateur.rang %>
+          </div>
+          <div style="font-size: 1.5rem; color: #2d3748; margin-bottom: 10px;">
+            <%= positionUtilisateur.prenom %> <%= positionUtilisateur.nom %>
+          </div>
+          <div style="font-size: 2rem; font-weight: 700; color: #28a745;">
+            <%= positionUtilisateur.solde.toFixed(2) %>€
+          </div>
+          <div style="margin-top: 20px; color: #6c757d;">
+            <% if (positionUtilisateur.rang === 1) { %>
+              🎉 Félicitations ! Vous êtes en tête du classement !
+            <% } else if (positionUtilisateur.rang <= 3) { %>
+              👏 Excellent ! Vous êtes sur le podium !
+            <% } else if (positionUtilisateur.rang <= 10) { %>
+              💪 Très bien ! Vous êtes dans le top 10 !
+            <% } else { %>
+              📈 Continuez vos efforts pour améliorer votre classement !
+            <% } %>
+          </div>
+        </div>
+      </div>
+    <% } %>
+    
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

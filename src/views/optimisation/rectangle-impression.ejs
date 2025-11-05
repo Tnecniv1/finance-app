@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plan Budgétaire - <%= moisCible %></title>
+  <style>
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 1cm;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fa;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border: 3px solid #333;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 25px 30px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 2.2rem;
+      margin-bottom: 5px;
+    }
+    
+    .header .mois {
+      font-size: 1.3rem;
+      opacity: 0.9;
+    }
+    
+    .solde-banner {
+      background-color: <%= session.solde_previsionnel >= 0 ? '#28a745' : '#dc3545' %>;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    
+    .content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+    
+    .section {
+      padding: 25px;
+      border-right: 2px solid #dee2e6;
+    }
+    
+    .section:last-child {
+      border-right: none;
+    }
+    
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .budget-list {
+      list-style: none;
+    }
+    
+    .budget-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #e9ecef;
+      font-size: 0.95rem;
+    }
+    
+    .budget-item:last-child {
+      border-bottom: none;
+    }
+    
+    .budget-name {
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .budget-montant {
+      font-weight: 700;
+      color: #667eea;
+    }
+    
+    .revenus .budget-montant {
+      color: #28a745;
+    }
+    
+    .depenses .budget-montant {
+      color: #dc3545;
+    }
+    
+    .transactions-list {
+      list-style: none;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .transaction-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #f1f3f5;
+      font-size: 0.9rem;
+    }
+    
+    .transaction-date {
+      font-weight: 600;
+      color: #6c757d;
+      min-width: 60px;
+    }
+    
+    .transaction-nom {
+      flex: 1;
+      padding: 0 10px;
+      color: #333;
+    }
+    
+    .transaction-montant {
+      font-weight: 700;
+      min-width: 80px;
+      text-align: right;
+    }
+    
+    .transaction-montant.revenu {
+      color: #28a745;
+    }
+    
+    .transaction-montant.depense {
+      color: #dc3545;
+    }
+    
+    .actions-section {
+      grid-column: 1 / -1;
+      padding: 25px;
+      background-color: #f8f9fa;
+      border-top: 2px solid #dee2e6;
+    }
+    
+    .actions-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 10px;
+    }
+    
+    .action-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      background: white;
+      border-left: 4px solid #667eea;
+      border-radius: 5px;
+      font-size: 0.9rem;
+    }
+    
+    .action-item.priorite-1 {
+      border-left-color: #dc3545;
+    }
+    
+    .action-item.priorite-2 {
+      border-left-color: #ffc107;
+    }
+    
+    .action-item.priorite-3 {
+      border-left-color: #28a745;
+    }
+    
+    .checkbox {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #333;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+    
+    .action-text {
+      flex: 1;
+      color: #333;
+    }
+    
+    .footer {
+      background-color: #333;
+      color: white;
+      padding: 15px 30px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    
+    .no-print {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      z-index: 1000;
+    }
+    
+    .btn-print {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 50px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-print:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+    }
+    
+    .stats-row {
+      display: flex;
+      justify-content: space-around;
+      padding: 20px;
+      background: #f8f9fa;
+      border-top: 2px solid #dee2e6;
+      border-bottom: 2px solid #dee2e6;
+    }
+    
+    .stat-box {
+      text-align: center;
+    }
+    
+    .stat-label {
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin-bottom: 5px;
+    }
+    
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    
+    .stat-value.revenus {
+      color: #28a745;
+    }
+    
+    .stat-value.depenses {
+      color: #dc3545;
+    }
+    
+    .stat-value.economie {
+      color: #667eea;
+    }
+  </style>
+</head>
+<body>
+  <%- include('../partials/navbar-simple') %>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>💰 PLAN BUDGÉTAIRE</h1>
+      <div class="mois"><%= moisCible %></div>
+    </div>
+    
+    <!-- Solde -->
+    <% 
+    // Calculer le solde depuis budgetsParCategorie
+    const totalRevenusSolde = budgetsParCategorie
+      .filter(c => c.type === 'revenu')
+      .reduce((sum, c) => sum + c.totalOptimal, 0);
+    
+    const totalDepensesSolde = budgetsParCategorie
+      .filter(c => c.type === 'depense')
+      .reduce((sum, c) => sum + c.totalOptimal, 0);
+    
+    const soldeReel = totalRevenusSolde - totalDepensesSolde;
+    %>
+    <div class="solde-banner" style="background-color: <%= soldeReel >= 0 ? '#28a745' : '#dc3545' %>;">
+      SOLDE : <%= soldeReel >= 0 ? '+' : '' %><%= soldeReel.toFixed(2) %>€
+    </div>
+    
+    <!-- Stats -->
+    <div class="stats-row">
+      <% 
+      // Calculer les totaux depuis budgetsParCategorie
+      const totalRevenus = budgetsParCategorie
+        .filter(c => c.type === 'revenu')
+        .reduce((sum, c) => sum + c.totalOptimal, 0);
+      
+      const totalDepenses = budgetsParCategorie
+        .filter(c => c.type === 'depense')
+        .reduce((sum, c) => sum + c.totalOptimal, 0);
+      
+      const soldeCalcule = totalRevenus - totalDepenses;
+      %>
+      <div class="stat-box">
+        <div class="stat-label">💵 Revenus</div>
+        <div class="stat-value revenus">+<%= totalRevenus.toFixed(2) %>€</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">💸 Dépenses</div>
+        <div class="stat-value depenses">-<%= totalDepenses.toFixed(2) %>€</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">💎 Économies</div>
+        <div class="stat-value economie">
+          <%= budgetsParCategorie.reduce((sum, c) => sum + c.economie, 0).toFixed(2) %>€
+        </div>
+      </div>
+    </div>
+    
+    <!-- Contenu principal -->
+    <div class="content">
+      <!-- Budgets par poste -->
+      <div class="section">
+        <div class="section-title">
+          📋 BUDGET PAR POSTE
+        </div>
+        <ul class="budget-list">
+          <% budgetsParCategorie.forEach(categorie => { %>
+            <li class="budget-item <%= categorie.type %>">
+              <span class="budget-name"><%= categorie.nom %></span>
+              <span class="budget-montant"><%= categorie.totalOptimal.toFixed(2) %>€</span>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+      
+      <!-- Transactions planifiées -->
+      <div class="section">
+        <div class="section-title">
+          📅 TRANSACTIONS PLANIFIÉES
+        </div>
+        <ul class="transactions-list">
+          <% if (transactionsPlanifiees.length === 0) { %>
+            <li style="text-align: center; padding: 20px; color: #6c757d;">
+              Aucune transaction planifiée
+            </li>
+          <% } else { %>
+            <% transactionsPlanifiees.forEach(tx => { %>
+              <li class="transaction-item">
+                <span class="transaction-date"><%= tx.dateFormatted %></span>
+                <span class="transaction-nom"><%= tx.nom %></span>
+                <span class="transaction-montant <%= tx.type %>">
+                  <%= tx.type === 'revenu' ? '+' : '-' %><%= Math.abs(tx.montant).toFixed(2) %>€
+                </span>
+              </li>
+            <% }) %>
+          <% } %>
+        </ul>
+      </div>
+    </div>
+    
+    <!-- Actions à réaliser -->
+    <% if (actions.length > 0) { %>
+      <div class="actions-section">
+        <div class="section-title">
+          ✅ ACTIONS À RÉALISER
+        </div>
+        <ul class="actions-list">
+          <% actions.forEach(action => { %>
+            <li class="action-item priorite-<%= action.priorite %>">
+              <div class="checkbox"></div>
+              <div class="action-text">
+                <%= action.description %>
+                <% if (action.economie_mensuelle > 0) { %>
+                  <span style="color: #667eea; font-weight: 600;">
+                    (💰 <%= action.economie_mensuelle.toFixed(2) %>€/mois)
+                  </span>
+                <% } %>
+              </div>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    <% } %>
+    
+    <!-- Footer -->
+    <div class="footer">
+      Généré le <%= new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }) %> | Finance App
+    </div>
+  </div>
+  
+  <!-- Bouton d'impression -->
+  <div class="no-print">
+    <button class="btn-print" onclick="window.print()">
+      🖨️ Imprimer
+    </button>
+  </div>
+  
+  <script>
+    // Auto-print après chargement (optionnel)
+    // window.onload = () => setTimeout(() => window.print(), 500);
+  </script>
+</body>
+</html>
