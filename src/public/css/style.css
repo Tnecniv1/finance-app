@@ -425,6 +425,27 @@ body {
     font-style: italic;
 }
 
+/* Badge Type de transaction */
+.transaction-type-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.badge-fixed {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+}
+
+.badge-variable {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+
 /* Responsive */
 @media (max-width: 768px) {
     .balance-section {

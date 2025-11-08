@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+
+    
     <%- include('../partials/navbar-simple', { currentPage: 'progression', user: user }) %>
     
     <%- include('../partials/progression-header', { currentView: currentView, stats: stats }) %>
@@ -194,12 +196,13 @@
                         <input type="hidden" id="categorized" name="categorized" value="<%= filters.categorized || '' %>">
                     </div>
 
-                    <!-- Bouton Récurrences -->
+                    <!-- Bouton R (page Récurrences) -->
                     <div class="filter-group filter-recurrence">
-                        <label>&nbsp;</label>
-                        <a href="/recurrences/validate" class="btn-recurrence-compact" title="Gérer les récurrences">
-                            🔁
-                        </a>
+                    <label>&nbsp;</label>
+                    <a href="/recurrences" class="btn-recurrence-compact"
+                        title="Récurrences (page R)" aria-label="Aller à la page R">
+                        R
+                    </a>
                     </div>
 
                     <!-- Bouton IA -->
@@ -278,7 +281,7 @@
                                     <%= transaction.objet %>
                                 </span>
                                 <span class="transaction-amount <%= transaction.nature %>">
-                                    <%= transaction.nature === 'revenu' ? '+' : '-' %> 
+                                    <%= transaction.nature === 'revenu' ? '+' : '' %> 
                                     <%= parseFloat(transaction.montant).toFixed(2) %> €
                                 </span>
                             </div>
@@ -304,10 +307,27 @@
                                         Non catégorisée
                                     </span>
                                 <% } %>
+                                
+                                <!-- Badge Fixe/Variable -->
+                                <% 
+                                const isRecurring = recurringTxIds && recurringTxIds.includes(transaction.id);
+                                %>
+                                <span class="transaction-type-badge <%= isRecurring ? 'badge-fixed' : 'badge-variable' %>">
+                                    <%= isRecurring ? '🔄 Fixe' : '📊 Variable' %>
+                                </span>
                             </div>
                         </div>
 
                         <div class="transaction-actions">
+                            <button 
+                                type="button" 
+                                class="btn-action btn-recurring" 
+                                onclick="openRecurringModal('<%= transaction.id %>', '<%= transaction.objet %>', '<%= transaction.montant %>', '<%= transaction.nature %>')"
+                                title="Fixe/Variable"
+                                style="background: #8b5cf6; color: white; font-weight: bold;"
+                            >
+                                F
+                            </button>
                             <button 
                                 type="button" 
                                 class="btn-action btn-categorize" 
@@ -316,12 +336,6 @@
                             >
                                 🏷️
                             </button>
-                            <form action="/transactions/<%= transaction.id %>/delete" method="POST" 
-                                  style="display: inline;"
-                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette transaction ?');">
-                                <button type="submit" class="btn-action btn-delete" title="Supprimer">
-                                    🗑️
-                                </button>
                             </form>
                         </div>
                     </div>
@@ -422,6 +436,8 @@
                     </select>
                 </div>
 
+
+
                 <div class="modal-actions">
                     <button type="submit" class="btn btn-primary">
                         ✅ Catégoriser
@@ -429,6 +445,69 @@
                     <button type="button" class="btn btn-secondary" onclick="closeBulkCategorizeModal()">
                         Annuler
                     </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Récurrence -->
+    <div id="recurringModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeRecurringModal()">&times;</span>
+            <h2>📌 Type de transaction</h2>
+            
+            <div id="recurringInfo" style="background:#f3f4f6; padding:15px; border-radius:8px; margin-bottom:20px;"></div>
+
+            <form id="recurringForm" action="" method="POST">
+                <div class="form-group">
+                    <label style="display:flex; gap:10px;">
+                        <input type="radio" name="type" value="variable" checked onchange="document.getElementById('recOpts').style.display='none'"> 
+                        📊 Variable
+                    </label>
+                    <label style="display:flex; gap:10px;">
+                        <input type="radio" name="type" value="fixed" onchange="document.getElementById('recOpts').style.display='block'"> 
+                        🔄 Fixe (récurrente)
+                    </label>
+                </div>
+
+                <div id="recOpts" style="display:none;">
+                    <div class="form-group">
+                        <label>
+                            <input type="radio" name="association_type" value="existing" checked onchange="document.getElementById('selRec').style.display='block'; document.getElementById('newRec').style.display='none'">
+                            Récurrence existante
+                        </label>
+                        <label>
+                            <input type="radio" name="association_type" value="new" onchange="document.getElementById('selRec').style.display='none'; document.getElementById('newRec').style.display='block'">
+                            Créer nouvelle
+                        </label>
+                    </div>
+
+                    <div id="selRec" class="form-group">
+                        <label>Sélectionner *</label>
+                        <select id="recurring_id" name="recurring_id">
+                            <option>Chargement...</option>
+                        </select>
+                    </div>
+
+                    <div id="newRec" style="display:none;">
+                        <div class="form-group">
+                            <label>Nom *</label>
+                            <input type="text" name="new_recurring_name" placeholder="Netflix, Loyer...">
+                        </div>
+                        <div class="form-group">
+                            <label>Montant (€)</label>
+                            <input type="number" step="0.01" id="newAmt" name="new_recurring_amount">
+                        </div>
+                        <div class="form-group">
+                            <label>Jour du mois</label>
+                            <input type="number" min="1" max="31" name="new_recurring_day" value="1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">✅ Valider</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeRecurringModal()">Annuler</button>
                 </div>
             </form>
         </div>
@@ -1418,6 +1497,118 @@
                 justify-content: center;
             }
         }
+        }
+
+        /* Badge Type de transaction Fixe/Variable */
+        .transaction-type-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .badge-fixed {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+        }
+
+        .badge-variable {
+            background: #f3f4f6;
+            color: #6b7280;
+            border: 1px solid #e5e7eb;
+        }
     </style>
+
+    <script>
+    let currentTx = null;
+
+    function openRecurringModal(id, objet, montant, nature) {
+        currentTx = { id, objet, montant, nature };
+        document.getElementById('recurringInfo').innerHTML = `<strong>${objet}</strong><br>${parseFloat(montant).toFixed(2)} €`;
+        document.getElementById('recurringForm').action = `/transactions/${id}/set-recurring`;
+        document.getElementById('newAmt').value = Math.abs(parseFloat(montant));
+        loadRecurrences(nature);
+        document.getElementById('recurringModal').style.display = 'flex';
+    }
+
+    function closeRecurringModal() {
+        document.getElementById('recurringModal').style.display = 'none';
+    }
+
+    async function loadRecurrences(nature) {
+        try {
+            const res = await fetch('/recurrences/all');
+            const data = await res.json();
+            const sel = document.getElementById('recurring_id');
+            sel.innerHTML = '<option value="">-- Sélectionner --</option>';
+            if (data.success && data.recurrences) {
+                data.recurrences.filter(r => r.nature === nature && r.active).forEach(r => {
+                    sel.innerHTML += `<option value="${r.id}">${r.nom || r.name} (${r.montant_moyen || 0}€)</option>`;
+                });
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    window.onclick = (e) => {
+        const m = document.getElementById('recurringModal');
+        if (e.target === m) closeRecurringModal();
+    }
+    </script>
+
+
+
+<script>
+// ========================================
+// MODAL RÉCURRENCE (FIXE/VARIABLE)
+// ========================================
+let currentTx = null;
+
+function openRecurringModal(id, objet, montant, nature) {
+    currentTx = { id, objet, montant, nature };
+    document.getElementById('recurringInfo').innerHTML = `<strong>${objet}</strong><br>${parseFloat(montant).toFixed(2)} €`;
+    document.getElementById('recurringForm').action = `/transactions/${id}/set-recurring`;
+    document.getElementById('newAmt').value = Math.abs(parseFloat(montant));
+    loadRecurrences(nature);
+    document.getElementById('recurringModal').style.display = 'flex';
+}
+
+function closeRecurringModal() {
+    document.getElementById('recurringModal').style.display = 'none';
+}
+
+async function loadRecurrences(nature) {
+    try {
+        const res = await fetch('/recurrences/all');
+        const data = await res.json();
+        const sel = document.getElementById('recurring_id');
+        sel.innerHTML = '<option value="">-- Sélectionner --</option>';
+        if (data.success && data.recurrences) {
+            const filtered = data.recurrences.filter(r => r.nature === nature && r.active);
+            if (filtered.length === 0) {
+                sel.innerHTML += '<option value="" disabled>Aucune récurrence active</option>';
+            } else {
+                filtered.forEach(r => {
+                    const name = r.nom || r.name || 'Sans nom';
+                    const amt = r.montant_moyen ? ` (${r.montant_moyen}€)` : '';
+                    sel.innerHTML += `<option value="${r.id}">${name}${amt}</option>`;
+                });
+            }
+        }
+    } catch (e) {
+        console.error('Erreur chargement récurrences:', e);
+        sel.innerHTML = '<option value="">Erreur</option>';
+    }
+}
+
+window.addEventListener('click', (e) => {
+    const m = document.getElementById('recurringModal');
+    if (e.target === m) closeRecurringModal();
+});
+</script>
+
 </body>
 </html>

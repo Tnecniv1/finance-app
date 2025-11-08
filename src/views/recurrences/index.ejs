@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Récurrences — Gestion</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --bg:#f6f7fb; --card:#fff; --txt:#222; --muted:#6b7280; --ok:#10b981; --err:#ef4444; --pri:#4f46e5; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:var(--bg); color:var(--txt); }
+    .wrap { max-width: 1280px; margin: 24px auto; padding: 0 16px; }
+    h1 { font-size: 26px; margin: 0 0 12px; }
+    .grid { display:grid; grid-template-columns: 2fr 1fr; gap:16px; }
+    .card { background:#fff; border-radius:14px; box-shadow:0 6px 18px rgba(10,10,20,.06); padding:16px; }
+    h2 { font-size:18px; margin:0 0 12px; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { text-align:left; padding:10px 8px; border-bottom:1px solid #eef0f3; }
+    th { font-size:12px; letter-spacing:.02em; color:#374151; text-transform: uppercase; }
+    .muted { color: var(--muted); }
+    .badge { display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:600; }
+    .b-revenu { background:#dcfce7; color:#065f46; }
+    .b-depense { background:#fee2e2; color:#7f1d1d; }
+    .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .btn { border:0; cursor:pointer; padding:8px 12px; border-radius:10px; background:#EEF2FF; color:#3730a3; font-weight:600; }
+    .btn:hover { background:#e0e7ff; }
+    .btn-danger { background:#fee2e2; color:#991b1b; }
+    .btn-danger:hover { background:#fecaca; }
+    input, select { width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:10px; }
+    label { display:block; font-size:12px; color:#111827; margin-bottom:6px; }
+    .flash { padding:10px 12px; border-radius:10px; margin-bottom:12px; }
+    .flash.ok { background:#ecfdf5; color:#065f46; }
+    .flash.err { background:#fef2f2; color:#7f1d1d; }
+    .section { margin-top:14px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <%- include('../partials/navbar-simple', { currentPage: 'recurrences' }) %>
+    <h1>Récurrences — Gestion</h1>
+
+    <% const _flash = (typeof flash !== 'undefined' && flash) ? flash : {}; %>
+    <% if (_flash.success) { %><div class="flash ok"><%= _flash.success %></div><% } %>
+    <% if (_flash.error) { %><div class="flash err"><%= _flash.error %></div><% } %>
+
+    <div class="grid">
+      <!-- Colonne gauche : liste -->
+      <section class="card">
+        <h2>Récurrences validées</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Nature</th>
+              <th>Fréquence</th>
+              <th>Jour</th>
+              <th>Montant</th>
+              <th style="width:190px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (!(recurrences && recurrences.length)) { %>
+              <tr><td colspan="6" class="muted">Aucune récurrence validée.</td></tr>
+            <% } else { %>
+              <% recurrences.forEach(r => { %>
+                <% const _title = r.nom || r.title || r.label || r.name || '(sans titre)'; %>
+                <% const freq = 'monthly'; /* on a choisi Mensuelle pour la v1 */ %>
+                <% const mu = (r.montant_moyen ?? r.montant ?? null); %>
+                <% const sigma = (r.montant_ecart_type ?? null); %>
+                <% const displayAmount = mu!=null ? (sigma!=null ? `${mu} € (±${sigma})` : `${mu} €`) : '—'; %>
+                <tr data-rec="<%= r.id %>">
+                  <td><strong><%= _title %></strong></td>
+                  <td><span class="badge <%= (r.nature==='depense'?'b-depense':'b-revenu') %>"><%= r.nature %></span></td>
+                  <td>monthly</td>
+                  <td><%= r.day_of_month ?? '—' %></td>
+                  <td><%= displayAmount %></td>
+                  <td class="row" style="justify-content:end;">
+                    <button class="btn" data-action="candidates" data-id="<%= r.id %>">🔎 Voir candidats</button>
+                    <form action="/recurrences/<%= r.id %>/delete" method="post" onsubmit="return confirm('Supprimer cette récurrence ?')" style="display:inline;">
+                      <button class="btn btn-danger" type="submit">Supprimer</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+
+        <!-- Zone association sous la liste -->
+        <div class="section">
+          <h2 id="assocTitle" class="muted" style="margin-bottom:10px;">Sélectionnez une récurrence pour associer</h2>
+
+          <h3>Candidats</h3>
+          <table id="candidatesTable" style="display:none;">
+            <thead>
+              <tr><th>Date</th><th>Libellé</th><th>Montant</th><th style="width:120px;"></th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+
+          <h3 style="margin-top:12px;">Déjà associés</h3>
+          <table id="mappedTable" style="display:none;">
+            <thead>
+              <tr><th>Date</th><th>Libellé</th><th>Montant</th><th style="width:120px;"></th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Colonne droite : formulaire -->
+      <aside class="card">
+        <h2>Ajouter une récurrence</h2>
+        <form class="section" action="/recurrences" method="post">
+          <div class="section">
+            <label>Nom</label>
+            <input type="text" name="titre" placeholder="Salaire, Loyer, Spotify…" required />
+          </div>
+
+          <div class="row section">
+            <div style="flex:1;">
+              <label>Fréquence</label>
+              <select name="frequence">
+                <option value="monthly" selected>Mensuelle</option>
+              </select>
+            </div>
+            <div style="flex:1;">
+              <label>Nature</label>
+              <select name="nature">
+                <option value="revenu">Revenu</option>
+                <option value="depense">Dépense</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row section">
+            <div style="flex:1;">
+              <label>Jour du mois (1-31)</label>
+              <input type="number" name="day_of_month" min="1" max="31" placeholder="5" />
+            </div>
+            <div style="flex:1;">
+              <label>Date de début</label>
+              <input type="date" name="start_date" />
+            </div>
+          </div>
+
+          <div class="row section">
+            <div style="flex:1;">
+              <label>Montant moyen (€)</label>
+              <input type="number" step="0.01" name="montant_moyen" placeholder="ex: 1200" />
+            </div>
+            <div style="flex:1;">
+              <label>Écart-type (€) (optionnel)</label>
+              <input type="number" step="0.01" name="montant_ecart_type" placeholder="ex: 50" />
+            </div>
+          </div>
+
+          <div class="row section">
+            <div style="flex:1;">
+              <label>p(occurrence) (0–1, défaut 1)</label>
+              <input type="number" step="0.01" min="0" max="1" name="p_occurrence" placeholder="1" />
+            </div>
+            <div style="flex:1;">
+              <label>Jitter (± jours)</label>
+              <input type="number" step="1" min="0" max="10" name="jitter_days" placeholder="0" />
+            </div>
+          </div>
+
+          <div class="section">
+            <button class="btn" type="submit">Créer</button>
+          </div>
+        </form>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const fmt = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
+    let currentRec = null;
+
+    async function loadFor(recurrenceId, titleText) {
+      currentRec = recurrenceId;
+      document.getElementById('assocTitle').textContent = `Récurrence sélectionnée : ${titleText}`;
+
+      // Candidats
+      const r1 = await fetch(`/recurrences/${recurrenceId}/candidates`);
+      const d1 = await r1.json();
+      const candT = document.getElementById('candidatesTable');
+      const candBody = candT.querySelector('tbody');
+      candBody.innerHTML = '';
+
+      if (d1.success && (d1.candidates||[]).length) {
+        d1.candidates.forEach(c => {
+          const label = c.libelle ?? c.objet ?? '';
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${(c.date||'').slice(0,10)}</td>
+            <td>${label}</td>
+            <td>${fmt.format(Number(c.montant||0))}</td>
+            <td><button class="btn" data-map="${c.id}">Associer</button></td>
+          `;
+          candBody.appendChild(tr);
+        });
+        candT.style.display = 'table';
+      } else {
+        candBody.innerHTML = `<tr><td colspan="4" class="muted">Aucun candidat détecté.</td></tr>`;
+        candT.style.display = 'table';
+      }
+
+      // Déjà associés
+      const r2 = await fetch(`/recurrences/${recurrenceId}/mappings`);
+      const d2 = await r2.json();
+      const mapT = document.getElementById('mappedTable');
+      const mapBody = mapT.querySelector('tbody');
+      mapBody.innerHTML = '';
+
+      if (d2.success && (d2.mappings||[]).length) {
+        d2.mappings.forEach(m => {
+          const t = m.transactions || {};
+          const label = t.libelle ?? t.objet ?? '';
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${(t.date||'').slice(0,10)}</td>
+            <td>${label}</td>
+            <td>${fmt.format(Number(t.montant||0))}</td>
+            <td><button class="btn btn-danger" data-unmap="${m.id}">Dissocier</button></td>
+          `;
+          mapBody.appendChild(tr);
+        });
+        mapT.style.display = 'table';
+      } else {
+        mapBody.innerHTML = `<tr><td colspan="4" class="muted">Aucune transaction associée.</td></tr>`;
+        mapT.style.display = 'table';
+      }
+    }
+
+    document.querySelectorAll('button[data-action="candidates"]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const tr = e.target.closest('tr[data-rec]');
+        const recId = e.target.getAttribute('data-id');
+        const titleText = tr?.querySelector('td strong')?.textContent || 'Récurrence';
+        loadFor(recId, titleText);
+      });
+    });
+
+    document.getElementById('candidatesTable').addEventListener('click', async (e) => {
+      const b = e.target.closest('button[data-map]'); if (!b || !currentRec) return;
+      const txId = b.getAttribute('data-map');
+
+      const res = await fetch(`/recurrences/${currentRec}/map`, {
+        method: 'POST', headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify({ transaction_id: txId })
+      });
+      const data = await res.json();
+      if (!data.success) return alert(data.error || 'Échec association');
+
+      b.textContent = 'Associée ✓'; b.disabled = true;
+    });
+
+    document.getElementById('mappedTable').addEventListener('click', async (e) => {
+      const b = e.target.closest('button[data-unmap]'); if (!b) return;
+      const mapId = b.getAttribute('data-unmap');
+      if (!confirm('Dissocier cette transaction ?')) return;
+
+      const res = await fetch(`/recurrences/map/${mapId}`, { method:'DELETE' });
+      const data = await res.json();
+      if (!data.success) return alert(data.error || 'Échec suppression');
+      b.closest('tr')?.remove();
+    });
+  </script>
+</body>
+</html>

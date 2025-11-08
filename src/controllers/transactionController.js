@@ -37,7 +37,7 @@ function calculateRecurrentVsVariable(recurringTxs, variableTxs) {
     if (tx.nature === 'revenu') {
       revenusRecurrentsTotal += montant;
     } else {
-      depensesRecurrentesTotal += montant;
+      depensesRecurrentesTotal += Math.abs(montant);
     }
   });
 
@@ -46,7 +46,7 @@ function calculateRecurrentVsVariable(recurringTxs, variableTxs) {
     if (tx.nature === 'revenu') {
       revenusVariablesTotal += montant;
     } else {
-      depensesVariablesTotal += montant;
+      depensesVariablesTotal += Math.abs(montant);
     }
   });
 
@@ -106,6 +106,18 @@ class TransactionController {
       // Récupérer les stats de l'IA
       const aiStats = await CategorizationAI.getStats(userId);
 
+      // Récupérer les IDs des transactions récurrentes
+      const supabase = require('../../config/supabase');
+      const { data: recurrences } = await supabase
+        .from('recurring_transactions')
+        .select('transaction_ids')
+        .eq('user_id', userId)
+        .eq('active', true);
+
+      const recurringTxIds = recurrences 
+        ? recurrences.flatMap(rec => rec.transaction_ids || [])
+        : [];
+
       // Messages
       const error = req.query.error || null;
       const success = req.query.success || null;
@@ -122,6 +134,7 @@ class TransactionController {
         categories,
         balance,
         suggestions,
+        recurringTxIds,
         aiStats,
         pseudo,
         user: req.session.user || { prenom: req.session.pseudo },
@@ -501,11 +514,11 @@ class TransactionController {
       const recurrences = await RecurringTransaction.findByUserId(userId);
 
       // ✅ Séparer récurrent vs variable
-      const recurringTxIds = [];
-      for (const rec of recurrences) {
-        const txIds = await RecurringTransaction.getTransactionsByRecurringId(rec.id);
-        recurringTxIds.push(...txIds);
-      }
+      const recurringTxIds = recurrences
+        .filter(rec => rec.active && rec.transaction_ids)
+        .flatMap(rec => rec.transaction_ids);
+
+      console.log('🔍 IDs récurrents:', recurringTxIds.length, recurringTxIds);
 
       // Séparer les transactions
       const recurringTransactions = transactions.filter(tx => recurringTxIds.includes(tx.id));
@@ -577,6 +590,59 @@ class TransactionController {
     } catch (error) {
       console.error('Erreur chargement camemberts:', error);
       res.redirect('/transactions?error=Erreur lors du chargement des camemberts');
+    }
+  }
+
+
+  static async setRecurring(req, res) {
+    const supabase = require('../../config/supabase');
+    try {
+      const userId = req.session.userId;
+      const transactionId = req.params.id;
+      const { type, association_type, recurring_id, new_recurring_name, new_recurring_amount, new_recurring_day } = req.body;
+
+      const { data: tx, error: txErr } = await supabase.from('transactions').select('id, user_id, nature, montant').eq('id', transactionId).eq('user_id', userId).single();
+      if (txErr || !tx) return res.redirect('/transactions?error=Transaction introuvable');
+
+      if (type === 'variable') {
+        const { data: recs } = await supabase.from('recurring_transactions').select('id, transaction_ids').eq('user_id', userId);
+        if (recs) {
+          for (const rec of recs) {
+            if (rec.transaction_ids && rec.transaction_ids.includes(transactionId)) {
+              const newIds = rec.transaction_ids.filter(id => id !== transactionId);
+              await supabase.from('recurring_transactions').update({ transaction_ids: newIds, nb_occurrences: newIds.length }).eq('id', rec.id);
+            }
+          }
+        }
+        return res.redirect('/transactions?success=Marquée variable');
+      }
+
+      if (association_type === 'new') {
+        const { error: insertErr } = await supabase.from('recurring_transactions').insert({
+          user_id: userId, nom: new_recurring_name, nature: tx.nature,
+          montant_moyen: parseFloat(new_recurring_amount) || Math.abs(parseFloat(tx.montant)),
+          jour_mois: parseInt(new_recurring_day) || 1, frequence: 'monthly', active: true,
+          nb_occurrences: 1, transaction_ids: [transactionId], status: 'active'
+        });
+        if (insertErr) {
+          console.error('[setRecurring] Insert error:', insertErr);
+          return res.redirect('/transactions?error=Erreur création');
+        }
+        return res.redirect('/transactions?success=Récurrence créée');
+      }
+
+      if (!recurring_id) return res.redirect('/transactions?error=Sélectionner récurrence');
+      const { data: rec, error: recErr } = await supabase.from('recurring_transactions').select('id, transaction_ids, nature').eq('id', recurring_id).eq('user_id', userId).single();
+      if (recErr || !rec || rec.nature !== tx.nature) return res.redirect('/transactions?error=Récurrence invalide');
+
+      const currentIds = rec.transaction_ids || [];
+      if (!currentIds.includes(transactionId)) {
+        await supabase.from('recurring_transactions').update({ transaction_ids: [...currentIds, transactionId], nb_occurrences: currentIds.length + 1 }).eq('id', recurring_id);
+      }
+      return res.redirect('/transactions?success=Transaction associée');
+    } catch (error) {
+      console.error('[setRecurring]', error);
+      return res.redirect('/transactions?error=Erreur');
     }
   }
 }

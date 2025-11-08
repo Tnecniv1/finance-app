@@ -82,7 +82,7 @@ class Transaction {
     // Filtrage post-requête
     let results = data;
 
-    // 🆕 FILTRE CATÉGORISATION (post-requête car Supabase OR est complexe)
+    // FILTRE CATÉGORISATION (post-requête car Supabase OR est complexe)
     if (categorized === 'yes') {
       // Transactions catégorisées : ont au moins une sous-catégorie
       results = results.filter(t => 
@@ -113,46 +113,56 @@ class Transaction {
     return results;
   }
 
+  /**
+   * Récupère toutes les transactions d'un utilisateur
+   * Version simple sans jointures complexes
+   */
   static async findByUserId(userId) {
-    let allTransactions = [];
-    let from = 0;
-    const batchSize = 1000;
-    let hasMore = true;
-
-    while (hasMore) {
+    try {
       const { data, error } = await supabase
         .from('transactions')
-        .select(`
-          *,
-          sous_categorie_revenu:sous_categories_revenus (
-            id,
-            nom,
-            categorie_revenu_id,
-            categorie_revenu:categories_revenus (id, nom)
-          ),
-          sous_categorie_depense:sous_categories_depenses (
-            id,
-            nom,
-            categorie_depense_id,
-            categorie_depense:categories_depenses (id, nom)
-          )
-        `)
+        .select('*')
         .eq('user_id', userId)
-        .order('date', { ascending: false })
-        .range(from, from + batchSize - 1);
+        .order('date', { ascending: false });
 
-      if (error) throw error;
-
-      if (data && data.length > 0) {
-        allTransactions = allTransactions.concat(data);
-        from += batchSize;
-        hasMore = data.length === batchSize;
-      } else {
-        hasMore = false;
+      if (error) {
+        console.error('Erreur findByUserId:', error);
+        throw error;
       }
-    }
 
-    return allTransactions;
+      return data || [];
+    } catch (error) {
+      console.error('Erreur dans findByUserId:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Récupère plusieurs transactions par leurs IDs
+   * Version simple sans jointures complexes
+   */
+  static async findByIds(ids) {
+    try {
+      if (!ids || ids.length === 0) {
+        return [];
+      }
+
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .in('id', ids)
+        .order('date', { ascending: false });
+
+      if (error) {
+        console.error('Erreur findByIds:', error);
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Erreur dans findByIds:', error);
+      return [];
+    }
   }
 
   /**
@@ -261,7 +271,7 @@ class Transaction {
   }
 
   /**
-   * 🆕 Récupérer les transactions non catégorisées pour l'IA
+   * Récupérer les transactions non catégorisées pour l'IA
    */
   static async getUncategorized(userId, limit = 100) {
     const { data, error } = await supabase
@@ -278,7 +288,7 @@ class Transaction {
   }
 
   /**
-   * 🆕 Compter les transactions catégorisées et non catégorisées
+   * Compter les transactions catégorisées et non catégorisées
    */
   static async getCategorizedStats(userId) {
     const { data, error } = await supabase
@@ -303,37 +313,6 @@ class Transaction {
       percentage: data.length > 0 ? Math.round((categorized / data.length) * 100) : 0
     };
   }
-
-  /**
-   * Récupère plusieurs transactions par leurs IDs (UUIDs)
-   * @param {Array<string>} ids - Array d'UUIDs
-   */
-  static async findByIds(ids) {
-    if (!ids || ids.length === 0) return [];
-    
-    const { data, error } = await supabase
-      .from('transactions')
-      .select(`
-        *,
-        sous_categorie_revenu:sous_categories_revenus (
-          id,
-          nom,
-          categorie_revenu:categories_revenus (id, nom)
-        ),
-        sous_categorie_depense:sous_categories_depenses (
-          id,
-          nom,
-          categorie_depense:categories_depenses (id, nom)
-        )
-      `)
-      .in('id', ids)
-      .order('date', { ascending: false });
-    
-    if (error) throw error;
-    return data || [];
-  }
-
-
 }
 
 module.exports = Transaction;

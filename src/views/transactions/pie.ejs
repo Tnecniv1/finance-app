@@ -498,6 +498,7 @@
 
         /* Volatility Gauge Styles */
         .volatility-container {
+            grid-column: 1 / -1;  /* Prend toute la largeur */
             margin-bottom: 20px;
         }
 
@@ -721,14 +722,6 @@
         <div class="filters-container">
             <div class="filters-row">
                 <div class="filter-group">
-                    <label>Mode</label>
-                    <div class="filter-buttons">
-                        <button class="filter-btn active" data-filter="mode" data-value="moyenne">Moyenne</button>
-                        <button class="filter-btn" data-filter="mode" data-value="volatilite">Volatilité</button>
-                    </div>
-                </div>
-
-                <div class="filter-group">
                     <label>Période</label>
                     <div class="filter-buttons">
                         <button class="filter-btn" data-filter="period" data-value="weekly">Hebdomadaire</button>
@@ -738,6 +731,7 @@
                 </div>
             </div>
         </div>
+
 
 
         <!-- Charts (Moyenne mode) -->
@@ -898,7 +892,7 @@
 
 
         <!-- Volatility Gauge (Volatilité mode) -->
-        <div class="volatility-container" id="volatilityContainer" style="display: none;">
+        <div class="volatility-container" id="volatilityContainer" style="display: block;">
             <div class="volatility-card">
                 <div class="volatility-header">
                     <h2>📊 Analyse de Volatilité</h2>
@@ -965,10 +959,10 @@
     <script>
         // Current filter state
         let currentPeriod = 'monthly';  // Default to monthly to match the active button
-        let currentMode = 'moyenne';  // Default to moyenne
 
         // Raw data
-        const transactions = <%- JSON.stringify(transactions) %>;
+        const transactionsData = <%- JSON.stringify(transactions) %>;
+        const transactions = Array.isArray(transactionsData) ? transactionsData : (transactionsData[1] || []);
         const categoriesRevenus = <%- JSON.stringify(categoriesRevenus) %>;
         const categoriesDepenses = <%- JSON.stringify(categoriesDepenses) %>;
         const recurringTxIds = <%- JSON.stringify(recurringTxIds) %>;  // IDs des transactions récurrentes
@@ -991,9 +985,6 @@
                 // Update filter
                 if (filterType === 'period') {
                     currentPeriod = value;
-                } else if (filterType === 'mode') {
-                    currentMode = value;
-                    toggleView();
                 }
 
                 // Refresh display
@@ -1018,14 +1009,10 @@
             }
         }
 
-        // Update display based on current mode
+        // Update display based on current period
         function updateDisplay() {
-            if (currentMode === 'moyenne') {
-                updateCharts();
-            } else {
-                updateVolatility();
-            }
-            updateStats();
+            updateCharts();
+            updateVolatility();
         }
 
         // Format currency
@@ -1250,7 +1237,8 @@
                     if (t.nature === 'depense' && t.sous_categorie_depense && t.sous_categorie_depense.categorie_depense_id) {
                         const categorieId = t.sous_categorie_depense.categorie_depense_id;
                         if (categoryData[categorieId] !== undefined) {
-                            categoryData[categorieId][i] += parseFloat(t.montant);
+                            categoryData[categorieId][i] += Math.abs(parseFloat(t.montant));
+
                         }
                     }
                 });
@@ -1284,41 +1272,6 @@
             return { labels, data, backgroundColors };
         }
 
-        // Update stats
-        function updateStats() {
-            const { start, end } = getDateRange(currentPeriod);
-            
-            let totalRevenus = 0;
-            let totalDepenses = 0;
-
-            transactions.forEach(t => {
-                const tDate = new Date(t.date);
-                if (tDate >= start && tDate <= end) {
-                    if (t.nature === 'revenu') {
-                        totalRevenus += parseFloat(t.montant);
-                    } else {
-                        totalDepenses += parseFloat(t.montant);
-                    }
-                }
-            });
-
-            document.getElementById('total-revenus').textContent = formatCurrency(totalRevenus);
-            document.getElementById('total-depenses').textContent = formatCurrency(totalDepenses);
-            
-            const solde = totalRevenus - totalDepenses;
-            const soldeElement = document.getElementById('solde');
-            soldeElement.textContent = formatCurrency(solde);
-            
-            const soldeCard = soldeElement.closest('.stat-card');
-            soldeCard.classList.remove('positive', 'negative', 'neutral');
-            if (solde > 0) {
-                soldeCard.classList.add('positive');
-            } else if (solde < 0) {
-                soldeCard.classList.add('negative');
-            } else {
-                soldeCard.classList.add('neutral');
-            }
-        }
 
         // Update legend
 
@@ -1416,62 +1369,33 @@
             }
 
             // Update stats
-            updateStats();
             updateRecurringAnalysis();  // Mettre à jour l'analyse récurrent/variable
         }
 
         // Calculer les stats récurrent/variable selon la période
-        function calculateRecurringStats(period) {
-            const filteredTransactions = filterTransactionsByPeriod(transactions, period);
-            
-            // Séparer récurrent vs variable
-            const recurringTransactions = filteredTransactions.filter(tx => recurringTxIds.includes(tx.id));
-            const variableTransactions = filteredTransactions.filter(tx => !recurringTxIds.includes(tx.id));
-            
-            // Calculer les totaux
-            let revenusRecurrents = 0;
-            let revenusVariables = 0;
-            let depensesRecurrentes = 0;
-            let depensesVariables = 0;
-            
-            recurringTransactions.forEach(tx => {
-                const montant = parseFloat(tx.montant);
-                if (tx.nature === 'revenu') {
-                    revenusRecurrents += montant;
-                } else {
-                    depensesRecurrentes += Math.abs(montant);
-                }
-            });
-            
-            variableTransactions.forEach(tx => {
-                const montant = parseFloat(tx.montant);
-                if (tx.nature === 'revenu') {
-                    revenusVariables += montant;
-                } else {
-                    depensesVariables += Math.abs(montant);
-                }
-            });
-            
-            const totalRevenus = revenusRecurrents + revenusVariables;
-            const totalDepenses = depensesRecurrentes + depensesVariables;
-            const tauxCouverture = depensesRecurrentes > 0 ? (revenusRecurrents / depensesRecurrentes * 100) : 0;
-            const resteAVivre = revenusRecurrents - depensesRecurrentes;
-            const soldeMensuel = totalRevenus - totalDepenses;
-            const risqueDecouvert = revenusRecurrents - depensesRecurrentes;
-            
-            return {
-                revenusRecurrents,
-                revenusVariables,
-                depensesRecurrentes,
-                depensesVariables,
-                totalRevenus,
-                totalDepenses,
-                tauxCouverture,
-                resteAVivre,
-                soldeMensuel,
-                risqueDecouvert
-            };
+        function calculateRecurringStats(transactions, nature /* 'revenu' | 'depense' */) {
+        let recurring = 0;
+        let variable  = 0;
+
+        transactions.forEach(t => {
+            if (t.nature !== nature) return;
+
+            // 🔑 Display logic: expenses as positive magnitudes
+            const amount = nature === 'depense'
+            ? Math.abs(Number(t.montant) || 0)
+            : Number(t.montant) || 0;
+
+            const isRecurring = Boolean(t.is_recurring || t.recurring || t.isRecurrent); // adapt to your flag
+            if (isRecurring) recurring += amount; else variable += amount;
+        });
+
+        const total = recurring + variable;
+        const rPct = total ? (recurring / total) * 100 : 0;
+        const vPct = total ? (variable  / total) * 100 : 0;
+
+        return { recurring, variable, total, rPct, vPct };
         }
+
         
         // Mettre à jour l'affichage de l'analyse récurrent/variable
         function updateRecurringAnalysis() {
@@ -1508,18 +1432,28 @@
             // Mettre à jour les barres de dépenses
             const expenseBar = document.querySelectorAll('.bar-group')[1];
             const expenseTotal = expenseBar.querySelector('.bar-total');
-            expenseTotal.textContent = `${stats.totalDepenses.toFixed(2)} €`;
-            
+            // ✅ FIX: Calculer la somme des moyennes mensuelles
+            const totalDepensesMensuel = stats.depensesRecurrentes + stats.depensesVariables;
+            expenseTotal.textContent = `${totalDepensesMensuel.toFixed(2)} €`;
+
+            // Ligne 1486-1491: Calculer le pourcentage récurrent
             const expenseRecurringSegment = expenseBar.querySelector('.recurring-expense');
             const expenseRecurringValue = expenseRecurringSegment.querySelector('.bar-value');
-            const expenseRecurringPct = stats.totalDepenses > 0 ? (stats.depensesRecurrentes / stats.totalDepenses * 100) : 0;
+            // ✅ FIX: Utiliser totalDepensesMensuel au lieu de stats.totalDepenses
+            const expenseRecurringPct = totalDepensesMensuel > 0 
+                ? (stats.depensesRecurrentes / totalDepensesMensuel * 100) 
+                : 0;
             expenseRecurringSegment.style.width = `${expenseRecurringPct}%`;
             expenseRecurringSegment.title = `Récurrent : ${stats.depensesRecurrentes.toFixed(2)} €`;
             expenseRecurringValue.textContent = `${stats.depensesRecurrentes.toFixed(0)} € (${Math.round(expenseRecurringPct)}%)`;
-            
+
+            // Ligne 1493-1498: Calculer le pourcentage variable
             const expenseVariableSegment = expenseBar.querySelector('.variable-expense');
             const expenseVariableValue = expenseVariableSegment.querySelector('.bar-value');
-            const expenseVariablePct = stats.totalDepenses > 0 ? (stats.depensesVariables / stats.totalDepenses * 100) : 0;
+            // ✅ FIX: Utiliser totalDepensesMensuel au lieu de stats.totalDepenses
+            const expenseVariablePct = totalDepensesMensuel > 0 
+                ? (stats.depensesVariables / totalDepensesMensuel * 100) 
+                : 0;
             expenseVariableSegment.style.width = `${expenseVariablePct}%`;
             expenseVariableSegment.title = `Variable : ${stats.depensesVariables.toFixed(2)} €`;
             expenseVariableValue.textContent = `${stats.depensesVariables.toFixed(0)} € (${Math.round(expenseVariablePct)}%)`;

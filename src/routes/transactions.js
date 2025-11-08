@@ -16,6 +16,8 @@ router.post('/:id/categorize', TransactionController.categorize);
 
 router.post('/categorize-bulk', TransactionController.categorizeBulk);
 
+router.post('/:id/set-recurring', TransactionController.setRecurring);  // ✅ AJOUTE CETTE LIGNE
+
 // Routes IA
 router.post('/ai/generate-suggestions', TransactionController.generateSuggestions);
 router.post('/ai/suggestions/:id/accept', TransactionController.acceptSuggestion);
