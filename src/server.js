@@ -18,7 +18,8 @@ const powensWebhookRouter = require('./routes/powensWebhook');
 const PORT = process.env.PORT || 3000;
 const app = express();
 
-const powensSyncRoute = require("./src/routes/powensSync");
+const powensSyncRoute = require('./routes/powensSync');
+
 
 // --- Trust proxy (pour cookies secure derrière Render/Proxy) ---
 app.set('trust proxy', 1);
