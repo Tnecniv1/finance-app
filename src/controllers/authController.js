@@ -50,7 +50,7 @@ class AuthController {
       req.session.userId = user.id;
       req.session.pseudo = user.pseudo;
 
-      res.redirect('/transactions');
+      res.redirect('/'); // ← Modifié : redirige vers la page Maison
     } catch (error) {
       console.error('Erreur inscription:', error);
       res.render('auth/register', { 
@@ -104,7 +104,7 @@ class AuthController {
       req.session.userId = user.id;
       req.session.pseudo = user.pseudo;
 
-      res.redirect('/transactions');
+      res.redirect('/'); // ← Modifié : redirige vers la page Maison
     } catch (error) {
       console.error('Erreur connexion:', error);
       res.render('auth/login', { 

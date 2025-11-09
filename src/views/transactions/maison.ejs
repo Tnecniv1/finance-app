@@ -27,9 +27,58 @@
             </a>
         </div>
 
-        <!-- Grand cadre blanc central (vide pour le moment) -->
+        <!-- Grand cadre avec visualisation de pixels -->
         <div class="center-frame">
-            <!-- Contenu à ajouter plus tard -->
+            <% if (visualisation) { %>
+
+                <!-- En-tête du projet -->
+                <div class="projet-header">
+                    <div class="projet-info">
+                        <h2 class="projet-nom">🎯 <%= visualisation.projet.nom %></h2>
+                        <p class="projet-description">
+                            <% if (visualisation.projet.description) { %>
+                                <%= visualisation.projet.description %>
+                            <% } %>
+                        </p>
+                    </div>
+                    <div class="projet-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Profit</span>
+                            <span class="stat-value <%= visualisation.estNegatif ? 'negative' : 'positive' %>">
+                                <%= visualisation.solde.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %>€
+                            </span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Objectif</span>
+                            <span class="stat-value">
+                                <%= visualisation.montantObjectif.toLocaleString('fr-FR', { minimumFractionDigits: 0 }) %>€
+                            </span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Progression</span>
+                            <span class="stat-value <%= visualisation.estNegatif ? 'negative' : 'positive' %>">
+                                <%= visualisation.estNegatif ? '-' : '+' %><%= visualisation.pourcentageAffiche %>%
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grille de pixels -->
+                <div class="pixel-container">
+                    <canvas id="pixelCanvas"></canvas>
+                </div>
+
+            <% } else { %>
+                <!-- Pas de projet actif -->
+                <div class="no-project">
+                    <div class="no-project-icon">🎯</div>
+                    <h3>Aucun projet actif</h3>
+                    <p>Créez votre premier projet financier pour visualiser votre progression !</p>
+                    <a href="/infos" class="btn-create-project">
+                        <span>➕</span> Créer un projet
+                    </a>
+                </div>
+            <% } %>
         </div>
     </div>
 
@@ -77,16 +126,157 @@
             color: #333;
         }
 
-        /* Grand cadre blanc central */
+        /* Grand cadre central */
         .center-frame {
             background: white;
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            min-height: 400px;
             padding: 40px;
             max-width: 1000px;
             margin: 0 auto;
             width: 100%;
+        }
+
+        /* En-tête du projet */
+        .projet-header {
+            margin-bottom: 30px;
+        }
+
+        .projet-nom {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .projet-description {
+            color: #6c757d;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .projet-stats {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 24px;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+        }
+
+        .stat-value.positive {
+            color: #28a745;
+        }
+
+        .stat-value.negative {
+            color: #dc3545;
+        }
+
+        /* Grille de pixels */
+        .pixel-container {
+            margin: 30px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        #pixelCanvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        /* Légende */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .legend-label {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        /* Pas de projet */
+        .no-project {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .no-project-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .no-project h3 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .no-project p {
+            font-size: 16px;
+            color: #6c757d;
+            margin-bottom: 30px;
+        }
+
+        .btn-create-project {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-create-project:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
 
         /* Responsive */
@@ -109,10 +299,117 @@
             }
 
             .center-frame {
-                min-height: 300px;
                 padding: 30px 20px;
+            }
+
+            .projet-stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .stat-value {
+                font-size: 20px;
+            }
+
+            .pixel-container {
+                min-height: 300px;
+                padding: 10px;
             }
         }
     </style>
+
+    <% if (visualisation) { %>
+    <script>
+        // Configuration de la grille de pixels
+        const config = {
+            totalPixels: <%= visualisation.totalPixels %>,
+            pixelsColores: <%= visualisation.pixelsColores %>,
+            estNegatif: <%= visualisation.estNegatif ? 'true' : 'false' %>,
+            gridSize: 100, // Grille 100x100
+            pixelSize: 4, // Taille de chaque pixel en px
+            pixelGap: 1 // Espacement entre les pixels
+        };
+
+        // Initialiser le canvas
+        const canvas = document.getElementById('pixelCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Calculer les dimensions du canvas
+        const totalSize = config.gridSize * (config.pixelSize + config.pixelGap);
+        canvas.width = totalSize;
+        canvas.height = totalSize;
+
+        // Couleurs
+        const colors = {
+            filled: config.estNegatif ? '#000000' : '#667eea', // Noir si dette, violet sinon
+            empty: '#f0f0f0'
+        };
+
+        // Fonction pour dessiner un pixel
+        function drawPixel(x, y, color) {
+            ctx.fillStyle = color;
+            const posX = x * (config.pixelSize + config.pixelGap);
+            const posY = y * (config.pixelSize + config.pixelGap);
+            ctx.fillRect(posX, posY, config.pixelSize, config.pixelSize);
+        }
+
+        // Dessiner la grille
+        function drawGrid() {
+            let pixelIndex = 0;
+            
+            for (let y = 0; y < config.gridSize; y++) {
+                for (let x = 0; x < config.gridSize; x++) {
+                    const color = pixelIndex < config.pixelsColores ? colors.filled : colors.empty;
+                    drawPixel(x, y, color);
+                    pixelIndex++;
+                }
+            }
+        }
+
+        // Animation au chargement (remplissage progressif)
+        function animateGrid() {
+            let currentPixel = 0;
+            const animationSpeed = config.pixelsColores > 1000 ? 1 : 5; // Vitesse adaptative
+            
+            const interval = setInterval(() => {
+                if (currentPixel >= config.pixelsColores) {
+                    clearInterval(interval);
+                    return;
+                }
+                
+                // Dessiner les pixels progressivement
+                for (let i = 0; i < animationSpeed && currentPixel < config.pixelsColores; i++) {
+                    const x = currentPixel % config.gridSize;
+                    const y = Math.floor(currentPixel / config.gridSize);
+                    drawPixel(x, y, colors.filled);
+                    currentPixel++;
+                }
+                
+                // Dessiner le reste en blanc
+                for (let y = 0; y < config.gridSize; y++) {
+                    for (let x = 0; x < config.gridSize; x++) {
+                        const index = y * config.gridSize + x;
+                        if (index >= currentPixel) {
+                            drawPixel(x, y, colors.empty);
+                        }
+                    }
+                }
+            }, 10);
+        }
+
+        // Lancer l'animation au chargement
+        window.addEventListener('load', () => {
+            // D'abord dessiner la grille vide
+            for (let y = 0; y < config.gridSize; y++) {
+                for (let x = 0; x < config.gridSize; x++) {
+                    drawPixel(x, y, colors.empty);
+                }
+            }
+            
+            // Puis animer le remplissage
+            setTimeout(animateGrid, 300);
+        });
+    </script>
+    <% } %>
 </body>
 </html>

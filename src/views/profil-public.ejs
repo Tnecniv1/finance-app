@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>👤 Profil <%= profileUser.prenom %> <%= profileUser.nom %> | Fidess</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    
+    .container-profil {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    /* En-tête profil */
+    .profil-header {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    
+    .profil-avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      font-weight: 700;
+      margin: 0 auto 20px;
+      border: 5px solid white;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    
+    .profil-nom {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #2d3748;
+      margin-bottom: 10px;
+    }
+    
+    .profil-pseudo {
+      font-size: 1.2rem;
+      color: #6c757d;
+      margin-bottom: 10px;
+    }
+    
+    .profil-anciennete {
+      font-size: 1rem;
+      color: #6c757d;
+    }
+    
+    .profil-own-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+    
+    /* Section boxes */
+    .section-box {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    
+    .section-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    /* Pixel actif */
+    .projet-info {
+      background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+      border: 2px solid #667eea;
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 25px;
+    }
+    
+    .projet-nom {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 15px;
+    }
+    
+    .projet-stats {
+      display: flex;
+      justify-content: space-around;
+      gap: 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .stat-item {
+      text-align: center;
+    }
+    
+    .stat-label {
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin-bottom: 5px;
+    }
+    
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .stat-value.positive {
+      color: #28a745;
+    }
+    
+    .stat-value.negative {
+      color: #dc3545;
+    }
+    
+    .pixel-container {
+      margin: 20px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 300px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 20px;
+    }
+    
+    #pixelCanvas {
+      max-width: 100%;
+      height: auto;
+      border-radius: 5px;
+    }
+    
+    /* Badges */
+    .badges-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .badge-item {
+      background: #f8f9fa;
+      border-radius: 15px;
+      padding: 15px;
+      text-align: center;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    
+    .badge-item.unlocked {
+      background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+      border: 2px solid #667eea;
+    }
+    
+    .badge-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    
+    .badge-emoji {
+      font-size: 3rem;
+      margin-bottom: 8px;
+      opacity: 0.3;
+    }
+    
+    .badge-item.unlocked .badge-emoji {
+      opacity: 1;
+    }
+    
+    .badge-name {
+      font-weight: 600;
+      color: #2d3748;
+      font-size: 0.9rem;
+      margin-bottom: 3px;
+    }
+    
+    .badge-level {
+      font-size: 0.75rem;
+      color: #6c757d;
+    }
+    
+    .badge-count {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #667eea;
+      color: white;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+    
+    /* Projets complétés */
+    .projet-card {
+      background: linear-gradient(135deg, #28a74520 0%, #20c99720 100%);
+      border: 2px solid #28a745;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 15px;
+      transition: all 0.3s ease;
+    }
+    
+    .projet-card:hover {
+      transform: translateX(5px);
+      box-shadow: 0 5px 15px rgba(40, 167, 69, 0.2);
+    }
+    
+    .projet-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .projet-card-nom {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #2d3748;
+    }
+    
+    .projet-badge {
+      background: #28a745;
+      color: white;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .projet-montant {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: #28a745;
+      font-family: 'Courier New', monospace;
+      margin-bottom: 8px;
+    }
+    
+    .projet-date {
+      font-size: 0.9rem;
+      color: #6c757d;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #6c757d;
+    }
+    
+    .empty-state i {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      opacity: 0.3;
+    }
+    
+    .btn-back {
+      background: white;
+      border: 2px solid #667eea;
+      color: #667eea;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+    }
+    
+    .btn-back:hover {
+      background: #667eea;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <%- include('partials/navbar-simple') %>
+  
+  <div class="container-profil">
+    
+    <!-- Bouton retour -->
+    <a href="/classement" class="btn-back">
+      <i class="fas fa-arrow-left"></i> Retour au classement
+    </a>
+    
+    <!-- En-tête du profil -->
+    <div class="profil-header">
+      <div class="profil-avatar">
+        <%= `${(profileUser.prenom || 'A')[0]}${(profileUser.nom || 'N')[0]}`.toUpperCase() %>
+      </div>
+      <div class="profil-nom">
+        <%= profileUser.prenom %> <%= profileUser.nom %>
+      </div>
+      <div class="profil-pseudo">
+        @<%= profileUser.pseudo %>
+      </div>
+      <div class="profil-anciennete">
+        <i class="fas fa-calendar-alt"></i> Membre depuis <%= anciennete %>
+      </div>
+      <% if (isOwnProfile) { %>
+        <div class="profil-own-badge">
+          <i class="fas fa-user"></i> C'est vous !
+        </div>
+      <% } %>
+    </div>
+    
+    <!-- Projet actif / Pixel en cours -->
+    <div class="section-box">
+      <div class="section-title">
+        <i class="fas fa-bullseye"></i>
+        Projet en cours
+      </div>
+      
+      <% if (visualisation) { %>
+        <div class="projet-info">
+          <div class="projet-nom">🎯 <%= visualisation.projet.nom %></div>
+          
+          <% if (visualisation.projet.description) { %>
+            <p style="color: #6c757d; margin-bottom: 15px;">
+              <%= visualisation.projet.description %>
+            </p>
+          <% } %>
+          
+          <div class="projet-stats">
+            <div class="stat-item">
+              <div class="stat-label">Solde actuel</div>
+              <div class="stat-value <%= visualisation.estNegatif ? 'negative' : 'positive' %>">
+                <%= visualisation.solde.toLocaleString('fr-FR', { minimumFractionDigits: 2 }) %>€
+              </div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Objectif</div>
+              <div class="stat-value">
+                <%= visualisation.montantObjectif.toLocaleString('fr-FR', { minimumFractionDigits: 0 }) %>€
+              </div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Progression</div>
+              <div class="stat-value <%= visualisation.estNegatif ? 'negative' : 'positive' %>">
+                <%= visualisation.estNegatif ? '-' : '+' %><%= visualisation.pourcentageAffiche %>%
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Grille de pixels -->
+        <div class="pixel-container">
+          <canvas id="pixelCanvas"></canvas>
+        </div>
+        
+      <% } else { %>
+        <div class="empty-state">
+          <i class="fas fa-inbox"></i>
+          <p><%= isOwnProfile ? 'Vous n\'avez' : 'Cet utilisateur n\'a' %> pas de projet actif pour le moment.</p>
+        </div>
+      <% } %>
+    </div>
+    
+    <!-- Collection de badges -->
+    <div class="section-box">
+      <div class="section-title">
+        <i class="fas fa-trophy"></i>
+        Collection de badges
+      </div>
+      
+      <% if (userBadges && userBadges.length > 0) { %>
+        <div class="badges-grid">
+          <% allBadges.forEach(badge => { %>
+            <div class="badge-item <%= badgeCounts[badge.niveau] ? 'unlocked' : '' %>">
+              <% if (badgeCounts[badge.niveau]) { %>
+                <div class="badge-count"><%= badgeCounts[badge.niveau] %></div>
+              <% } %>
+              <div class="badge-emoji"><%= badge.emoji %></div>
+              <div class="badge-name"><%= badge.nom %></div>
+              <div class="badge-level">Niv. <%= badge.niveau %></div>
+            </div>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="empty-state">
+          <i class="fas fa-trophy"></i>
+          <p><%= isOwnProfile ? 'Vous n\'avez' : 'Cet utilisateur n\'a' %> pas encore de badge.</p>
+        </div>
+      <% } %>
+    </div>
+    
+    <!-- Projets réalisés -->
+    <div class="section-box">
+      <div class="section-title">
+        <i class="fas fa-check-circle"></i>
+        Projets réalisés (<%= projetsCompletes.length %>)
+      </div>
+      
+      <% if (projetsCompletes && projetsCompletes.length > 0) { %>
+        <% projetsCompletes.forEach(projet => { %>
+          <div class="projet-card">
+            <div class="projet-card-header">
+              <div class="projet-card-nom"><%= projet.nom %></div>
+              <div class="projet-badge">
+                <i class="fas fa-check"></i>
+                Réalisé
+              </div>
+            </div>
+            
+            <div class="projet-montant">
+              🎯 <%= parseFloat(projet.montant_objectif).toLocaleString('fr-FR') %>€
+            </div>
+            
+            <% if (projet.description) { %>
+              <p style="color: #6c757d; margin-bottom: 10px; font-size: 0.95rem;">
+                <%= projet.description %>
+              </p>
+            <% } %>
+            
+            <div class="projet-date">
+              <i class="fas fa-calendar-check"></i> 
+              Complété le <%= new Date(projet.date_completion).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div class="empty-state">
+          <i class="fas fa-inbox"></i>
+          <p><%= isOwnProfile ? 'Vous n\'avez' : 'Cet utilisateur n\'a' %> pas encore réalisé de projet.</p>
+        </div>
+      <% } %>
+    </div>
+    
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <% if (visualisation) { %>
+  <script>
+    // Configuration de la grille de pixels
+    const config = {
+      totalPixels: <%= visualisation.totalPixels %>,
+      pixelsColores: <%= visualisation.pixelsColores %>,
+      estNegatif: <%= visualisation.estNegatif ? 'true' : 'false' %>,
+      gridSize: 100,
+      pixelSize: 3,
+      pixelGap: 1
+    };
+
+    const canvas = document.getElementById('pixelCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const totalSize = config.gridSize * (config.pixelSize + config.pixelGap);
+    canvas.width = totalSize;
+    canvas.height = totalSize;
+
+    const colors = {
+      filled: config.estNegatif ? '#000000' : '#667eea',
+      empty: '#f0f0f0'
+    };
+
+    function drawPixel(x, y, color) {
+      ctx.fillStyle = color;
+      const posX = x * (config.pixelSize + config.pixelGap);
+      const posY = y * (config.pixelSize + config.pixelGap);
+      ctx.fillRect(posX, posY, config.pixelSize, config.pixelSize);
+    }
+
+    function drawGrid() {
+      let pixelIndex = 0;
+      for (let y = 0; y < config.gridSize; y++) {
+        for (let x = 0; x < config.gridSize; x++) {
+          const color = pixelIndex < config.pixelsColores ? colors.filled : colors.empty;
+          drawPixel(x, y, color);
+          pixelIndex++;
+        }
+      }
+    }
+
+    window.addEventListener('load', () => {
+      drawGrid();
+    });
+  </script>
+  <% } %>
+</body>
+</html>

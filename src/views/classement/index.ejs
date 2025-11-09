@@ -54,10 +54,15 @@
       box-shadow: 0 20px 60px rgba(0,0,0,0.3);
       transition: transform 0.3s ease;
       position: relative;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
     }
     
     .podium-place:hover {
       transform: translateY(-10px) scale(1.05);
+      color: inherit;
     }
     
     .podium-place.first {
@@ -116,6 +121,13 @@
       font-size: 2rem;
       font-weight: 900;
       font-family: 'Courier New', monospace;
+      margin-bottom: 10px;
+    }
+    
+    .podium-badges {
+      font-size: 1.2rem;
+      margin-top: 10px;
+      min-height: 30px;
     }
     
     /* Liste classement */
@@ -145,11 +157,15 @@
       margin-bottom: 10px;
       background: #f8f9fa;
       transition: all 0.3s ease;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
     }
     
     .classement-item:hover {
       background: #e9ecef;
       transform: translateX(5px);
+      color: inherit;
     }
     
     .classement-item.current-user {
@@ -188,8 +204,20 @@
       color: #2d3748;
     }
     
+    .classement-details {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-top: 5px;
+    }
+    
     .classement-anciennete {
       font-size: 0.85rem;
+      color: #6c757d;
+    }
+    
+    .classement-badges {
+      font-size: 1rem;
       color: #6c757d;
     }
     
@@ -265,7 +293,7 @@
     <% if (podium.length > 0) { %>
       <div class="podium-container">
         <% podium.forEach(user => { %>
-          <div class="podium-place <%= user.rang === 1 ? 'first' : user.rang === 2 ? 'second' : 'third' %>">
+          <a href="/profil/<%= user.id %>" class="podium-place <%= user.rang === 1 ? 'first' : user.rang === 2 ? 'second' : 'third' %>">
             <div class="podium-medal">
               <%= user.rang === 1 ? '🥇' : user.rang === 2 ? '🥈' : '🥉' %>
             </div>
@@ -281,21 +309,34 @@
             <div class="podium-solde">
               <%= user.solde.toFixed(2) %>€
             </div>
-          </div>
+            <% if (user.badges && Object.keys(user.badges).length > 0) { %>
+              <div class="podium-badges">
+                <%
+                  const emojis = { 1: '🐜', 2: '🐌', 3: '🐈', 4: '🦎', 5: '🐅', 6: '🦚', 7: '🦍', 8: '🐋', 9: '🦄', 10: '🐉' };
+                  const niveaux = Object.keys(user.badges).sort((a, b) => b - a);
+                  const badgeText = niveaux.map(niveau => {
+                    const count = user.badges[niveau];
+                    return count > 0 ? `${emojis[niveau]} ×${count}` : '';
+                  }).filter(t => t).join(' ');
+                %>
+                <%= badgeText %>
+              </div>
+            <% } %>
+          </a>
         <% }) %>
       </div>
     <% } %>
     
     <!-- Classement complet -->
-    <div class="classement-box">
-      <div class="classement-title">
-        <i class="fas fa-list-ol"></i>
-        Classement complet
-      </div>
-      
-      <% if (autres.length > 0) { %>
+    <% if (autres.length > 0) { %>
+      <div class="classement-box">
+        <div class="classement-title">
+          <i class="fas fa-list-ol"></i>
+          Classement complet
+        </div>
+        
         <% autres.forEach(user => { %>
-          <div class="classement-item <%= user.isCurrentUser ? 'current-user' : '' %>">
+          <a href="/profil/<%= user.id %>" class="classement-item <%= user.isCurrentUser ? 'current-user' : '' %>">
             <div class="classement-rang">#<%= user.rang %></div>
             <div class="classement-avatar"><%= user.initiales %></div>
             <div class="classement-info">
@@ -305,19 +346,32 @@
                   <span style="color: #667eea; font-weight: 700;">(Vous)</span>
                 <% } %>
               </div>
-              <div class="classement-anciennete">
-                <i class="fas fa-clock"></i> Membre depuis <%= user.anciennete %>
+              <div class="classement-details">
+                <div class="classement-anciennete">
+                  <i class="fas fa-clock"></i> Membre depuis <%= user.anciennete %>
+                </div>
+                <% if (user.badges && Object.keys(user.badges).length > 0) { %>
+                  <div class="classement-badges">
+                    <%
+                      const emojis = { 1: '🐜', 2: '🐌', 3: '🐈', 4: '🦎', 5: '🐅', 6: '🦚', 7: '🦍', 8: '🐋', 9: '🦄', 10: '🐉' };
+                      const niveaux = Object.keys(user.badges).sort((a, b) => b - a);
+                      const badgeText = niveaux.map(niveau => {
+                        const count = user.badges[niveau];
+                        return count > 0 ? `${emojis[niveau]} ×${count}` : '';
+                      }).filter(t => t).join(' ');
+                    %>
+                    <%= badgeText %>
+                  </div>
+                <% } %>
               </div>
             </div>
             <div class="classement-solde">
               <%= user.solde.toFixed(2) %>€
             </div>
-          </div>
+          </a>
         <% }) %>
-      <% } else { %>
-        <p class="text-center text-muted">Aucun autre participant pour le moment</p>
-      <% } %>
-    </div>
+      </div>
+    <% } %>
     
     <!-- Votre position -->
     <% if (positionUtilisateur) { %>
@@ -333,9 +387,22 @@
           <div style="font-size: 1.5rem; color: #2d3748; margin-bottom: 10px;">
             <%= positionUtilisateur.prenom %> <%= positionUtilisateur.nom %>
           </div>
-          <div style="font-size: 2rem; font-weight: 700; color: #28a745;">
+          <div style="font-size: 2rem; font-weight: 700; color: #28a745; margin-bottom: 15px;">
             <%= positionUtilisateur.solde.toFixed(2) %>€
           </div>
+          <% if (positionUtilisateur.badges && Object.keys(positionUtilisateur.badges).length > 0) { %>
+            <div style="font-size: 1.5rem; margin-bottom: 15px;">
+              <%
+                const emojis = { 1: '🐜', 2: '🐌', 3: '🐈', 4: '🦎', 5: '🐅', 6: '🦚', 7: '🦍', 8: '🐋', 9: '🦄', 10: '🐉' };
+                const niveaux = Object.keys(positionUtilisateur.badges).sort((a, b) => b - a);
+                const badgeText = niveaux.map(niveau => {
+                  const count = positionUtilisateur.badges[niveau];
+                  return count > 0 ? `${emojis[niveau]} ×${count}` : '';
+                }).filter(t => t).join(' ');
+              %>
+              <%= badgeText %>
+            </div>
+          <% } %>
           <div style="margin-top: 20px; color: #6c757d;">
             <% if (positionUtilisateur.rang === 1) { %>
               🎉 Félicitations ! Vous êtes en tête du classement !

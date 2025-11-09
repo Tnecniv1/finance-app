@@ -14,6 +14,9 @@ const recurrenceRoutes = require('./routes/recurrences');
 const optimisationRoutes = require('./routes/optimisation');
 const classementRoutes = require('./routes/classement.routes');
 const powensWebhookRouter = require('./routes/powensWebhook');
+const infosRoutes = require('./routes/infos'); 
+const projetValidationRoutes = require('./routes/projetValidation.routes');
+const profilRoutes = require('./routes/profil.routes');
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -54,8 +57,11 @@ app.use('/transactions', transactionRoutes);
 app.use('/transactions/import-csv', csvRoutes);
 app.use('/recurrences', recurrenceRoutes);
 app.use('/optimisation', optimisationRoutes);
+app.use('/infos', infosRoutes);
 app.use('/classement', classementRoutes);
 app.use('/', mainRoutes);
+app.use('/projet', projetValidationRoutes);
+app.use('/profil', profilRoutes);
 
 app.use("/api", powensSyncRoute);
 

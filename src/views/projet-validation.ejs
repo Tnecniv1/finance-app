@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎉 Valider mon projet | Fidess</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    
+    .container-validation {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .header-validation {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+    }
+    
+    .header-validation h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    
+    .validation-box {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    
+    .projet-info {
+      background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+      border: 2px solid #667eea;
+      border-radius: 15px;
+      padding: 30px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    
+    .projet-nom {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 20px;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    .stat-item {
+      text-align: center;
+    }
+    
+    .stat-label {
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin-bottom: 8px;
+    }
+    
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .stat-value.success {
+      color: #28a745;
+    }
+    
+    .stat-value.warning {
+      color: #ffc107;
+    }
+    
+    .alert {
+      border-radius: 10px;
+      border: none;
+      margin-bottom: 30px;
+    }
+    
+    .transaction-list {
+      max-height: 400px;
+      overflow-y: auto;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px;
+    }
+    
+    .transaction-item {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+    
+    .transaction-item:hover {
+      background: #f8f9fa;
+      border-color: #667eea;
+    }
+    
+    .transaction-item.selected {
+      background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+      border-color: #667eea;
+    }
+    
+    .transaction-radio {
+      margin-right: 15px;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+    
+    .transaction-info {
+      flex: 1;
+    }
+    
+    .transaction-libelle {
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 5px;
+    }
+    
+    .transaction-date {
+      font-size: 0.85rem;
+      color: #6c757d;
+    }
+    
+    .transaction-montant {
+      font-size: 1.3rem;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+      color: #dc3545;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 10px;
+      padding: 15px 40px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      transition: transform 0.2s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-secondary {
+      border-radius: 10px;
+      padding: 15px 40px;
+      font-weight: 600;
+    }
+    
+    .no-transactions {
+      text-align: center;
+      padding: 40px;
+      color: #6c757d;
+    }
+  </style>
+</head>
+<body>
+  <%- include('partials/navbar-simple') %>
+  
+  <div class="container-validation">
+    
+    <!-- En-tête -->
+    <div class="header-validation">
+      <h1>🎉 Valider mon projet</h1>
+      <p>Sélectionnez la transaction qui prouve la réalisation de votre projet</p>
+    </div>
+    
+    <!-- Messages d'erreur -->
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="alert alert-danger">
+        <i class="fas fa-exclamation-circle"></i> <%= error %>
+      </div>
+    <% } %>
+    
+    <!-- Informations du projet -->
+    <div class="validation-box">
+      <div class="projet-info">
+        <div class="projet-nom">🎯 <%= projet.nom %></div>
+        
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-label">Objectif</div>
+            <div class="stat-value"><%= parseFloat(projet.montant_objectif).toLocaleString('fr-FR') %>€</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Solde actuel</div>
+            <div class="stat-value <%= canComplete ? 'success' : 'warning' %>">
+              <%= solde.toLocaleString('fr-FR', { minimumFractionDigits: 2 }) %>€
+            </div>
+          </div>
+        </div>
+        
+        <% if (canComplete) { %>
+          <div class="alert alert-success mt-3 mb-0">
+            <i class="fas fa-check-circle"></i> Félicitations ! Votre solde vous permet de valider ce projet.
+          </div>
+        <% } else { %>
+          <div class="alert alert-warning mt-3 mb-0">
+            <i class="fas fa-exclamation-triangle"></i> Attention : votre solde actuel est inférieur à l'objectif.
+          </div>
+        <% } %>
+      </div>
+      
+      <!-- Formulaire de validation -->
+      <form action="/projet/valider/<%= projet.id %>" method="POST">
+        <h3 style="margin-bottom: 20px;">Sélectionnez la transaction de validation</h3>
+        <p style="color: #6c757d; margin-bottom: 20px;">
+          Choisissez la transaction qui correspond à l'achat réalisé pour ce projet. 
+          Nous vérifierons que votre solde avant cette transaction était suffisant.
+        </p>
+        
+        <% if (transactionsCandidates && transactionsCandidates.length > 0) { %>
+          <div class="transaction-list">
+            <% transactionsCandidates.forEach(tx => { %>
+              <label class="transaction-item" onclick="selectTransaction(this)">
+                <input 
+                  type="radio" 
+                  name="transaction_id" 
+                  value="<%= tx.id %>" 
+                  class="transaction-radio"
+                  required
+                >
+                <div class="transaction-info">
+                  <div class="transaction-libelle"><%= tx.libelle || 'Transaction' %></div>
+                  <div class="transaction-date">
+                    <%= new Date(tx.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+                  </div>
+                </div>
+                <div class="transaction-montant">
+                  <%= Math.abs(parseFloat(tx.montant)).toLocaleString('fr-FR', { minimumFractionDigits: 2 }) %>€
+                </div>
+              </label>
+            <% }) %>
+          </div>
+          
+          <div style="margin-top: 30px; text-align: center; display: flex; gap: 15px; justify-content: center;">
+            <a href="/infos" class="btn btn-secondary">
+              <i class="fas fa-arrow-left"></i> Annuler
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-check"></i> Valider le projet
+            </button>
+          </div>
+        <% } else { %>
+          <div class="no-transactions">
+            <i class="fas fa-inbox" style="font-size: 3rem; opacity: 0.3; margin-bottom: 20px;"></i>
+            <p>Aucune transaction importante trouvée correspondant à ce projet.</p>
+            <p style="font-size: 0.9rem;">Les transactions affichées doivent représenter au moins 50% du montant de votre objectif.</p>
+            <a href="/infos" class="btn btn-secondary mt-3">
+              <i class="fas fa-arrow-left"></i> Retour aux infos
+            </a>
+          </div>
+        <% } %>
+      </form>
+    </div>
+    
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function selectTransaction(label) {
+      // Retirer la classe selected de tous les items
+      document.querySelectorAll('.transaction-item').forEach(item => {
+        item.classList.remove('selected');
+      });
+      
+      // Ajouter la classe selected à l'item cliqué
+      label.classList.add('selected');
+    }
+  </script>
+</body>
+</html>

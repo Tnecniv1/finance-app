@@ -1,9 +1,10 @@
 const supabase = require('../../config/supabase');
+const Badge = require('../models/Badge');
 
 class ClassementController {
   
   /**
-   * Affiche le classement des utilisateurs par solde de trésorerie
+   * Affiche le classement des utilisateurs par solde de trésorerie avec badges
    */
   static async afficherClassement(req, res) {
     try {
@@ -15,7 +16,7 @@ class ClassementController {
       console.log('🔍 Récupération des utilisateurs...');
       const { data: utilisateurs, error: userError } = await supabase
         .from('users')
-        .select('id, nom, prenom, created_at');
+        .select('id, nom, prenom, pseudo, created_at');
       
       if (userError) {
         console.error('❌ Erreur Supabase users:', userError);
@@ -39,12 +40,12 @@ class ClassementController {
             return { ...user, solde: 0 };
           }
           
-          // Calculer le solde : revenus - dépenses
+          // Calculer le solde : revenus - dépenses (en valeur absolue)
           const solde = transactions.reduce((total, tx) => {
             const montant = parseFloat(tx.montant) || 0;
             return tx.nature === 'revenu' 
-              ? total + montant 
-              : total - montant;
+              ? total + Math.abs(montant)
+              : total - Math.abs(montant);
           }, 0);
           
           return { ...user, solde };
@@ -53,19 +54,27 @@ class ClassementController {
       
       console.log('✅ Soldes calculés pour tous les utilisateurs');
       
+      // Récupérer les statistiques de badges pour tous les utilisateurs
+      const userIds = utilisateursAvecSolde.map(u => u.id);
+      const badgeStats = await Badge.getBadgeStatsForRanking(userIds);
+      
+      console.log('✅ Statistiques de badges récupérées');
+      
       // Trier par solde décroissant
       utilisateursAvecSolde.sort((a, b) => b.solde - a.solde);
       
-      // Enrichir avec le rang et formater
+      // Enrichir avec le rang, badges et formater
       const classement = utilisateursAvecSolde.map((user, index) => ({
         rang: index + 1,
         id: user.id,
         nom: user.nom || 'Anonyme',
         prenom: user.prenom || '',
+        pseudo: user.pseudo || '',
         initiales: `${(user.prenom || 'A')[0]}${(user.nom || 'N')[0]}`.toUpperCase(),
         solde: user.solde,
         isCurrentUser: user.id === userId,
-        anciennete: ClassementController.calculateAnciennete(user.created_at)
+        anciennete: ClassementController.calculateAnciennete(user.created_at),
+        badges: badgeStats[user.id] || {}
       }));
       
       console.log('📋 Classement généré:', classement.length, 'entrées');
@@ -79,7 +88,7 @@ class ClassementController {
       // Trouver la position de l'utilisateur actuel
       const positionUtilisateur = classement.find(u => u.isCurrentUser);
       
-      console.log('📍 Position utilisateur:', positionUtilisateur?.rang || 'non trouvé');
+      console.log('🔍 Position utilisateur:', positionUtilisateur?.rang || 'non trouvé');
       
       // Statistiques
       const stats = {
@@ -95,7 +104,7 @@ class ClassementController {
       console.log('📊 Stats calculées:', stats);
       console.log('🎨 Rendu de la vue classement');
       
-      res.render('classement', {
+      res.render('classement/index', {
         podium,
         autres,
         positionUtilisateur,
@@ -135,6 +144,32 @@ class ClassementController {
     return sorted.length % 2 === 0
       ? (sorted[mid - 1] + sorted[mid]) / 2
       : sorted[mid];
+  }
+  
+  /**
+   * Formater les badges pour l'affichage
+   */
+  static formatBadges(badges) {
+    if (!badges || Object.keys(badges).length === 0) return '';
+    
+    const parts = [];
+    // Trier par niveau (du plus haut au plus bas)
+    const niveaux = Object.keys(badges).sort((a, b) => b - a);
+    
+    niveaux.forEach(niveau => {
+      const count = badges[niveau];
+      if (count > 0) {
+        // Mapper le niveau à l'emoji
+        const emojis = {
+          1: '🐜', 2: '🐌', 3: '🐈', 4: '🦎', 5: '🐅',
+          6: '🦚', 7: '🦍', 8: '🐋', 9: '🦄', 10: '🐉'
+        };
+        const emoji = emojis[niveau] || '🏅';
+        parts.push(`${emoji} ×${count}`);
+      }
+    });
+    
+    return parts.join(' ');
   }
 }
 
