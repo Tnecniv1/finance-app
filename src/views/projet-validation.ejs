@@ -245,7 +245,7 @@
                   required
                 >
                 <div class="transaction-info">
-                  <div class="transaction-libelle"><%= tx.libelle || 'Transaction' %></div>
+                  <div class="transaction-libelle"><%= tx.objet || 'Transaction' %></div>
                   <div class="transaction-date">
                     <%= new Date(tx.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) %>
                   </div>
