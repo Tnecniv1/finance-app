@@ -122,12 +122,23 @@ class TransactionController {
       const error = req.query.error || null;
       const success = req.query.success || null;
 
-      // Calculer les stats pour le header
+      // Calculer les stats pour le header (cohérent avec les autres pages)
+      const toNum = v => Number.parseFloat(v) || 0;
+
+      // Les valeurs brutes renvoyées par le modèle (dépenses souvent négatives)
+      const incomeRaw   = toNum(balance.totalIncome);
+      const expensesRaw = toNum(balance.totalExpenses);
+
+      // Profit correct : somme algébrique (si expensesRaw est négatif, on ajoute quand même)
+      const profit = incomeRaw + expensesRaw;
+
+      // Valeurs normalisées pour l'affichage
       const stats = {
-        profit: balance.balance || 0,
-        revenus: balance.totalIncome || 0,
-        charges: balance.totalExpenses || 0
+        profit,                          // ex. 6593.22 + (-6849.53) = -256.31
+        revenus: Math.abs(incomeRaw),    // 6593.22
+        charges: Math.abs(expensesRaw)   // 6849.53
       };
+
 
       res.render('transactions/index', {
         transactions,
