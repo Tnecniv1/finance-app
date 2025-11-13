@@ -1,7 +1,7 @@
 // src/routes/powensCallback.js
 const express = require('express');
 const router = express.Router();
-const axios = require('axios');
+const https = require('https');
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
@@ -14,6 +14,56 @@ const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
 // Supabase client
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* ================================
+ * HELPER : Requête HTTPS sans axios
+ * ============================== */
+function httpsRequest(url, options = {}) {
+    return new Promise((resolve, reject) => {
+        const urlObj = new URL(url);
+        
+        const reqOptions = {
+            hostname: urlObj.hostname,
+            port: urlObj.port || 443,
+            path: urlObj.pathname + urlObj.search,
+            method: options.method || 'GET',
+            headers: options.headers || {}
+        };
+
+        const req = https.request(reqOptions, (res) => {
+            let data = '';
+            
+            res.on('data', (chunk) => {
+                data += chunk;
+            });
+            
+            res.on('end', () => {
+                try {
+                    const jsonData = JSON.parse(data);
+                    if (res.statusCode >= 200 && res.statusCode < 300) {
+                        resolve({ data: jsonData, status: res.statusCode });
+                    } else {
+                        const error = new Error(`HTTP ${res.statusCode}`);
+                        error.response = { data: jsonData, status: res.statusCode };
+                        reject(error);
+                    }
+                } catch (e) {
+                    reject(new Error('Invalid JSON response'));
+                }
+            });
+        });
+
+        req.on('error', (e) => {
+            reject(e);
+        });
+
+        if (options.body) {
+            req.write(JSON.stringify(options.body));
+        }
+
+        req.end();
+    });
+}
 
 /* ================================
  * CALLBACK WEBVIEW POWENS
@@ -89,16 +139,17 @@ router.get('/powens/callback-debug', async (req, res) => {
     try {
         console.log('🔄 Échange du code contre un access_token...');
         
-        const tokenResponse = await axios.post(
+        const tokenResponse = await httpsRequest(
             `${POWENS_BASE_URL}/2.0/auth/token/access`,
             {
-                code: code,
-                client_id: POWENS_CLIENT_ID,
-                client_secret: POWENS_CLIENT_SECRET
-            },
-            {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
+                },
+                body: {
+                    code: code,
+                    client_id: POWENS_CLIENT_ID,
+                    client_secret: POWENS_CLIENT_SECRET
                 }
             }
         );
@@ -114,9 +165,10 @@ router.get('/powens/callback-debug', async (req, res) => {
         // 4️⃣ Vérifier le type de token (doit être userAccess)
         console.log('🔍 Vérification du type de token...');
         
-        const userInfoResponse = await axios.get(
+        const userInfoResponse = await httpsRequest(
             `${POWENS_BASE_URL}/2.0/users/me`,
             {
+                method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${access_token}`
                 }
@@ -137,9 +189,10 @@ router.get('/powens/callback-debug', async (req, res) => {
         // 5️⃣ Récupérer les comptes bancaires
         console.log('🏦 Récupération des comptes bancaires...');
         
-        const accountsResponse = await axios.get(
+        const accountsResponse = await httpsRequest(
             `${POWENS_BASE_URL}/2.0/users/${userInfo.id}/accounts`,
             {
+                method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${access_token}`
                 }
@@ -147,8 +200,6 @@ router.get('/powens/callback-debug', async (req, res) => {
         );
 
         const accounts = accountsResponse.data.accounts || [];
-        console.log(`✅ ${accounts.length} compte(s) récupéré(s)`);
-
         // 6️⃣ Stocker le token en session (temporaire pour test)
         // ⚠️ En production, vous devriez le stocker en base de données
         req.session.powensToken = access_token;
