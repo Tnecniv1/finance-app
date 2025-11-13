@@ -14,6 +14,7 @@ const recurrenceRoutes = require('./routes/recurrences');
 const optimisationRoutes = require('./routes/optimisation');
 const classementRoutes = require('./routes/classement.routes');
 const powensWebhookRouter = require('./routes/powensWebhook');
+const powensCallbackRoutes = require('./routes/powensCallback');
 const infosRoutes = require('./routes/infos'); 
 const projetValidationRoutes = require('./routes/projetValidation.routes');
 const profilRoutes = require('./routes/profil.routes');
@@ -64,6 +65,7 @@ app.use('/projet', projetValidationRoutes);
 app.use('/profil', profilRoutes);
 
 app.use("/api", powensSyncRoute);
+app.use(powensCallbackRoutes);
 
 // NB: ton routeur Monte Carlo expose déjà /api/projection ; le monter à la racine convient
 app.use('/', monteCarloRoutes);
