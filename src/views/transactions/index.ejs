@@ -54,6 +54,7 @@
                                 <span class="suggestion-amount <%= suggestion.suggested_nature %>">
                                     <%= suggestion.suggested_nature === 'revenu' ? '+' : '-' %> 
                                     <%= parseFloat(suggestion.transaction.montant).toFixed(2) %> €
+                                    <%= Math.abs(parseFloat(suggestion.transaction.montant)).toFixed(2) %> €
                                 </span>
                                 
                                 <div class="suggestion-arrow">→</div>

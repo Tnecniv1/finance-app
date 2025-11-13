@@ -1,0 +1,350 @@
+[33mcommit e38f7ae2c5f0d55f05014a2adb6d1597449fbf40[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Thu Nov 13 15:54:12 2025 +0100
+
+    feat: Ajout sécurité production + politique confidentialité
+
+ package-lock.json                             | 163 [32m+++++++[m
+ package.json                                  |   4 [32m+[m
+ src/controllers/optimisationController.js     |  21 [32m+[m[31m-[m
+ src/middleware/security.js                    | 176 [32m+++++++[m
+ src/server.js                                 | 160 [32m++++++[m[31m-[m
+ src/views/legal/politique-confidentialite.ejs | 308 [32m++++++++++++[m
+ src/views/optimisation/dashboard.ejs          | 666 [32m+++++++++++[m[31m---------------[m
+ src/views/transactions/graph.ejs              | 131 [32m+++[m[31m--[m
+ src/views/transactions/index.ejs              |   1 [32m+[m
+ test-powens-correct-flow.js                   | 224 [32m+++++++++[m
+ 10 files changed, 1413 insertions(+), 441 deletions(-)
+
+[33mcommit 0d9dc5e117690832cebd4e455632616bdfcf9651[m[33m ([m[1;31morigin/main[m[33m)[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Thu Nov 13 15:30:11 2025 +0100
+
+    feat: Phase 1 terminée - Callback Powens simplifié pour sandbox
+
+ src/routes/powensCallback.js | 260 [32m++++++++++++++++[m[31m---------------------------[m
+ 1 file changed, 94 insertions(+), 166 deletions(-)
+
+[33mcommit c35a56643ba5fde22d3655e1785eec6424a81c7a[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Thu Nov 13 15:18:41 2025 +0100
+
+    fix: Gestion du connection_id dans le callback Powens
+
+ src/routes/powensCallback.js | 609 [32m++++++++++++++++++++++++++[m[31m-----------------[m
+ 1 file changed, 376 insertions(+), 233 deletions(-)
+
+[33mcommit acaa9135def7ceffedf82effb47c4db7b95bc93f[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Thu Nov 13 12:50:04 2025 +0100
+
+    fix: Remplacement axios par module https natif
+
+ src/routes/powensCallback.js | 73 [32m+++++++++++++++++++++++++++++++++++++[m[31m-------[m
+ 1 file changed, 62 insertions(+), 11 deletions(-)
+
+[33mcommit 733aee771a66f99e890f279f0ac11fdd87d9375b[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Thu Nov 13 12:40:02 2025 +0100
+
+    feat: Ajout du callback Powens pour échange code->token userAccess
+
+ src/routes/powensCallback.js | 315 [32m+++++++++++++++++++++++++++++++++++++++++++[m
+ src/server.js                |   2 [32m+[m
+ 2 files changed, 317 insertions(+)
+
+[33mcommit a7b4c0651652632200a8476bdbe521e7a2d19f1d[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Sun Nov 9 22:03:42 2025 +0100
+
+    Résolution d'un bug dans l'affichage
+
+ src/views/projet-validation.ejs | 2 [32m+[m[31m-[m
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+[33mcommit 2b075547fdc8a0b642df4ba08b64fac1bb74200b[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Sun Nov 9 21:18:48 2025 +0100
+
+    Résolution d'un bug dans le calcul du solde
+
+ src/controllers/transactionController.js | 19 [32m+++++++++++++++[m[31m----[m
+ 1 file changed, 15 insertions(+), 4 deletions(-)
+
+[33mcommit f858fb4dad86342c5acc3a2e38314a5d99888c67[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Sun Nov 9 16:16:46 2025 +0100
+
+    Fonctionnalité de gamification
+
+ src/controllers/authController.js             |   4 [32m+[m[31m-[m
+ src/controllers/classementController.js       |  53 [32m++[m[31m-[m
+ src/controllers/infosController.js            | 232 [32m+++++++++++[m
+ src/controllers/maisonController.js           |  69 [32m++++[m
+ src/controllers/profilController.js           | 117 [32m++++++[m
+ src/controllers/projetValidationController.js | 151 [32m+++++++[m
+ src/models/Badge.js                           | 186 [32m+++++++++[m
+ src/models/Projet.js                          | 231 [32m+++++++++++[m
+ src/routes/infos.js                           |  21 [32m+[m
+ src/routes/main.js                            |  18 [32m+[m[31m-[m
+ src/routes/profil.routes.js                   |  12 [32m+[m
+ src/routes/projetValidation.routes.js         |  15 [32m+[m
+ src/server.js                                 |   6 [32m+[m
+ src/views/classement.ejs                      | 233 [31m-----------[m
+ src/views/classement/index.ejs                | 103 [32m++++[m[31m-[m
+ src/views/infos.ejs                           | 567 [32m++++++++++++++++++++++++++[m
+ src/views/profil-public.ejs                   | 518 [32m+++++++++++++++++++++++[m
+ src/views/projet-validation.ejs               | 296 [32m++++++++++++++[m
+ src/views/transactions/infos.ejs              |   0
+ src/views/transactions/maison.ejs             | 307 [32m+++++++++++++[m[31m-[m
+ src/views/transactions/pie.ejs                | 447 [31m--------------------[m
+ 21 files changed, 2857 insertions(+), 729 deletions(-)
+
+[33mcommit 15c2496f52a2ad248f3ebe6fe257b9057ec869cf[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Sat Nov 8 14:20:48 2025 +0100
+
+    Ajout route health Powens + vérif import
+
+ src/routes/powensSync.js | 165 [32m+++++++++++++++++++++++++++++++++++[m[31m------------[m
+ 1 file changed, 122 insertions(+), 43 deletions(-)
+
+[33mcommit 364c798227affe2d88373eeee44d0c6c1c6654fd[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Sat Nov 8 13:56:44 2025 +0100
+
+    Fix chemin import PowensSync
+
+ src/server.js | 3 [32m++[m[31m-[m
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+[33mcommit e7f074161c49593d3a352540597304b633be6c0a[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Sat Nov 8 13:32:54 2025 +0100
+
+    Ajout de la route Powens Sync et correctifs
+
+ config/supabase.js                       |   46 [32m+[m[31m-[m
+ src/controllers/csvController.js         |  399 [32m++++++[m[31m------[m
+ src/controllers/monteCarloController.js  |  347 [32m+[m[31m---------[m
+ src/controllers/recurrenceController.js  |  480 [31m--------------[m
+ src/controllers/recurrencesController.js |  310 [32m+++++++++[m
+ src/controllers/transactionController.js |   80 [32m++[m[31m-[m
+ src/models/AccountSnapshot.js            |   29 [32m+[m
+ src/models/RecurrenceMapping.js          |  136 [32m++++[m
+ src/models/Transaction.js                |  111 [32m++[m[31m--[m
+ src/public/css/recurrence-manager.css    |  671 [31m--------------------[m
+ src/public/css/style.css                 |   21 [32m+[m
+ src/public/js/recurrence-manager.js      |  463 [31m--------------[m
+ src/routes/powensSync.js                 |   71 [32m+++[m
+ src/routes/recurrences.js                |  142 [32m+[m[31m----[m
+ src/routes/transactions.js               |    2 [32m+[m
+ src/server.js                            |   58 [32m+[m[31m-[m
+ src/services/cashflowMonteCarlo.js       |  335 [32m++++++++++[m
+ src/views/recurrences/index.ejs          |  271 [32m++++++++[m
+ src/views/recurrences/validate.ejs       |  565 [31m-----------------[m
+ src/views/transactions/graph.ejs         | 1018 [32m++++++++[m[31m----------------------[m
+ src/views/transactions/index.ejs         |  217 [32m++++++[m[31m-[m
+ src/views/transactions/pie.ejs           |  160 [32m++[m[31m---[m
+ 22 files changed, 2136 insertions(+), 3796 deletions(-)
+
+[33mcommit 3375518dac89495e1b9f2498ef89b2a5b52736bc[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Wed Nov 5 13:31:59 2025 +0100
+
+    Ton message de commit ici
+
+ src/server.js | 5 [32m+++++[m
+ 1 file changed, 5 insertions(+)
+
+[33mcommit eefbc99c0c36932935686b47790ffd296c4b96f8[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Wed Nov 5 12:08:53 2025 +0100
+
+    Fix require path for powensWebhook from src/server.js
+
+ src/server.js | 2 [32m+[m[31m-[m
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+[33mcommit 0b9a283713348311a84b223dd1ce3c42ed37aa97[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Wed Nov 5 12:04:12 2025 +0100
+
+    Ajout du webhook Powens et mise à jour du server.js
+
+ src/routes/powensWebhook.js | 35 [32m++++++++++++++++++++++++++++++[m
+ src/server.js               | 52 [32m++++++++++++++++++++++++++[m[31m-------------------[m
+ 2 files changed, 65 insertions(+), 22 deletions(-)
+
+[33mcommit fcff98c98b0d154f56caa58c9808791a1ab2620d[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Wed Nov 5 11:28:20 2025 +0100
+
+    ton message de commit
+
+ src/controllers/classementController.js         |  141 [32m+++[m
+ src/controllers/optimisationController.js       | 1101 [32m+++++++++++++++++++++++[m
+ src/controllers/recurrenceController.js         |  229 [32m++++[m[31m-[m
+ src/models/ActionOptimisation.js                |  498 [32m++++++++++[m
+ src/models/BudgetOptimise.js                    |  457 [32m++++++++++[m
+ src/models/RecurringTransaction.js              |   95 [32m+[m[31m-[m
+ src/models/SessionOptimisation.js               |  408 [32m+++++++++[m
+ src/public/css/recurrence-manager.css           |  671 [32m++++++++++++++[m
+ src/public/js/recurrence-manager.js             |  463 [32m++++++++++[m
+ src/routes/classement.routes.js                 |   12 [32m+[m
+ src/routes/main.js                              |    7 [32m+[m[31m-[m
+ src/routes/optimisation.js                      |   85 [32m++[m
+ src/routes/recurrences.js                       |  124 [32m++[m[31m-[m
+ src/server.js                                   |    4 [32m+[m
+ src/services/recurrenceDetector.js              |  623 [32m++++++++[m[31m-----[m
+ src/views/classement.ejs                        |  233 [32m+++++[m
+ src/views/classement/index.ejs                  |  358 [32m++++++++[m
+ src/views/optimisation/add-action.ejs           |  323 [32m+++++++[m
+ src/views/optimisation/dashboard.ejs            |  575 [32m++++++++++++[m
+ src/views/optimisation/etape1-revenus.ejs       |  327 [32m+++++++[m
+ src/views/optimisation/etape2-depenses.ejs      |  480 [32m++++++++++[m
+ src/views/optimisation/etape3-recapitulatif.ejs |  406 [32m+++++++++[m
+ src/views/optimisation/historique.ejs           |  290 [32m++++++[m
+ src/views/optimisation/optimiser.ejs            |  228 [32m+++++[m
+ src/views/optimisation/rectangle-impression.ejs |  430 [32m+++++++++[m
+ src/views/transactions/classement.ejs           |    0
+ src/views/transactions/index.ejs                |   80 [32m+[m[31m-[m
+ src/views/transactions/maison.ejs               |    4 [32m+[m[31m-[m
+ src/views/transactions/optimiser.ejs            |    0
+ 29 files changed, 8324 insertions(+), 328 deletions(-)
+
+[33mcommit c615cfb47557a08771d5f3a3040f50752787238f[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Sun Nov 2 20:07:20 2025 +0100
+
+    fix: afficher le bouton Import CSV même sans transactions
+
+ src/views/transactions/index.ejs | 14 [32m+++++++++++[m[31m---[m
+ 1 file changed, 11 insertions(+), 3 deletions(-)
+
+[33mcommit 9560e529ddf86b17a965187583b2463f114aaaa9[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Sun Nov 2 19:00:46 2025 +0100
+
+    Fix: Analyse récurrent/variable adaptée aux filtres de période
+
+ src/controllers/transactionController.js | 109 [32m+++++[m[31m-[m
+ src/views/transactions/pie.ejs           | 560 [32m++++++++++++++++++++++++++++[m[31m---[m
+ 2 files changed, 618 insertions(+), 51 deletions(-)
+
+[33mcommit 10deba4e38cfa4cdbb0f086932e1639b8bded6df[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Sun Nov 2 14:34:35 2025 +0100
+
+    feat(csv): ajout du bouton 'Importer CSV' sur la page Liste + vérification des routes
+
+ src/views/transactions/index.ejs | 3 [32m+++[m
+ 1 file changed, 3 insertions(+)
+
+[33mcommit 87af36fa166da0b39a0db73aa338cba56d47e321[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Sun Nov 2 13:33:47 2025 +0100
+
+    feat: MVP initial
+
+ src/controllers/monteCarloController.js  |  339 [32m++++++[m
+ src/controllers/recurrenceController.js  |  263 [32m+++++[m
+ src/controllers/transactionController.js |   60 [32m+[m[31m-[m
+ src/models/Nouveau Document texte.txt    |  784 [31m-------------[m
+ src/models/RecurringTransaction.js       |  327 [32m++++++[m
+ src/models/Transaction.js                |  154 [32m++[m[31m-[m
+ src/public/js/monte-carlo-projection.js  |  350 [32m++++++[m
+ src/routes/monteCarlo.js                 |   10 [32m+[m
+ src/routes/recurrences.js                |   70 [32m++[m
+ src/server.js                            |    5 [32m+[m
+ src/services/CategorizationAI.js         |   73 [32m+[m[31m-[m
+ src/services/recurrenceDetector.js       |  353 [32m++++++[m
+ src/views/recurrences/validate.ejs       |  565 [32m++++++++++[m
+ src/views/transactions/graph.ejs         |  932 [32m+++++++++[m[31m-------[m
+ src/views/transactions/index.ejs         | 1773 [32m+++++++++++++++++[m[31m-------------[m
+ 15 files changed, 4006 insertions(+), 2052 deletions(-)
+
+[33mcommit cce01f10093598a5fa720b8a3737784c64ce876b[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Fri Oct 31 10:33:17 2025 +0100
+
+    Amélioration de l'UI et l'UX
+
+ src/controllers/transactionController.js  |  60 [32m++[m[31m-[m
+ src/models/Nouveau Document texte.txt     | 784 [32m++++++++++++++++++++++++++++++[m
+ src/routes/main.js                        |  44 [32m++[m
+ src/routes/transactions.js                |   2 [32m+[m[31m-[m
+ src/server.js                             |  16 [32m+[m[31m-[m
+ src/views/partials/navbar-simple.ejs      | 127 [32m+++++[m
+ src/views/partials/progression-header.ejs | 183 [32m+++++++[m
+ src/views/transactions/classement.ejs     |   0
+ src/views/transactions/graph.ejs          |  45 [32m+[m[31m-[m
+ src/views/transactions/index.ejs          |  46 [32m+[m[31m-[m
+ src/views/transactions/infos.ejs          |   0
+ src/views/transactions/maison.ejs         | 118 [32m+++++[m
+ src/views/transactions/optimiser.ejs      |   0
+ src/views/transactions/pie.ejs            | 237 [32m++++++[m[31m---[m
+ 14 files changed, 1502 insertions(+), 160 deletions(-)
+
+[33mcommit 5957ae3d93b3f3eb9295032e7d8b62e47351236f[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Thu Oct 30 14:52:08 2025 +0100
+
+    fix: amélioration UI volatilité + corrections calculs _ deux
+
+ src/views/transactions/pie.ejs | 726 [32m++++++++++++++++++++++++[m[31m-----------------[m
+ 1 file changed, 424 insertions(+), 302 deletions(-)
+
+[33mcommit cfbe71d292047bcfc711328747c92423193ba325[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Thu Oct 30 14:40:07 2025 +0100
+
+    fix: amélioration UI volatilité + corrections calculs
+
+ src/views/transactions/pie.ejs | 732 [32m++++++++++++++++++[m[31m-----------------------[m
+ 1 file changed, 318 insertions(+), 414 deletions(-)
+
+[33mcommit e3305ba0200750b61c320c676dd4237b6932f7e9[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Thu Oct 30 13:53:57 2025 +0100
+
+    Fix: Échelle -50/+50 + debug logs volatilité
+
+ src/views/transactions/pie.ejs | 42 [32m+++++++++++++++++++++++++++++++[m[31m-----------[m
+ 1 file changed, 31 insertions(+), 11 deletions(-)
+
+[33mcommit 72a1461b839445c5c0b7325d15301eb2fbc23c68[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Thu Oct 30 13:41:12 2025 +0100
+
+    Fix: Curseurs empilés en cascade au-dessus de la barre
+
+ src/views/transactions/pie.ejs | 32 [32m+++++++++++++++++[m[31m---------------[m
+ 1 file changed, 17 insertions(+), 15 deletions(-)
+
+[33mcommit 1297086f31a8257414a9ce61874a6332d6a29b3d[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Thu Oct 30 13:33:38 2025 +0100
+
+    Refactor: Barre de volatilité horizontale pour meilleure lisibilité
+
+ src/views/transactions/pie.ejs | 71 [32m+++++++++++++++++++++[m[31m---------------------[m
+ 1 file changed, 36 insertions(+), 35 deletions(-)
+
+[33mcommit e3e0525d9c33950f28d02c15ad2b449ea8035bbb[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Thu Oct 30 13:24:46 2025 +0100
+
+    Optimize: Gauge plus grand + suppression interprétation
+
+ src/views/transactions/pie.ejs | 29 [32m++++++++++[m[31m-------------------[m
+ 1 file changed, 10 insertions(+), 19 deletions(-)
+
+[33mcommit ab7c19b87fd50451218778db9aee66928044d59d[m
+Author: Tnecniv1 <vincentlebarbey@gmail.com>
+Date:   Thu Oct 30 13:17:27 2025 +0100
+
+    Fix: Échelle volatilité -100% à +100% + suppression période journalière
+
+ src/views/transactions/pie.ejs | 21 [32m++++++++++[m[31m-----------[m
+ 1 file changed, 10 insertions(+), 11 deletions(-)

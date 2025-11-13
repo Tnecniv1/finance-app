@@ -63,13 +63,18 @@ class OptimisationController {
       finMois.setDate(0);
       finMois.setHours(23, 59, 59, 999);
       
-      // Récupérer les transactions du mois
+      // Récupérer les transactions du mois AVEC les catégories parentes
       const { data: transactionsMois } = await supabase
         .from('transactions')
-        .select('montant, nature, categorie_depense_id, categorie_revenu_id')
+        .select(`
+          montant, 
+          nature,
+          sous_categorie_depense:sous_categories_depenses(categorie_depense_id),
+          sous_categorie_revenu:sous_categories_revenus(categorie_revenu_id)
+        `)
         .eq('user_id', userId)
-        .gte('date_transaction', debutMois.toISOString())
-        .lte('date_transaction', finMois.toISOString());
+        .gte('date', debutMois.toISOString())
+        .lte('date', finMois.toISOString());
       
       // 4. Construire le tableau comparatif
       const tableauComparatif = {
@@ -92,11 +97,11 @@ class OptimisationController {
       // Calculer les montants actuels par catégorie
       const actualMap = {};
       (transactionsMois || []).forEach(tx => {
-        if (tx.nature === 'depense' && tx.categorie_depense_id) {
-          const key = `depense_${tx.categorie_depense_id}`;
+        if (tx.nature === 'depense' && tx.sous_categorie_depense?.categorie_depense_id) {
+          const key = `depense_${tx.sous_categorie_depense.categorie_depense_id}`;
           actualMap[key] = (actualMap[key] || 0) + Math.abs(parseFloat(tx.montant));
-        } else if (tx.nature === 'revenu' && tx.categorie_revenu_id) {
-          const key = `revenu_${tx.categorie_revenu_id}`;
+        } else if (tx.nature === 'revenu' && tx.sous_categorie_revenu?.categorie_revenu_id) {
+          const key = `revenu_${tx.sous_categorie_revenu.categorie_revenu_id}`;
           actualMap[key] = (actualMap[key] || 0) + Math.abs(parseFloat(tx.montant));
         }
       });

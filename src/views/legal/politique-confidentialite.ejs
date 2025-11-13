@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Politique de Confidentialité - Finance App</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.7;
+            color: #333;
+            background: #f8f9fa;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #007bff;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+        }
+        h2 {
+            color: #0056b3;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-left: 4px solid #007bff;
+            padding-left: 15px;
+        }
+        h3 {
+            color: #495057;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        .section {
+            margin-bottom: 35px;
+        }
+        .important {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 4px;
+        }
+        .important strong {
+            color: #856404;
+        }
+        ul {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        .date {
+            color: #6c757d;
+            font-style: italic;
+            font-size: 0.95em;
+            margin-bottom: 30px;
+        }
+        .company-info {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .company-info p {
+            margin: 5px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-top: 3px solid #007bff;
+        }
+        .footer a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 10px 20px;
+            background: white;
+            border-radius: 6px;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        .footer a:hover {
+            background: #007bff;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Politique de Confidentialité</h1>
+        <p class="date">Dernière mise à jour : <%= lastUpdate %></p>
+
+        <div class="section">
+            <h2>1. Responsable du traitement</h2>
+            <div class="company-info">
+                <p><strong><%= companyName %></strong></p>
+                <p>Micro-entreprise</p>
+                <p>SIRET : <%= siret %></p>
+                <p>Email : <%= companyEmail %></p>
+                <p>Adresse : <%= companyAddress %></p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>2. Données collectées</h2>
+            <p>Dans le cadre de l'utilisation de notre service de gestion financière, nous collectons et traitons les données suivantes :</p>
+            
+            <h3>2.1 Données d'inscription</h3>
+            <ul>
+                <li>Nom et prénom</li>
+                <li>Adresse email</li>
+                <li>Mot de passe (chiffré avec bcrypt)</li>
+            </ul>
+
+            <h3>2.2 Données bancaires (via Powens)</h3>
+            <ul>
+                <li>Informations de comptes bancaires (nom, type, solde, IBAN)</li>
+                <li>Historique des transactions bancaires</li>
+                <li>Catégories de dépenses et revenus</li>
+            </ul>
+
+            <div class="important">
+                <strong>⚠️ Important :</strong> Nous n'avons JAMAIS accès à vos identifiants bancaires. La connexion à votre banque se fait via <strong>Powens</strong>, un agrégateur certifié PSD2 et régulé par l'ACPR (Autorité de Contrôle Prudentiel et de Résolution).
+            </div>
+
+            <h3>2.3 Données d'import CSV</h3>
+            <ul>
+                <li>Fichiers CSV de relevés bancaires que vous téléchargez volontairement</li>
+                <li>Transactions extraites de ces fichiers</li>
+            </ul>
+
+            <h3>2.4 Données techniques</h3>
+            <ul>
+                <li>Adresse IP</li>
+                <li>Logs de connexion</li>
+                <li>Données de session</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>3. Finalités du traitement</h2>
+            <p>Vos données sont traitées pour les finalités suivantes :</p>
+            <ul>
+                <li><strong>Gestion de votre compte :</strong> Création et authentification de votre compte utilisateur</li>
+                <li><strong>Service de gestion financière :</strong> Agrégation de vos comptes bancaires, catégorisation des transactions, génération de rapports financiers</li>
+                <li><strong>Coaching financier :</strong> Analyse de vos habitudes financières et recommandations personnalisées</li>
+                <li><strong>Sécurité :</strong> Prévention de la fraude et protection de votre compte</li>
+                <li><strong>Conformité légale :</strong> Respect de nos obligations légales (conservation des données, lutte contre le blanchiment)</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>4. Base légale du traitement</h2>
+            <p>Le traitement de vos données repose sur :</p>
+            <ul>
+                <li><strong>Exécution du contrat :</strong> Le traitement est nécessaire pour vous fournir nos services de gestion financière</li>
+                <li><strong>Consentement :</strong> Vous consentez explicitement à la connexion de vos comptes bancaires via Powens</li>
+                <li><strong>Obligation légale :</strong> Conservation des données pour respecter nos obligations légales</li>
+                <li><strong>Intérêt légitime :</strong> Sécurisation de la plateforme et prévention de la fraude</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>5. Destinataires des données</h2>
+            <p>Vos données peuvent être partagées avec :</p>
+            <ul>
+                <li><strong>Powens :</strong> Agrégateur bancaire certifié PSD2 pour la connexion à vos comptes bancaires</li>
+                <li><strong>Supabase :</strong> Hébergement de la base de données (serveurs en Europe, conformes RGPD)</li>
+                <li><strong>Render :</strong> Hébergement de l'application web (serveurs en Europe)</li>
+            </ul>
+            <p><strong>Nous ne vendons JAMAIS vos données à des tiers.</strong></p>
+        </div>
+
+        <div class="section">
+            <h2>6. Durée de conservation</h2>
+            <ul>
+                <li><strong>Compte actif :</strong> Tant que votre compte est actif</li>
+                <li><strong>Après suppression du compte :</strong> 30 jours (puis suppression définitive)</li>
+                <li><strong>Données de facturation :</strong> 10 ans (obligation légale)</li>
+                <li><strong>Logs de sécurité :</strong> 1 an</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>7. Vos droits (RGPD)</h2>
+            <p>Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez des droits suivants :</p>
+            <ul>
+                <li><strong>Droit d'accès :</strong> Obtenir une copie de vos données personnelles</li>
+                <li><strong>Droit de rectification :</strong> Corriger vos données inexactes ou incomplètes</li>
+                <li><strong>Droit à l'effacement :</strong> Demander la suppression de vos données</li>
+                <li><strong>Droit à la portabilité :</strong> Récupérer vos données dans un format exploitable</li>
+                <li><strong>Droit d'opposition :</strong> Vous opposer au traitement de vos données</li>
+                <li><strong>Droit de limitation :</strong> Limiter le traitement de vos données</li>
+            </ul>
+            <p>Pour exercer vos droits, contactez-nous à : <strong><%= companyEmail %></strong></p>
+        </div>
+
+        <div class="section">
+            <h2>8. Sécurité des données</h2>
+            <p>Nous mettons en œuvre les mesures de sécurité suivantes pour protéger vos données :</p>
+            <ul>
+                <li>✅ Chiffrement HTTPS (SSL/TLS) pour toutes les communications</li>
+                <li>✅ Mots de passe chiffrés avec bcrypt (algorithme de hachage sécurisé)</li>
+                <li>✅ Base de données sécurisée avec Row Level Security (RLS)</li>
+                <li>✅ Rate limiting (protection anti-DDoS)</li>
+                <li>✅ Sessions sécurisées (HttpOnly, Secure, SameSite)</li>
+                <li>✅ Surveillance et logs de sécurité</li>
+                <li>✅ Sauvegardes régulières et chiffrées</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>9. Powens et PSD2</h2>
+            <p>
+                <strong>Powens</strong> est un Prestataire de Services d'Information sur les Comptes (PSIC) agréé par l'ACPR 
+                (Autorité de Contrôle Prudentiel et de Résolution).
+            </p>
+            <p>
+                En vertu de la directive européenne PSD2, Powens a le droit d'accéder à vos comptes bancaires 
+                avec votre consentement explicite pour récupérer vos transactions et informations de comptes.
+            </p>
+            <div class="important">
+                <strong>🔒 Sécurité :</strong> Powens ne stocke JAMAIS vos identifiants bancaires. 
+                La connexion se fait de manière sécurisée directement avec votre banque via des protocoles chiffrés.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>10. Cookies</h2>
+            <p>Nous utilisons uniquement des cookies strictement nécessaires au fonctionnement du service :</p>
+            <ul>
+                <li><strong>Cookie de session :</strong> Maintient votre connexion pendant 24 heures</li>
+                <li><strong>Pas de cookies publicitaires</strong></li>
+                <li><strong>Pas de cookies de tracking</strong></li>
+                <li><strong>Pas de cookies tiers</strong></li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>11. Modifications de cette politique</h2>
+            <p>
+                Nous pouvons modifier cette politique de confidentialité pour refléter les changements dans nos pratiques 
+                ou pour des raisons légales.
+            </p>
+            <p>
+                Toute modification importante sera publiée sur cette page avec une nouvelle date de mise à jour 
+                et vous sera notifiée par email.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>12. Contact et réclamation</h2>
+            <p>Pour toute question concernant cette politique de confidentialité ou vos données personnelles :</p>
+            <div class="company-info">
+                <p><strong>Email :</strong> <%= companyEmail %></p>
+                <p><strong>Adresse :</strong> <%= companyAddress %></p>
+            </div>
+            <p style="margin-top: 20px;">
+                <strong>Droit de réclamation auprès de la CNIL :</strong><br>
+                Vous avez le droit d'introduire une réclamation auprès de la Commission Nationale de l'Informatique et des Libertés (CNIL) :
+            </p>
+            <div class="company-info">
+                <p><strong>CNIL</strong></p>
+                <p>3 Place de Fontenoy - TSA 80715</p>
+                <p>75334 PARIS CEDEX 07</p>
+                <p>Téléphone : 01 53 73 22 22</p>
+                <p>Site web : <a href="https://www.cnil.fr" target="_blank" style="color: #007bff;">www.cnil.fr</a></p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>Date d'entrée en vigueur :</strong> <%= lastUpdate %></p>
+            <p style="margin-top: 20px;">
+                <a href="/transactions">← Retour à l'application</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

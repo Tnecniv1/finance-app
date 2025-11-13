@@ -15,8 +15,9 @@
     }
     
     .container-dashboard {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
+      padding: 0 20px;
     }
     
     .header {
@@ -57,274 +58,181 @@
       align-items: center;
       gap: 10px;
     }
-    
-    .treemap-container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
+
+    /* Tableau budgétaire */
+    .budget-table-container {
+      overflow-x: auto;
       margin-top: 20px;
     }
-    
-    @media (max-width: 968px) {
-      .treemap-container {
-        grid-template-columns: 1fr;
-      }
-    }
-    
-    .treemap-section {
-      border-radius: 15px;
-      overflow: hidden;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      background: white;
-    }
-    
-    .treemap-header {
-      padding: 15px 20px;
-      font-weight: 700;
-      font-size: 1.1rem;
-      color: white;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .treemap-header.revenus {
-      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    }
-    
-    .treemap-header.depenses {
-      background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
-    }
-    
-    .treemap-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 15px;
-      min-height: 150px;
-      background: #f8f9fa;
-    }
-    
-    .treemap-cell {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 15px;
-      border: 2px solid white;
-      transition: all 0.3s ease;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .treemap-cell:hover {
-      transform: scale(1.02);
-      z-index: 10;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-    }
-    
-    .treemap-cell.ok {
-      background: #e2e8f0;
-      color: #2d3748;
-    }
-    
-    .treemap-cell.alerte {
-      background: #667eea;
-      color: white;
-    }
-    
-    .treemap-cell-nom {
-      font-weight: 700;
+
+    .budget-table {
+      width: 100%;
+      border-collapse: collapse;
       font-size: 0.95rem;
-      text-align: center;
-      margin-bottom: 8px;
-      line-height: 1.2;
     }
-    
-    .treemap-cell-montant {
-      font-size: 1.1rem;
-      font-weight: 700;
-      font-family: 'Courier New', monospace;
-    }
-    
-    .treemap-cell-budget {
-      font-size: 0.85rem;
-      opacity: 0.8;
-      margin-top: 3px;
-    }
-    
-    .treemap-cell-indicateur {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-    }
-    
-    .treemap-cell-indicateur.ok {
-      background: #28a745;
-    }
-    
-    .treemap-cell-indicateur.alerte {
-      background: #ffc107;
-      animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-    
-    .solde-box {
+
+    .budget-table thead th {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      border-radius: 15px;
-      padding: 25px;
+      padding: 15px 12px;
       text-align: center;
-      margin-top: 20px;
-      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-    }
-    
-    .solde-box h3 {
-      margin: 0 0 10px 0;
-      font-size: 1.3rem;
       font-weight: 700;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border: 1px solid rgba(255,255,255,0.1);
     }
-    
-    .solde-montant {
-      font-size: 2.5rem;
-      font-weight: 900;
-      font-family: 'Courier New', monospace;
+
+    .budget-table thead th:first-child {
+      text-align: left;
+      width: 20%;
     }
-    
-    .solde-detail {
-      margin-top: 15px;
-      display: flex;
-      justify-content: center;
-      gap: 30px;
-      font-size: 0.95rem;
-      opacity: 0.9;
+
+    .budget-table thead th.delta-col {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      width: 10%;
     }
-    
-    /* Équilibre compact */
-    .equilibre-compact {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      margin-top: 20px;
-      border: 2px solid #e9ecef;
+
+    .budget-table thead th.revenus-col {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     }
-    
-    .equilibre-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #2d3748;
-      margin-bottom: 15px;
+
+    .budget-table thead th.depenses-col {
+      background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
     }
-    
-    .equilibre-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
+
+    .budget-table tbody tr {
+      border-bottom: 1px solid #e9ecef;
+      transition: background-color 0.2s;
     }
-    
-    .equilibre-item {
+
+    .budget-table tbody tr:hover {
       background: #f8f9fa;
-      padding: 12px;
-      border-radius: 8px;
-      text-align: center;
     }
-    
-    .equilibre-item.situation {
-      background: linear-gradient(135deg, #667eea15, #764ba215);
-    }
-    
-    .equilibre-label {
-      font-size: 0.8rem;
-      color: #6c757d;
-      margin-bottom: 6px;
-    }
-    
-    .equilibre-value {
-      font-size: 1.2rem;
+
+    .budget-table tbody tr.total-row {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
       font-weight: 700;
+      font-size: 1.05rem;
+      border-top: 3px solid #667eea;
+    }
+
+    .budget-table tbody tr.total-row:hover {
+      background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    }
+
+    .budget-table tbody td {
+      padding: 12px;
+      text-align: center;
       font-family: 'Courier New', monospace;
     }
-    
-    .equilibre-value.positive {
-      color: #28a745;
-    }
-    
-    .equilibre-value.negative {
-      color: #dc3545;
-    }
-    
-    .equilibre-situation {
-      font-size: 1.1rem;
-      font-weight: 700;
-    }
-    
-    .treemap-cell {
-      position: relative;
-      padding: 12px 15px;
-      background: white;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      transition: all 0.2s;
-      border: 2px solid transparent;
-    }
-    
-    .treemap-cell:hover {
-      border-color: #667eea;
-      transform: translateX(3px);
-    }
-    
-    .treemap-cell-indicateur {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    
-    .treemap-cell-indicateur.ok {
-      background: #28a745;
-    }
-    
-    .treemap-cell-indicateur.alerte {
-      background: #ffc107;
-    }
-    
-    .treemap-cell-nom {
-      flex: 1;
-      font-size: 0.9rem;
+
+    .budget-table tbody td:first-child {
+      text-align: left;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
       font-weight: 600;
       color: #2d3748;
     }
-    
-    .treemap-cell-montant {
-      font-size: 1.1rem;
+
+    .montant-estime {
+      color: #6c757d;
+      font-weight: 500;
+    }
+
+    .montant-observe {
       font-weight: 700;
       color: #2d3748;
-      font-family: 'Courier New', monospace;
     }
-    
-    .treemap-cell-budget {
+
+    .montant-observe.revenus {
+      color: #28a745;
+    }
+
+    .montant-observe.depenses {
+      color: #dc3545;
+    }
+
+    .montant-zero {
+      color: #cbd5e0;
+    }
+
+    .delta-positif {
+      background: #d4f4dd;
+      color: #28a745;
+      font-weight: 700;
+    }
+
+    .delta-negatif {
+      background: #ffe5e5;
+      color: #dc3545;
+      font-weight: 700;
+    }
+
+    .delta-neutre {
+      color: #6c757d;
+    }
+
+    .depassement {
+      background: #fff5f5;
+      color: #dc3545;
+      font-weight: 700;
+    }
+
+    .sous-budget {
+      background: #f0fdf4;
+      color: #28a745;
+      font-weight: 700;
+    }
+
+    /* Résumé en haut du tableau */
+    .resume-budget {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .resume-card {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      border: 2px solid #e9ecef;
+    }
+
+    .resume-card.revenus {
+      background: linear-gradient(135deg, #d4f4dd 0%, #b7f0c3 100%);
+      border-color: #28a745;
+    }
+
+    .resume-card.depenses {
+      background: linear-gradient(135deg, #ffe5e5 0%, #ffd1d1 100%);
+      border-color: #dc3545;
+    }
+
+    .resume-label {
       font-size: 0.85rem;
       color: #6c757d;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .resume-montant {
+      font-size: 1.8rem;
+      font-weight: 900;
       font-family: 'Courier New', monospace;
+      color: #2d3748;
     }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-      .equilibre-grid {
-        grid-template-columns: 1fr;
-      }
+
+    .resume-montant.revenus {
+      color: #28a745;
     }
-    
+
+    .resume-montant.depenses {
+      color: #dc3545;
+    }
+
+    /* Bouton */
     .btn-faire-budget {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       border: none;
@@ -337,12 +245,12 @@
       transition: all 0.3s ease;
       box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
     }
-    
+
     .btn-faire-budget:hover {
       transform: translateY(-2px);
       box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
     }
-    
+
     .alert-info-custom {
       background: #e7f3ff;
       border: 2px solid #667eea;
@@ -350,34 +258,34 @@
       padding: 20px;
       margin-bottom: 20px;
     }
-    
+
     .alert-info-custom i {
       color: #667eea;
       font-size: 1.5rem;
     }
-    
-    .legende {
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-      margin-top: 15px;
-      font-size: 0.9rem;
-    }
-    
-    .legende-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .legende-color {
-      width: 20px;
-      height: 20px;
-      border-radius: 5px;
-    }
-    
+
     .text-center {
       text-align: center;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .resume-budget {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .budget-table {
+        font-size: 0.85rem;
+      }
+
+      .budget-table thead th,
+      .budget-table tbody td {
+        padding: 8px 6px;
+      }
+
+      .resume-montant {
+        font-size: 1.4rem;
+      }
     }
   </style>
 </head>
@@ -392,154 +300,148 @@
       <p class="mois-actuel"><i class="far fa-calendar"></i> <%= moisActuel %></p>
     </div>
     
-    <!-- BLOC 1 : Visualisation Treemap -->
+    <!-- BLOC 1 : Tableau budgétaire -->
     <div class="bloc">
       <h2 class="bloc-title">
-        <i class="fas fa-th"></i> Où j'en suis ce mois-ci ?
+        <i class="fas fa-table"></i> Budget du mois
       </h2>
       
       <% if (!dernierPlan) { %>
         <div class="alert-info-custom">
           <i class="fas fa-info-circle"></i>
           <strong>Aucun budget défini</strong><br>
-          Vous n'avez pas encore créé de budget. Les montants ci-dessous représentent vos dépenses actuelles du mois.
+          Vous n'avez pas encore créé de budget. Les montants observés représentent vos transactions actuelles du mois.
         </div>
       <% } %>
-      
-      <div class="treemap-container">
-        
-        <!-- REVENUS -->
-        <div class="treemap-section">
-          <div class="treemap-header revenus">
-            <span><i class="fas fa-arrow-up"></i> Revenus</span>
-            <span><%= totaux.revenus.actuel.toFixed(0) %>€ / <%= totaux.revenus.budget.toFixed(0) %>€</span>
-          </div>
-          <div class="treemap-grid">
-            <% 
-            const totalRevenus = totaux.revenus.budget || totaux.revenus.actuel || 1;
-            tableauComparatif.revenus.forEach(revenu => { 
-              if (revenu.montantActuel === 0 && revenu.budgetFixe === 0) return;
-              
-              const montantPourTaille = Math.max(revenu.budgetFixe, revenu.montantActuel);
-              const pourcentageTaille = (montantPourTaille / totalRevenus * 100).toFixed(1);
-              const estAlerte = revenu.budgetFixe > 0 && revenu.montantActuel < revenu.budgetFixe * 0.75;
-              const classe = estAlerte ? 'alerte' : 'ok';
-            %>
-              <div class="treemap-cell <%= classe %>" 
-                   title="<%= revenu.nom %>: <%= revenu.montantActuel.toFixed(2) %>€ / <%= revenu.budgetFixe.toFixed(2) %>€">
-                <div class="treemap-cell-indicateur <%= classe %>"></div>
-                <div class="treemap-cell-nom"><%= revenu.nom %></div>
-                <div class="treemap-cell-montant"><%= revenu.montantActuel.toFixed(0) %>€</div>
-                <% if (revenu.budgetFixe > 0) { %>
-                  <div class="treemap-cell-budget">/ <%= revenu.budgetFixe.toFixed(0) %>€</div>
-                <% } %>
-              </div>
-            <% }) %>
-          </div>
+
+      <!-- Résumé en cartes -->
+      <div class="resume-budget">
+        <div class="resume-card revenus">
+          <div class="resume-label"><i class="fas fa-arrow-up"></i> Revenus estimés</div>
+          <div class="resume-montant revenus"><%= totaux.revenus.budget.toFixed(0) %>€</div>
         </div>
-        
-        <!-- DÉPENSES -->
-        <div class="treemap-section">
-          <div class="treemap-header depenses">
-            <span><i class="fas fa-arrow-down"></i> Dépenses</span>
-            <span><%= totaux.depenses.actuel.toFixed(0) %>€ / <%= totaux.depenses.budget.toFixed(0) %>€</span>
-          </div>
-          <div class="treemap-grid">
-            <% 
-            const totalDepenses = totaux.depenses.budget || totaux.depenses.actuel || 1;
-            tableauComparatif.depenses.forEach(depense => { 
-              if (depense.montantActuel === 0 && depense.budgetFixe === 0) return;
-              
-              const montantPourTaille = Math.max(depense.budgetFixe, depense.montantActuel);
-              const pourcentageTaille = (montantPourTaille / totalDepenses * 100).toFixed(1);
-              const estAlerte = depense.budgetFixe > 0 && depense.montantActuel > depense.budgetFixe * 0.9;
-              const classe = estAlerte ? 'alerte' : 'ok';
-            %>
-              <div class="treemap-cell <%= classe %>" 
-                   title="<%= depense.nom %>: <%= depense.montantActuel.toFixed(2) %>€ / <%= depense.budgetFixe.toFixed(2) %>€">
-                <div class="treemap-cell-indicateur <%= classe %>"></div>
-                <div class="treemap-cell-nom"><%= depense.nom %></div>
-                <div class="treemap-cell-montant"><%= depense.montantActuel.toFixed(0) %>€</div>
-                <% if (depense.budgetFixe > 0) { %>
-                  <div class="treemap-cell-budget">/ <%= depense.budgetFixe.toFixed(0) %>€</div>
-                <% } %>
-              </div>
-            <% }) %>
-          </div>
+        <div class="resume-card revenus">
+          <div class="resume-label"><i class="fas fa-check-circle"></i> Revenus observés</div>
+          <div class="resume-montant revenus"><%= totaux.revenus.actuel.toFixed(0) %>€</div>
         </div>
-        
-      </div>
-      
-      <!-- Légende -->
-      <div class="legende">
-        <div class="legende-item">
-          <div class="legende-color" style="background: #e2e8f0;"></div>
-          <span>Respect probable</span>
+        <div class="resume-card depenses">
+          <div class="resume-label"><i class="fas fa-arrow-down"></i> Dépenses estimées</div>
+          <div class="resume-montant depenses"><%= totaux.depenses.budget.toFixed(0) %>€</div>
         </div>
-        <div class="legende-item">
-          <div class="legende-color" style="background: #8298fa;"></div>
-          <span>Non respect probable (> 90%)</span>
+        <div class="resume-card depenses">
+          <div class="resume-label"><i class="fas fa-exclamation-circle"></i> Dépenses observées</div>
+          <div class="resume-montant depenses"><%= totaux.depenses.actuel.toFixed(0) %>€</div>
         </div>
       </div>
-      
-      <!-- Équilibre du budget - VERSION COMPACTE -->
-      <div class="equilibre-compact">
-        <div class="equilibre-title">⚖️ Équilibre du budget</div>
-        <% 
-          const ecartRevenus = totaux.revenus.actuel - totaux.revenus.budget;
-          const ecartDepenses = totaux.depenses.budget - totaux.depenses.actuel;
-          
-          let situation = '';
-          let situationColor = '';
-          let situationIcon = '';
-          
-          if (ecartRevenus >= 0 && ecartDepenses >= 0) {
-            situation = 'Excellent';
-            situationColor = '#28a745';
-            situationIcon = '🟢';
-          } else if (ecartRevenus >= 0 && ecartDepenses < 0) {
-            situation = 'Attention';
-            situationColor = '#ffc107';
-            situationIcon = '🟡';
-          } else if (ecartRevenus < 0 && ecartDepenses >= 0) {
-            situation = 'Vigilance';
-            situationColor = '#ffc107';
-            situationIcon = '🟡';
-          } else {
-            situation = 'Critique';
-            situationColor = '#dc3545';
-            situationIcon = '🔴';
-          }
-        %>
-        
-        <div class="equilibre-grid">
-          <div class="equilibre-item">
-            <div class="equilibre-label">
-              <i class="fas fa-arrow-up" style="color: #28a745;"></i> Écart revenus
-            </div>
-            <div class="equilibre-value <%= ecartRevenus >= 0 ? 'positive' : 'negative' %>">
-              <%= ecartRevenus >= 0 ? '+' : '' %><%= ecartRevenus.toFixed(0) %>€
-              <%= ecartRevenus >= 0 ? '✅' : '❌' %>
-            </div>
-          </div>
-          
-          <div class="equilibre-item">
-            <div class="equilibre-label">
-              <i class="fas fa-arrow-down" style="color: #dc3545;"></i> Écart dépenses
-            </div>
-            <div class="equilibre-value <%= ecartDepenses >= 0 ? 'positive' : 'negative' %>">
-              <%= ecartDepenses >= 0 ? '+' : '' %><%= ecartDepenses.toFixed(0) %>€
-              <%= ecartDepenses >= 0 ? '✅' : '❌' %>
-            </div>
-          </div>
-          
-          <div class="equilibre-item situation">
-            <div class="equilibre-label">Situation</div>
-            <div class="equilibre-situation" style="color: <%= situationColor %>;">
-              <%= situationIcon %> <%= situation %>
-            </div>
-          </div>
-        </div>
+
+      <!-- Tableau détaillé -->
+      <div class="budget-table-container">
+        <table class="budget-table">
+          <thead>
+            <tr>
+              <th>Catégorie</th>
+              <th class="delta-col">Delta</th>
+              <th class="revenus-col">Revenus estimés</th>
+              <th class="revenus-col">Revenus observés</th>
+              <th class="depenses-col">Dépenses estimées</th>
+              <th class="depenses-col">Dépenses observées</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% 
+            // ✅ CORRECTION : Ne PAS fusionner les taxonomies
+            // On affiche d'abord toutes les catégories de REVENUS
+            // Puis toutes les catégories de DÉPENSES
+            
+            // Trier les revenus
+            const revenusTriees = tableauComparatif.revenus.sort((a, b) => a.nom.localeCompare(b.nom));
+            
+            // Trier les dépenses
+            const depensesTriees = tableauComparatif.depenses.sort((a, b) => a.nom.localeCompare(b.nom));
+            
+            // Afficher d'abord toutes les catégories de REVENUS
+            revenusTriees.forEach(revenu => {
+              const classRevenuObserve = revenu.montantActuel === 0 ? 'montant-zero' : 'montant-observe revenus';
+              
+              // Calcul du delta pour les revenus : observé - estimé
+              const delta = revenu.montantActuel - revenu.budgetFixe;
+              const deltaTxt = delta === 0 ? '—' : (delta > 0 ? '+' : '') + delta.toFixed(0) + '€';
+              const classDelta = delta === 0 ? 'delta-neutre' : (delta >= 0 ? 'delta-positif' : 'delta-negatif');
+            %>
+              <tr>
+                <td><%= revenu.nom %></td>
+                <td class="<%= classDelta %>"><%= deltaTxt %></td>
+                <td class="montant-estime"><%= revenu.budgetFixe.toFixed(0) %>€</td>
+                <td class="<%= classRevenuObserve %>"><%= revenu.montantActuel.toFixed(0) %>€</td>
+                <td class="montant-zero">—</td>
+                <td class="montant-zero">—</td>
+              </tr>
+            <% }); %>
+            
+            <!-- Séparateur visuel entre revenus et dépenses -->
+            <tr style="height: 10px; background: #e9ecef;">
+              <td colspan="6"></td>
+            </tr>
+            
+            <% 
+            // Afficher ensuite toutes les catégories de DÉPENSES
+            depensesTriees.forEach(depense => {
+              const classDepenseObservee = depense.montantActuel === 0 ? 'montant-zero' : 
+                (depense.budgetFixe > 0 && depense.montantActuel > depense.budgetFixe) ? 'montant-observe depenses depassement' : 
+                'montant-observe depenses';
+              
+              // Calcul du delta pour les dépenses : estimé - observé (inversé car moins de dépenses = mieux)
+              const delta = depense.budgetFixe - depense.montantActuel;
+              const deltaTxt = delta === 0 ? '—' : (delta > 0 ? '+' : '') + delta.toFixed(0) + '€';
+              const classDelta = delta === 0 ? 'delta-neutre' : (delta > 0 ? 'delta-positif' : 'delta-negatif');
+            %>
+              <tr>
+                <td><%= depense.nom %></td>
+                <td class="<%= classDelta %>"><%= deltaTxt %></td>
+                <td class="montant-zero">—</td>
+                <td class="montant-zero">—</td>
+                <td class="montant-estime"><%= depense.budgetFixe.toFixed(0) %>€</td>
+                <td class="<%= classDepenseObservee %>"><%= depense.montantActuel.toFixed(0) %>€</td>
+              </tr>
+            <% }); %>
+            
+            <!-- Ligne de total -->
+            <% 
+              const deltaRevenus = totaux.revenus.actuel - totaux.revenus.budget;
+              const deltaDepenses = totaux.depenses.budget - totaux.depenses.actuel;
+              const deltaTotal = deltaRevenus + deltaDepenses;
+              const classeDeltaTotal = deltaTotal === 0 ? 'delta-neutre' : (deltaTotal > 0 ? 'delta-positif' : 'delta-negatif');
+            %>
+            <tr class="total-row">
+              <td><strong>TOTAL</strong></td>
+              <td class="<%= classeDeltaTotal %>">
+                <strong><%= deltaTotal > 0 ? '+' : '' %><%= deltaTotal.toFixed(0) %>€</strong>
+              </td>
+              <td><strong><%= totaux.revenus.budget.toFixed(0) %>€</strong></td>
+              <td><strong><%= totaux.revenus.actuel.toFixed(0) %>€</strong></td>
+              <td><strong><%= totaux.depenses.budget.toFixed(0) %>€</strong></td>
+              <td><strong><%= totaux.depenses.actuel.toFixed(0) %>€</strong></td>
+            </tr>
+            
+            <!-- Ligne solde -->
+            <% 
+              const soldeEstime = totaux.revenus.budget - totaux.depenses.budget;
+              const soldeObserve = totaux.revenus.actuel - totaux.depenses.actuel;
+              const classeSoldeEstime = soldeEstime >= 0 ? 'sous-budget' : 'depassement';
+              const classeSoldeObserve = soldeObserve >= 0 ? 'sous-budget' : 'depassement';
+            %>
+            <tr class="total-row">
+              <td><strong>💰 SOLDE</strong></td>
+              <td></td>
+              <td colspan="2" class="<%= classeSoldeEstime %>">
+                <strong><%= soldeEstime >= 0 ? '+' : '' %><%= soldeEstime.toFixed(0) %>€</strong>
+              </td>
+              <td colspan="2" class="<%= classeSoldeObserve %>">
+                <strong><%= soldeObserve >= 0 ? '+' : '' %><%= soldeObserve.toFixed(0) %>€</strong>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
     
