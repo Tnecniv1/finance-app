@@ -159,9 +159,72 @@ if (process.env.NODE_ENV !== 'production') {
 
 // 404 - Page non trouvée
 app.use((req, res) => {
-  res.status(404).render('errors/404', {
-    url: req.url
-  });
+  res.status(404).send(`
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Page non trouvée - 404</title>
+      <style>
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0;
+        }
+        .error-container {
+          background: white;
+          padding: 50px;
+          border-radius: 20px;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+          text-align: center;
+          max-width: 500px;
+        }
+        h1 {
+          font-size: 72px;
+          margin: 0;
+          color: #667eea;
+        }
+        h2 {
+          color: #333;
+          margin: 20px 0;
+        }
+        p {
+          color: #666;
+          line-height: 1.6;
+        }
+        a {
+          display: inline-block;
+          margin-top: 30px;
+          padding: 12px 30px;
+          background: #667eea;
+          color: white;
+          text-decoration: none;
+          border-radius: 25px;
+          transition: all 0.3s ease;
+        }
+        a:hover {
+          background: #764ba2;
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+      </style>
+    </head>
+    <body>
+      <div class="error-container">
+        <h1>404</h1>
+        <h2>Page non trouvée</h2>
+        <p>La page que vous recherchez n'existe pas ou a été déplacée.</p>
+        <p><code>${req.url}</code></p>
+        <a href="/transactions">← Retour à l'accueil</a>
+      </div>
+    </body>
+    </html>
+  `);
 });
 
 // 500 - Erreur serveur
@@ -169,11 +232,87 @@ app.use((err, req, res, next) => {
   console.error('❌ Erreur serveur:', err.message);
   console.error(err.stack);
   
-  res.status(500).render('errors/500', {
-    error: process.env.NODE_ENV === 'production' 
-      ? 'Une erreur est survenue' 
-      : err.message
-  });
+  res.status(500).send(`
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Erreur serveur - 500</title>
+      <style>
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0;
+        }
+        .error-container {
+          background: white;
+          padding: 50px;
+          border-radius: 20px;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+          text-align: center;
+          max-width: 500px;
+        }
+        h1 {
+          font-size: 72px;
+          margin: 0;
+          color: #f5576c;
+        }
+        h2 {
+          color: #333;
+          margin: 20px 0;
+        }
+        p {
+          color: #666;
+          line-height: 1.6;
+        }
+        .error-detail {
+          background: #fee;
+          padding: 15px;
+          border-radius: 8px;
+          margin: 20px 0;
+          font-family: monospace;
+          font-size: 12px;
+          color: #c33;
+          text-align: left;
+        }
+        a {
+          display: inline-block;
+          margin-top: 30px;
+          padding: 12px 30px;
+          background: #f5576c;
+          color: white;
+          text-decoration: none;
+          border-radius: 25px;
+          transition: all 0.3s ease;
+        }
+        a:hover {
+          background: #f093fb;
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+      </style>
+    </head>
+    <body>
+      <div class="error-container">
+        <h1>500</h1>
+        <h2>Erreur serveur</h2>
+        <p>Une erreur est survenue sur le serveur. Nos équipes ont été notifiées.</p>
+        ${process.env.NODE_ENV !== 'production' ? `
+          <div class="error-detail">
+            <strong>Détails (mode développement) :</strong><br>
+            ${err.message}
+          </div>
+        ` : ''}
+        <a href="/transactions">← Retour à l'accueil</a>
+      </div>
+    </body>
+    </html>
+  `);
 });
 
 // ========================================
