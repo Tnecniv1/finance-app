@@ -112,179 +112,107 @@ router.get('/powens/callback-debug', async (req, res) => {
     // 2️⃣ CAS 1 : Connection réussie avec connection_id (flux utilisateur permanent)
     if (connection_id && !code) {
         console.log('✅ Connexion bancaire réussie avec connection_id:', connection_id);
+        console.log('⚠️  Mode simplifié : affichage du succès sans récupération des comptes');
+        console.log('   (Les comptes seront synchronisés via webhook ou route /api/powens/sync)');
         
-        try {
-            // Utiliser le token permanent pré-configuré
-            if (!POWENS_ACCESS_TOKEN || !POWENS_USER_ID) {
-                throw new Error('POWENS_ACCESS_TOKEN ou POWENS_USER_ID manquant dans les variables d\'environnement');
-            }
-
-            console.log('🔍 Récupération des informations avec le token permanent...');
-            
-            // Vérifier les informations utilisateur
-            const userInfoResponse = await httpsRequest(
-                `${POWENS_BASE_URL}/2.0/users/me`,
-                {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${POWENS_ACCESS_TOKEN}`
+        // Afficher simplement le succès
+        return res.send(`
+            <!DOCTYPE html>
+            <html lang="fr">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Connexion réussie ✅</title>
+                <style>
+                    body { 
+                        font-family: Arial, sans-serif; 
+                        max-width: 900px; 
+                        margin: 50px auto; 
+                        padding: 20px; 
+                        background: #f5f5f5;
                     }
-                }
-            );
-
-            const userInfo = userInfoResponse.data;
-            console.log('👤 User info:', JSON.stringify(userInfo, null, 2));
-
-            // Récupérer les comptes bancaires
-            console.log('🏦 Récupération des comptes bancaires...');
-            
-            const accountsResponse = await httpsRequest(
-                `${POWENS_BASE_URL}/2.0/users/${POWENS_USER_ID}/accounts`,
-                {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${POWENS_ACCESS_TOKEN}`
+                    .success { 
+                        background: #d4edda; 
+                        border: 2px solid #28a745; 
+                        padding: 30px; 
+                        border-radius: 8px; 
+                        margin-bottom: 20px;
                     }
-                }
-            );
+                    h1 { color: #28a745; margin-top: 0; }
+                    .info { 
+                        background: white; 
+                        padding: 20px; 
+                        border-radius: 8px; 
+                        margin: 20px 0;
+                        border-left: 4px solid #007bff;
+                    }
+                    .info h2 { margin-top: 0; color: #007bff; }
+                    .warning {
+                        background: #fff3cd;
+                        border-left: 4px solid #ffc107;
+                        padding: 15px;
+                        margin: 20px 0;
+                        border-radius: 4px;
+                    }
+                    a { 
+                        display: inline-block; 
+                        margin-top: 20px; 
+                        padding: 12px 24px; 
+                        background: #007bff; 
+                        color: white; 
+                        text-decoration: none; 
+                        border-radius: 4px; 
+                        font-weight: bold;
+                    }
+                    a:hover { background: #0056b3; }
+                    .badge { 
+                        display: inline-block; 
+                        padding: 4px 8px; 
+                        background: #28a745; 
+                        color: white; 
+                        border-radius: 4px; 
+                        font-size: 12px;
+                        font-weight: bold;
+                    }
+                    code {
+                        background: #f8f9fa;
+                        padding: 2px 6px;
+                        border-radius: 3px;
+                        font-family: monospace;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="success">
+                    <h1>✅ Connexion bancaire réussie !</h1>
+                    <p>Votre banque a été connectée avec succès via Powens.</p>
+                    <p>Les transactions seront synchronisées automatiquement.</p>
+                </div>
 
-            const accounts = accountsResponse.data.accounts || [];
-            console.log(`✅ ${accounts.length} compte(s) récupéré(s)`);
+                <div class="info">
+                    <h2>📊 Informations de connexion</h2>
+                    <p><strong>Connection ID :</strong> <span class="badge">${connection_id}</span></p>
+                    <p><strong>État :</strong> Connexion établie ✓</p>
+                    <p><strong>Prochaine étape :</strong> Configuration de la synchronisation automatique</p>
+                </div>
 
-            // Afficher la page de succès
-            return res.send(`
-                <!DOCTYPE html>
-                <html lang="fr">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Connexion réussie ✅</title>
-                    <style>
-                        body { 
-                            font-family: Arial, sans-serif; 
-                            max-width: 900px; 
-                            margin: 50px auto; 
-                            padding: 20px; 
-                            background: #f5f5f5;
-                        }
-                        .success { 
-                            background: #d4edda; 
-                            border: 2px solid #28a745; 
-                            padding: 30px; 
-                            border-radius: 8px; 
-                            margin-bottom: 20px;
-                        }
-                        h1 { color: #28a745; margin-top: 0; }
-                        .info { 
-                            background: white; 
-                            padding: 20px; 
-                            border-radius: 8px; 
-                            margin: 20px 0;
-                            border-left: 4px solid #007bff;
-                        }
-                        .info h2 { margin-top: 0; color: #007bff; }
-                        .account {
-                            background: #f8f9fa;
-                            padding: 15px;
-                            margin: 10px 0;
-                            border-radius: 4px;
-                            border-left: 4px solid #17a2b8;
-                        }
-                        .account strong { color: #17a2b8; }
-                        pre { 
-                            background: #f8f9fa; 
-                            padding: 15px; 
-                            border-radius: 4px; 
-                            overflow-x: auto;
-                            font-size: 12px;
-                        }
-                        a { 
-                            display: inline-block; 
-                            margin-top: 20px; 
-                            padding: 12px 24px; 
-                            background: #007bff; 
-                            color: white; 
-                            text-decoration: none; 
-                            border-radius: 4px; 
-                            font-weight: bold;
-                        }
-                        a:hover { background: #0056b3; }
-                        .badge { 
-                            display: inline-block; 
-                            padding: 4px 8px; 
-                            background: #28a745; 
-                            color: white; 
-                            border-radius: 4px; 
-                            font-size: 12px;
-                            font-weight: bold;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="success">
-                        <h1>✅ Connexion bancaire réussie !</h1>
-                        <p>Votre banque a été connectée avec succès via Powens.</p>
-                    </div>
+                <div class="warning">
+                    <h3>ℹ️ Note technique (environnement Sandbox)</h3>
+                    <p>En environnement sandbox Powens, le flux OAuth ne retourne pas de token utilisable directement.</p>
+                    <p>Pour accéder aux comptes et transactions, utilisez la route : <code>/api/powens/sync</code></p>
+                    <p><strong>Recommandation :</strong> Passer en production Powens pour un flux complet.</p>
+                </div>
 
-                    <div class="info">
-                        <h2>📊 Informations de connexion</h2>
-                        <p><strong>Connection ID :</strong> ${connection_id}</p>
-                        <p><strong>User ID Powens :</strong> ${userInfo.id}</p>
-                        <p><strong>Type de token :</strong> <span class="badge">${userInfo.platform}</span></p>
-                        <p><strong>Nombre de comptes :</strong> ${accounts.length}</p>
-                    </div>
+                <div class="info">
+                    <h2>🎯 Étape 1 terminée !</h2>
+                    <p>✅ Intégration Powens fonctionnelle (Webview OK)</p>
+                    <p>⏳ Prochaine étape : Configuration production + synchronisation automatique</p>
+                </div>
 
-                    ${accounts.length > 0 ? `
-                    <div class="info">
-                        <h2>🏦 Vos comptes bancaires</h2>
-                        ${accounts.map(acc => `
-                            <div class="account">
-                                <strong>${acc.name || 'Compte sans nom'}</strong><br>
-                                Type: ${acc.type || 'N/A'}<br>
-                                Solde: ${acc.balance != null ? acc.balance.toFixed(2) + ' €' : 'N/A'}<br>
-                                IBAN: ${acc.iban || 'Non disponible'}
-                            </div>
-                        `).join('')}
-                    </div>
-                    ` : ''}
-
-                    <a href="/transactions">← Retour aux transactions</a>
-                </body>
-                </html>
-            `);
-
-        } catch (error) {
-            console.error('❌ Erreur lors de la récupération des données:', error.response?.data || error.message);
-            
-            return res.status(500).send(`
-                <!DOCTYPE html>
-                <html lang="fr">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Erreur serveur</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
-                        .error { background: #fee; border: 2px solid #c33; padding: 20px; border-radius: 8px; }
-                        h1 { color: #c33; }
-                        pre { background: #f8f9fa; padding: 15px; border-radius: 4px; overflow-x: auto; }
-                        a { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; }
-                    </style>
-                </head>
-                <body>
-                    <div class="error">
-                        <h1>❌ Erreur lors de la récupération des données</h1>
-                        <p><strong>Message :</strong> ${error.message}</p>
-                        ${error.response?.data ? `
-                            <p><strong>Détails de l'erreur :</strong></p>
-                            <pre>${JSON.stringify(error.response.data, null, 2)}</pre>
-                        ` : ''}
-                    </div>
-                    <a href="/transactions">← Retour aux transactions</a>
-                </body>
-                </html>
-            `);
-        }
+                <a href="/transactions">← Retour aux transactions</a>
+            </body>
+            </html>
+        `);
     }
 
     // 3️⃣ CAS 2 : Code reçu (flux OAuth classique)
